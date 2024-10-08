@@ -1,25 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
-
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import LoginPage from "./Pages/LoginPage";
+import {
+    AdminRoute,
+    ClientRoute,
+    TrainerRoute,
+} from "./Components/PrivateRoutes";
+import { useNavigate } from "react-router-dom";
+import ResetPassword from "./Pages/ResetPassword";
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const navigate = useNavigate();
+    return (
+        <div>
+            <Routes>
+                <Route
+                    path="/"
+                    exact
+                    element={<LoginPage navigate={navigate} />}
+                />
+                <Route
+                    path="/admin"
+                    exact
+                    element={
+                        <AdminRoute>
+                            <>admin</>
+                        </AdminRoute>
+                    }
+                />
+                <Route
+                    path="/client"
+                    exact
+                    element={
+                        <ClientRoute>
+                            <>client</>
+                        </ClientRoute>
+                    }
+                />
+                <Route
+                    path="/trainer"
+                    exact
+                    element={
+                        <TrainerRoute>
+                            <>client</>
+                        </TrainerRoute>
+                    }
+                />
+                <Route path="/resetPassword" element={<ResetPassword />} />
+            </Routes>
+        </div>
+    );
 }
 
 export default App;
