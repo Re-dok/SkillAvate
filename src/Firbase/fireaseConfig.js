@@ -5,6 +5,8 @@ import {
     sendEmailVerification,
     signInWithEmailAndPassword,
     sendPasswordResetEmail,
+    browserLocalPersistence,
+    setPersistence,
 } from "firebase/auth";
 import {
     collection,
@@ -23,27 +25,46 @@ const firebaseConfig = {
     appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
+export const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+    //TODO Handle Errors better.
+    console.log("probelm seting perst");
+});
 const db = getFirestore();
 const usersRef = collection(db, "users");
 
 const addUserToDB = async ({ email, isTrainer }) => {
     await addDoc(usersRef, { email, isTrainer });
 };
-const getUserDetails = async ({ email }) => {
+export async function doGetUserData(email) {
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q); // fetch the documents matching the query
 
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0]; // assuming there's only one user with the given email
         const userData = userDoc.data(); // get user data
-        return userData.isTrainer; // return the age field
+        return {
+            isTrainer: userData.isTrainer,
+            isAdmin: userData.isAdmin,
+            isPersistant: userData.isPersistant,
+            email: email,
+        };
     } else {
+        console.log("bi4");
         throw new Error("User not found");
     }
-};
-export async function doSignUpUser({ email, password, isTrainer }) {
+}
+export async function doSignoutUser() {
+    await auth.signOut();
+    console.log("singed out");
+    return "Signed Out!";
+}
+export async function doSignUpUser({
+    email,
+    password,
+    isTrainer,
+    isPersistant,
+}) {
     const userCreds = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -52,7 +73,7 @@ export async function doSignUpUser({ email, password, isTrainer }) {
     const user = userCreds.user;
     if (user) {
         await sendEmailVerification(user);
-        await addUserToDB({ email, isTrainer });
+        await addUserToDB({ email, isTrainer, isPersistant });
         return "Verification email sent! Please verify and sign in.";
     } else {
         throw new Error("Problem Signing up, please try again!");
@@ -65,16 +86,19 @@ export async function doSignInUser({ email, password }) {
         password
     );
     const user = userCredential.user;
-    const verf = user.emailVerified;
-    if (!verf) throw new Error("user not verified!");
-    const token = await user.getIdToken();
-    const isTrainer = await getUserDetails({ email });
-    return { token, isTrainer };
+    await user.reload();
+    const updatedUser = auth.currentUser; // Get the refreshed user
+    const isVerified = updatedUser.emailVerified;
+    if (!isVerified) throw new Error("user not verified!");
+    const token = await updatedUser.getIdToken();
+    // const userDetails = await doGetUserData({ email });
+    return "SIGNIN IN ";
+    // token,
+    // isTrainer: userDetails.isTrainer,
+    // isAdmin: userDetails.isAdmin,
 }
 export async function doUserPasswordReset({ email }) {
-    // alert("hi3");
     await sendPasswordResetEmail(auth, email);
-    // alert("hi4");
     return "Reset Link sent to your mail!";
 }
 export default app;

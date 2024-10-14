@@ -14,6 +14,8 @@ import {
     emailChanged,
     passwordChanged,
     toggleUserRole,
+    togglePersistent,
+    getUserData,
 } from "../features/user/userSlice";
 import { doSignUp } from "../features/user/userSlice";
 import { connect } from "react-redux";
@@ -28,7 +30,9 @@ import { connect } from "react-redux";
 
 //tODO add sign in with email and the respective html
 //tODO add password reset, verify email logic
-// can we customize the verify email and password reset pages?
+//TODO can we customize the verify email and password reset pages?
+import { auth } from "../Firbase/fireaseConfig";
+import withRouter from "../Components/WithRouter";
 
 class LoginPage extends Component {
     constructor(props) {
@@ -38,22 +42,35 @@ class LoginPage extends Component {
             passwordType: "password",
         };
     }
+
     handleSubmit = async () => {
-        const { email, password, isTrainer } = this.props;
+        this.props.setEnableAuth(false);
+        console.log("here for 2nd: " + this.props.enabledAuth);
+        const { email, password, isTrainer, isPersistent } = this.props;
         if (!this.state.isLogin) {
-            await this.props.doSignUp({ email, password, isTrainer });
+            await this.props.doSignUp({
+                email,
+                password,
+                isTrainer,
+                isPersistent,
+            });
             setTimeout(() => {
                 window.location.reload();
             }, 5000);
         } else {
             await this.props.doSignIn({ email, password });
-            if (this.props.success) {
-                this.props.navigate(isTrainer ? "/trainer" : "/client");
+            // to use the latest values we destruncture the props again
+            await this.props.getUserData(email);
+            const { isTrainer, isAdmin, success, navigate } = this.props;
+            if (success) {
+                console.log("LOGGED IN");
+                navigate(
+                    isAdmin ? "/admin" : isTrainer ? "/trainer" : "/client"
+                );
             }
         }
     };
     toggleFormType = () => {
-        //FIXME should i reset the state to empty when toggled?
         if (this.state.isLogin) this.setState({ isLogin: false });
         else this.setState({ isLogin: true });
     };
@@ -63,7 +80,11 @@ class LoginPage extends Component {
         this.setState({ passwordType: newState });
     };
     toggleUserRole = () => {
+        // TODO check and impliment user role signup
         this.props.toggleUserRole();
+    };
+    togglePersistent = () => {
+        this.props.togglePersistent();
     };
     handleChange = (e) => {
         if (e.target.name === "password")
@@ -75,6 +96,9 @@ class LoginPage extends Component {
     render() {
         const isDisabled =
             !this.props.email || !this.props.password || this.state.isLoading;
+        // TODO remove this ->
+        // if(false) return (<>lol</>)
+        //     else
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
                 <div
@@ -83,6 +107,7 @@ class LoginPage extends Component {
                 >
                     <h2>{this.state.isLogin ? "Login" : "Sign Up"}</h2>
                     <InputGroup className="gap-0 d-flex flex-column ">
+                        {/* FIXME dont focus on select */}
                         <Label>Email address</Label>
                         <Input
                             name="email"
@@ -118,7 +143,7 @@ class LoginPage extends Component {
                                 <Input
                                     type="checkbox"
                                     //FIXME add persitant login
-                                    onChange={() => alert("hi")}
+                                    onChange={this.togglePersistent}
                                 />
                                 Stay connected
                             </div>
@@ -135,6 +160,7 @@ class LoginPage extends Component {
                         <InputGroup className="d-flex mt-1 flex-lg-row flex-column align-content-center justify-content-between">
                             <Label className="mt-1">Sign Up As a :</Label>
                             <div className="w-100 mb-3 d-flex flex-row justify-content-evenly align-content-center">
+                                {/* FIXME should be lined up from the left */}
                                 <FormGroup check inline>
                                     <Input
                                         type="checkbox"
@@ -161,7 +187,7 @@ class LoginPage extends Component {
                         onClick={this.handleSubmit}
                     >
                         {this.props.isLoading
-                            ? "Loading"
+                            ? "Loading..."
                             : this.state.isLogin
                             ? "Sign in"
                             : "Sign Up"}
@@ -199,6 +225,9 @@ const mapDispatchToProps = {
     doSignUp,
     toggleUserRole,
     doSignIn,
+    togglePersistent,
+    getUserData,
+    getUserData,
 };
 const mapStateToProps = (state) => {
     return {
@@ -206,8 +235,13 @@ const mapStateToProps = (state) => {
         email: state.user.userCredentials.email,
         isLoading: state.user.loading,
         isTrainer: state.user.isTrainer,
+        isAdmin: state.user.isAdmin,
         error: state.user.error,
         success: state.user.success,
+        isPersistent: state.user.isPersistent,
     };
 };
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(withRouter(LoginPage));
