@@ -2,9 +2,18 @@ import React from "react";
 import { Button, Nav, NavItem } from "reactstrap";
 import withRouter from "./WithRouter";
 import { Link } from "react-router-dom";
-import { doSignoutUser } from "../Firbase/fireaseConfig";
+import { doSignoutUser } from "../Firbase/firbaseAuth";
+import { bindActionCreators } from "@reduxjs/toolkit";
+import { doSignOut } from "../features/user/userSlice";
+import { connect } from "react-redux";
 
 class Toolbar extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+    handleSignOut = () => {
+        this.props.doSignOut();
+    };
     render() {
         return (
             <div>
@@ -17,8 +26,8 @@ class Toolbar extends React.Component {
                                     active={
                                         this.props.router.location.pathname ===
                                         "/client"
-                                            ? true
-                                            : false
+                                            ? "true"
+                                            : "false"
                                     }
                                     to="/client"
                                 >
@@ -31,8 +40,8 @@ class Toolbar extends React.Component {
                                     active={
                                         this.props.router.location.pathname ===
                                         "/admin"
-                                            ? true
-                                            : false
+                                            ? "true"
+                                            : "false"
                                     }
                                     to="/admin"
                                 >
@@ -45,24 +54,32 @@ class Toolbar extends React.Component {
                                     active={
                                         this.props.router.location.pathname ===
                                         "/trainer"
-                                            ? true
-                                            : false
+                                            ? "true"
+                                            : "false"
                                     }
                                     to="/trainer"
                                 >
                                     trainer
                                 </Link>
                             </NavItem>
+                            <NavItem>
+                                <Link
+                                    className="nav-link"
+                                    active={
+                                        this.props.router.location.pathname ===
+                                        "/home"
+                                            ? "true"
+                                            : "false"
+                                    }
+                                    to="/home"
+                                >
+                                    home
+                                </Link>
+                            </NavItem>
                         </Nav>
                     </div>
                     <div className="my-1">
-                        <Button
-                            size="sm"
-                            onClick={async () => {
-                                await doSignoutUser();
-                                window.location.reload();
-                            }}
-                        >
+                        <Button size="sm" onClick={this.handleSignOut}>
                             sign out
                         </Button>
                     </div>
@@ -71,5 +88,7 @@ class Toolbar extends React.Component {
         );
     }
 }
-
-export default withRouter(Toolbar);
+const mapDispatchToProps = {
+    doSignOut,
+};
+export default connect(null, mapDispatchToProps)(withRouter(Toolbar));

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import LoginPage from "./Pages/LoginPage";
 import {
@@ -9,56 +9,79 @@ import {
 } from "./Components/PrivateRoutes";
 import ResetPassword from "./Pages/ResetPassword";
 import ToolBar from "./Components/Navbar1";
-import { getUserData } from "./features/user/userSlice";
-import { auth } from "./Firbase/fireaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
-import { connect } from "react-redux"; // To connect Redux state
-import { bindActionCreators } from "redux"; // To dispatch actions
+import { doGetUserData, setInitialURL } from "./features/user/userSlice";
+import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
+
+import { auth } from "./Firbase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+//FIXME FIND a way such that alerts close on there own, maybe can add it here in OnUpdate
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
             authStateChangedIsEnabled: true,
         };
+        const currentLoc = window.location.pathname;
+        if (this.props.initialURL === null) {
+            this.props.setInitialURL(currentLoc);
+        }
     }
 
     componentDidMount() {
-        this.unsubscribe = onAuthStateChanged(auth, async (user) => {
-            const { authStateChangedIsEnabled } = this.state;
-            const { dispatchGetUserData, navigate } = this.props;
+        // check if the state isLoggedIn is true
+        // no
+        if (!this.props.isLoggedIn) {
+            // run check Auth
+            this.unsubscribe = onAuthStateChanged(auth, async (user) => {
+                const { authStateChangedIsEnabled } = this.state;
 
-            if (authStateChangedIsEnabled) {
-                if (user) {
-                    try {
-                        await dispatchGetUserData(user.email);
+                if (authStateChangedIsEnabled) {
+                    // not signed in
+                    if (!user) {
+                        // if the url is not for login save the intended url, given it isnt signUp/forgot password and then use it at login page to redirect after login
+                        this.props.navigate("/");
+                        // wait for login(so do nothing here)
+                    } else {
+                        // signed in?
+                        // fetch details,nav as normal via intended nav,will need to set is logged in as true
+                        await this.props.doGetUserData(user.email);
                         const { isAdmin, isTrainer } = this.props;
-
-                        navigate(
-                            isAdmin
-                                ? "/admin"
-                                : isTrainer
-                                ? "/trainer"
-                                : "/client"
-                        );
-                        console.log(
-                            "runs for 1st: " +
-                                authStateChangedIsEnabled +
-                                isAdmin +
-                                isTrainer
-                        );
-                    } catch (err) {
-                        console.error("Error fetching user data:", err.message);
+                        if (
+                            this.props.initialURL === "/" ||
+                            this.props.initialURL === "/resetPassword" ||
+                            this.props.initialURL === null
+                        ) {
+                            this.props.navigate(
+                                isAdmin
+                                    ? "/admin"
+                                    : isTrainer
+                                    ? "/trainer"
+                                    : "/client"
+                            );
+                        } else {
+                            this.props.navigate(this.props.initialURL);
+                            if (this.props.initialURL)
+                                this.props.setInitialURL(null);
+                        }
                     }
-                } else {
-                    console.log("No user is signed in");
                 }
+            });
+        } else {
+            // WILL never occur
+            //{ WONT occur idealy since on load or reload, the logIn is always false, and this code run only on load or reload}
+            // fetch details, if hes dirctly trying to reach a subdomain, then you need not navigate, else hes on login page redirect to home
+            const currentLoc = window.location.pathname;
+            const { isAdmin, isTrainer } = this.props;
+            if (currentLoc === "/" || currentLoc === "/resetPassword") {
+                this.props.navigate(
+                    isAdmin ? "/admin" : isTrainer ? "/trainer" : "/client"
+                );
             }
-        });
+        }
     }
 
     componentWillUnmount() {
-        // Clean up the listener when the component unmounts
         if (this.unsubscribe) {
             this.unsubscribe();
         }
@@ -80,7 +103,6 @@ class App extends Component {
                         exact
                         element={
                             <LoginPage
-                                // navigate={this.props.navigate}
                                 enabledAuth={authStateChangedIsEnabled}
                                 setEnableAuth={
                                     this.setAuthStateChangedIsEnabled
@@ -94,6 +116,15 @@ class App extends Component {
                         element={
                             <AdminRoute>
                                 <>admin</>
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/home"
+                        exact
+                        element={
+                            <AdminRoute>
+                                <>home</>
                             </AdminRoute>
                         }
                     />
@@ -122,16 +153,15 @@ class App extends Component {
     }
 }
 
-// Map Redux state to props
 const mapStateToProps = (state) => ({
     isAdmin: state.user.isAdmin,
     isTrainer: state.user.isTrainer,
+    initialURL: state.user.initialURL,
+    isLoggedIn: state.user.isLoggedIn,
 });
+const mapDispatchToProps = {
+    doGetUserData,
+    setInitialURL,
+};
 
-// Map Redux actions to props
-const mapDispatchToProps = (dispatch) => ({
-    dispatchGetUserData: bindActionCreators(getUserData, dispatch),
-});
-
-// Wrap the component with connect() to bind Redux
 export default connect(mapStateToProps, mapDispatchToProps)(withRouter(App));
