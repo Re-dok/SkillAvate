@@ -14,10 +14,16 @@ import {
     emailChanged,
     passwordChanged,
     toggleUserRole,
+    togglePersistent,
+    doGetUserData,
+    doSignUp,
+    setInitialURL,
+    doSignOut,
 } from "../features/user/userSlice";
-import { doSignUp } from "../features/user/userSlice";
 import { connect } from "react-redux";
 
+import { auth } from "../Firbase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 // tODO add signup
 // tODO add role check box to sign UP
 
@@ -28,7 +34,8 @@ import { connect } from "react-redux";
 
 //tODO add sign in with email and the respective html
 //tODO add password reset, verify email logic
-// can we customize the verify email and password reset pages?
+//TODO can we customize the verify email and password reset pages?
+import withRouter from "../Components/WithRouter";
 
 class LoginPage extends Component {
     constructor(props) {
@@ -38,22 +45,92 @@ class LoginPage extends Component {
             passwordType: "password",
         };
     }
-    handleSubmit = async () => {
-        const { email, password, isTrainer } = this.props;
-        if (!this.state.isLogin) {
-            await this.props.doSignUp({ email, password, isTrainer });
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000);
+
+    componentDidMount() {
+        // the isLoggedIn is false,
+        if (!this.props.isLoggedIn) {
+            // this means we have to check persitence
+            this.unsubscribe = onAuthStateChanged(auth, async (user) => {
+                const authStateChangedIsEnabled = this.props.email;
+
+                if (authStateChangedIsEnabled === null) {
+                    // if signedOut: do nothing
+                    // else if signedIn: navigate to the initalURL or to home
+                    //         // run check Auth
+                    // not signed in
+                    if (!user) {
+                    } else {
+                        // signed in?
+                        // fetch details,nav as normal via intended nav,will need to set is logged in as true
+                        await this.props.doGetUserData(user.email);
+                        const { isAdmin, isTrainer } = this.props;
+                        if (
+                            this.props.initialURL === "/" ||
+                            this.props.initialURL === "/resetPassword" ||
+                            this.props.initialURL === null
+                        ) {
+                            this.props.navigate(
+                                isAdmin === true
+                                    ? "/admin"
+                                    : isTrainer
+                                    ? "/trainer"
+                                    : "/client"
+                            );
+                        } else {
+                            this.props.navigate(this.props.initialURL);
+                            if (this.props.initialURL)
+                                this.props.setInitialURL(null);
+                        }
+                    }
+                }
+            });
         } else {
-            await this.props.doSignIn({ email, password });
-            if (this.props.success) {
-                this.props.navigate(isTrainer ? "/trainer" : "/client");
+            // if true make it go to home,since this meant that the user already logged in and came here only by accedent
+            const { isAdmin, isTrainer } = this.props;
+            this.props.navigate(
+                isAdmin === true ? "/admin" : isTrainer ? "/trainer" : "/client"
+            );
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
+        }
+    }
+
+    handleSubmit = async () => {
+        // this.props.setEnableAuth(false);
+        if (!this.state.isLogin) {
+            await this.props.doSignUp();
+        } else {
+            const { email, password } = this.props;
+            if (!email || !password) return;
+            await this.props.doSignIn();
+            const { success } = this.props;
+            if (success) {
+                await this.props.doGetUserData(email);
+                const { isTrainer, isAdmin, navigate } = this.props;
+                if (
+                    this.props.initialURL === "/" ||
+                    this.props.initialURL === null ||
+                    this.props.initialURL === "/resetPassword"
+                ) {
+                    navigate(
+                        isAdmin === true
+                            ? "/admin"
+                            : isTrainer
+                            ? "/trainer"
+                            : "/client"
+                    );
+                } else {
+                    navigate(this.props.initialURL);
+                    this.props.setInitialURL(null);
+                }
             }
         }
     };
     toggleFormType = () => {
-        //FIXME should i reset the state to empty when toggled?
         if (this.state.isLogin) this.setState({ isLogin: false });
         else this.setState({ isLogin: true });
     };
@@ -65,16 +142,18 @@ class LoginPage extends Component {
     toggleUserRole = () => {
         this.props.toggleUserRole();
     };
+    togglePersistent = () => {
+        this.props.togglePersistent();
+    };
     handleChange = (e) => {
         if (e.target.name === "password")
-            // not a real prop, used to connect to store
             this.props.passwordChanged(e.target.value);
-        // not a real prop, used to connect to store
         else this.props.emailChanged(e.target.value);
     };
     render() {
         const isDisabled =
-            !this.props.email || !this.props.password || this.state.isLoading;
+            !this.props.email || !this.props.password || this.props.isLoading;
+
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
                 <div
@@ -87,7 +166,7 @@ class LoginPage extends Component {
                         <Input
                             name="email"
                             onChange={(e) => this.handleChange(e)}
-                            className="w-100"
+                            className="w-100 input-focus-none"
                         />
                     </InputGroup>
                     <InputGroup className="gap-0 d-flex flex-column">
@@ -97,7 +176,7 @@ class LoginPage extends Component {
                                 name="password"
                                 onChange={(e) => this.handleChange(e)}
                                 type={this.state.passwordType}
-                                className="border-0"
+                                className="border-0 input-focus-none"
                             />
                             <InputGroupText
                                 style={{ cursor: "pointer" }}
@@ -117,8 +196,7 @@ class LoginPage extends Component {
                             <div className="gap-2 d-flex align-content-center">
                                 <Input
                                     type="checkbox"
-                                    //FIXME add persitant login
-                                    onChange={() => alert("hi")}
+                                    onChange={this.togglePersistent}
                                 />
                                 Stay connected
                             </div>
@@ -134,7 +212,7 @@ class LoginPage extends Component {
                     ) : (
                         <InputGroup className="d-flex mt-1 flex-lg-row flex-column align-content-center justify-content-between">
                             <Label className="mt-1">Sign Up As a :</Label>
-                            <div className="w-100 mb-3 d-flex flex-row justify-content-evenly align-content-center">
+                            <div className="w-100 mb-3 d-flex flex-row justify-content-start align-content-center gap-3">
                                 <FormGroup check inline>
                                     <Input
                                         type="checkbox"
@@ -161,7 +239,7 @@ class LoginPage extends Component {
                         onClick={this.handleSubmit}
                     >
                         {this.props.isLoading
-                            ? "Loading"
+                            ? "Loading..."
                             : this.state.isLogin
                             ? "Sign in"
                             : "Sign Up"}
@@ -184,7 +262,10 @@ class LoginPage extends Component {
                         </div>
                     </InputGroup>
                     {(this.props.error || this.props.success) && (
-                        <Alert color={this.props.error ? "danger" : "success"}>
+                        <Alert
+                            color={this.props.error ? "danger" : "success"}
+                            fade={false}
+                        >
                             {this.props.error || this.props.success}
                         </Alert>
                     )}
@@ -199,6 +280,10 @@ const mapDispatchToProps = {
     doSignUp,
     toggleUserRole,
     doSignIn,
+    togglePersistent,
+    doGetUserData,
+    setInitialURL,
+    doSignOut,
 };
 const mapStateToProps = (state) => {
     return {
@@ -206,8 +291,14 @@ const mapStateToProps = (state) => {
         email: state.user.userCredentials.email,
         isLoading: state.user.loading,
         isTrainer: state.user.isTrainer,
+        isAdmin: state.user.isAdmin,
         error: state.user.error,
         success: state.user.success,
+        isLoggedIn: state.user.isLoggedIn,
+        initialURL: state.user.initialURL,
     };
 };
-export default connect(mapStateToProps, mapDispatchToProps)(LoginPage);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(withRouter(LoginPage));

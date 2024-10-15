@@ -1,38 +1,65 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
     doSignInUser,
+    doSignoutUser,
     doSignUpUser,
     doUserPasswordReset,
-} from "../../Firbase/fireaseConfig";
-
+} from "../../Firbase/firbaseAuth";
+// FIXME partian me for better usablility
+// FIXME make the messages go away
+import { getUserData } from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
+    error: "",
+    success: "",
+
     userCredentials: {
         email: null,
         password: null,
     },
+
+    isAdmin: false,
     isTrainer: false,
-    authToken: null,
-    error: "",
-    success: "",
+    isPersistent: false,
+
+    isLoggedIn: false,
+    initialURL: null,
 };
 const doSignUp = createAsyncThunk(
-    "/user/signUpUser",
-    async ({ email, password, isTrainer }) => {
+    "user/signUpUser",
+    async (_, { getState }) => {
         try {
-            const response = await doSignUpUser({ email, password, isTrainer });
+            const state = getState();
+            const { email, password } = state.user.userCredentials;
+            const isTrainer = state.user.isTrainer;
+            const response = await doSignUpUser({
+                email,
+                password,
+                isTrainer,
+            });
+            await doSignoutUser();
             return response;
         } catch (error) {
             throw new Error(error.message);
         }
     }
 );
-// TODO add singout
+
+const doSignOut = createAsyncThunk("user/signOutUser", async () => {
+    try {
+        await doSignoutUser();
+    } catch (err) {
+        throw new Error(err.message);
+    }
+});
 const doSignIn = createAsyncThunk(
-    "/user/signInUser",
-    async ({ email, password }) => {
+    "user/signInUser",
+    async (_, { getState }) => {
         try {
-            const resp = await doSignInUser({ email, password });
+            const state = getState();
+            const { email, password } = state.user.userCredentials;
+            const isPersistent = state.user.isPersistent;
+            const resp = await doSignInUser({ email, password, isPersistent });
             return resp;
         } catch (error) {
             throw new Error(error.message);
@@ -40,15 +67,26 @@ const doSignIn = createAsyncThunk(
     }
 );
 const doPasswordReset = createAsyncThunk(
-    "/user/resetPassword",
-    async ({ email }) => {
+    "user/resetPassword",
+    async (_, { getState }) => {
         try {
-            // alert("hi2");
+            const email = getState().user.userCredentials.email;
             const resp = await doUserPasswordReset({ email });
-            //   alert("hi5");
             return resp;
         } catch (err) {
-            //   alert("hi6");
+            throw new Error(err.message);
+        }
+    }
+);
+const doGetUserData = createAsyncThunk(
+    "user/getUserData",
+    async (Email, { getState }) => {
+        try {
+            let email = getState().user.userCredentials.email;
+            if (!email) email = Email;
+            const resp = await getUserData(email);
+            return resp;
+        } catch (err) {
             throw new Error(err.message);
         }
     }
@@ -66,6 +104,12 @@ const userSlice = createSlice({
         toggleUserRole: (state) => {
             state.isTrainer = !state.isTrainer;
         },
+        togglePersistent: (state) => {
+            state.isPersistent = !state.isPersistent;
+        },
+        setInitialURL: (state, action) => {
+            state.initialURL = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -76,24 +120,29 @@ const userSlice = createSlice({
             .addCase(doSignUp.fulfilled, (state, action) => {
                 state.loading = false;
                 state.success = action.payload;
+                state.userCredentials.password = null;
             })
             .addCase(doSignUp.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+                state.userCredentials.password = null;
             })
             .addCase(doSignIn.pending, (state) => {
                 state.loading = true;
                 state.error = "";
+                // state.success=
             })
             .addCase(doSignIn.fulfilled, (state, action) => {
                 state.loading = false;
-                state.authToken = action.payload.token;
-                state.isTrainer = action.payload.isTrainer;
+                state.userCredentials.password = null;
+                state.isLoggedIn = true;
+                // handles the null case
                 state.success = "Login Successfull!";
             })
             .addCase(doSignIn.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+                state.userCredentials.password = null;
             })
             .addCase(doPasswordReset.pending, (state) => {
                 state.loading = true;
@@ -102,14 +151,50 @@ const userSlice = createSlice({
             .addCase(doPasswordReset.fulfilled, (state, action) => {
                 state.loading = false;
                 state.success = action.payload;
+                state.userCredentials.password = null;
             })
             .addCase(doPasswordReset.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+                state.userCredentials.password = null;
+            })
+            .addCase(doGetUserData.pending, (state) => {
+                state.loading = true;
+                state.error = "";
+            })
+            .addCase(doGetUserData.fulfilled, (state, action) => {
+                state.loading = false;
+                // FIXME might need to change wayyy later when courses are added
+                state.userCredentials.email = action.payload.email;
+                state.isTrainer = action.payload.isTrainer;
+                // handles the null case
+                state.isAdmin = action.payload.isAdmin === true ? true : false;
+                state.success = "data fetch Successfull!";
+                state.isLoggedIn = true;
+            })
+            .addCase(doGetUserData.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doSignOut.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doSignOut.fulfilled, () => {
+                return initialState;
+            })
+            .addCase(doSignOut.rejected, (state, action) => {
+                state.error = action.error.message;
+                state.loading = false;
             });
     },
 });
 export default userSlice.reducer;
-export const { passwordChanged, emailChanged, toggleUserRole } =
-    userSlice.actions;
-export { doSignUp, doSignIn, doPasswordReset };
+export const {
+    passwordChanged,
+    emailChanged,
+    toggleUserRole,
+    togglePersistent,
+    setInitialURL,
+} = userSlice.actions;
+// TODO add signout method and also in the app
+export { doSignUp, doSignIn, doPasswordReset, doGetUserData, doSignOut };

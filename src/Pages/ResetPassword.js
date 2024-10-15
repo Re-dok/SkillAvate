@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Button, Input, InputGroup, Label, Alert } from "reactstrap";
 import { emailChanged, doPasswordReset } from "../features/user/userSlice";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 
 // tODO add signup
 // tODO add role check box to sign UP
@@ -18,20 +19,16 @@ import { connect } from "react-redux";
 class ResetPassword extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
     }
     handleSubmit = async () => {
         //   tODO add forgot password logic
-        const { email } = this.props;
-        // alert("hi1");
-        await this.props.doPasswordReset({ email });
-        // alert("h7");
+        await this.props.doPasswordReset();
     };
     handleChange = (e) => {
         this.props.emailChanged(e.target.value);
     };
     render() {
-        const isDisabled = !this.props.email || this.state.isLoading;
+        const isDisabled = !this.props.email || this.props.isLoading;
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
                 <div
@@ -44,7 +41,7 @@ class ResetPassword extends Component {
                         <Input
                             name="email"
                             onChange={(e) => this.handleChange(e)}
-                            className="w-100"
+                            className="w-100 input-focus-none"
                         />
                     </InputGroup>
                     <Button
@@ -60,6 +57,14 @@ class ResetPassword extends Component {
                             {this.props.error || this.props.success}
                         </Alert>
                     )}
+                    <div className="gap-2 d-flex align-content-center">
+                    <Link
+                        to="/"
+                        className="text-decoration-none"
+                    >
+                       Go back to Login ?
+                    </Link>
+                </div>
                 </div>
             </div>
         );
@@ -71,10 +76,10 @@ const mapDispatchToProps = {
 };
 const mapStateToProps = (state) => {
     return {
-        email: state.user.userCredentials.email,
         isLoading: state.user.loading,
         error: state.user.error,
         success: state.user.success,
+        email: state.user.userCredentials.email,
     };
 };
 export default connect(mapStateToProps, mapDispatchToProps)(ResetPassword);
