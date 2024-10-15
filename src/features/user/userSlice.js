@@ -18,8 +18,8 @@ const initialState = {
         password: null,
     },
 
-    isAdmin: null,
-    isTrainer: null,
+    isAdmin: false,
+    isTrainer: false,
     isPersistent: false,
 
     isLoggedIn: false,

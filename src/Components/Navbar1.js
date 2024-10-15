@@ -2,8 +2,6 @@ import React from "react";
 import { Button, Nav, NavItem } from "reactstrap";
 import withRouter from "./WithRouter";
 import { Link } from "react-router-dom";
-import { doSignoutUser } from "../Firbase/firbaseAuth";
-import { bindActionCreators } from "@reduxjs/toolkit";
 import { doSignOut } from "../features/user/userSlice";
 import { connect } from "react-redux";
 

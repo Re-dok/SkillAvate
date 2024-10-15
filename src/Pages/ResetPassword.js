@@ -19,7 +19,6 @@ import { Link } from "react-router-dom";
 class ResetPassword extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
     }
     handleSubmit = async () => {
         //   tODO add forgot password logic

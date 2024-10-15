@@ -22,6 +22,8 @@ import {
 } from "../features/user/userSlice";
 import { connect } from "react-redux";
 
+import { auth } from "../Firbase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 // tODO add signup
 // tODO add role check box to sign UP
 
@@ -43,40 +45,85 @@ class LoginPage extends Component {
             passwordType: "password",
         };
     }
+
     componentDidMount() {
-        /// check if the state isLoggedIn is true
-        if (this.props.isLoggedIn) {
-            // yes handle it and nav to home if initented is empty or login page
+        // the isLoggedIn is false,
+        if (!this.props.isLoggedIn) {
+            // this means we have to check persitence
+            this.unsubscribe = onAuthStateChanged(auth, async (user) => {
+                const authStateChangedIsEnabled = this.props.email;
+
+                if (authStateChangedIsEnabled === null) {
+                    // if signedOut: do nothing
+                    // else if signedIn: navigate to the initalURL or to home
+                    //         // run check Auth
+                    // not signed in
+                    if (!user) {
+                    } else {
+                        // signed in?
+                        // fetch details,nav as normal via intended nav,will need to set is logged in as true
+                        await this.props.doGetUserData(user.email);
+                        const { isAdmin, isTrainer } = this.props;
+                        if (
+                            this.props.initialURL === "/" ||
+                            this.props.initialURL === "/resetPassword" ||
+                            this.props.initialURL === null
+                        ) {
+                            this.props.navigate(
+                                isAdmin === true
+                                    ? "/admin"
+                                    : isTrainer
+                                    ? "/trainer"
+                                    : "/client"
+                            );
+                        } else {
+                            this.props.navigate(this.props.initialURL);
+                            if (this.props.initialURL)
+                                this.props.setInitialURL(null);
+                        }
+                    }
+                }
+            });
+        } else {
+            // if true make it go to home,since this meant that the user already logged in and came here only by accedent
             const { isAdmin, isTrainer } = this.props;
             this.props.navigate(
-                isAdmin ? "/admin" : isTrainer ? "/trainer" : "/client"
+                isAdmin === true ? "/admin" : isTrainer ? "/trainer" : "/client"
             );
-            // no?
-            // wait for login, fetch details,nav accordingly
-            // check before navgating if intended url is not empty, if so nav them there else to home
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.unsubscribe) {
+            this.unsubscribe();
         }
     }
 
     handleSubmit = async () => {
-        this.props.setEnableAuth(false);
-        const { email } = this.props;
+        // this.props.setEnableAuth(false);
         if (!this.state.isLogin) {
             await this.props.doSignUp();
         } else {
-            if(!email) return;
+            const { email, password } = this.props;
+            if (!email || !password) return;
             await this.props.doSignIn();
-            await this.props.doGetUserData(email);
-            const { isTrainer, isAdmin, success, navigate } = this.props;
+            const { success } = this.props;
             if (success) {
+                await this.props.doGetUserData(email);
+                const { isTrainer, isAdmin, navigate } = this.props;
                 if (
                     this.props.initialURL === "/" ||
                     this.props.initialURL === null ||
                     this.props.initialURL === "/resetPassword"
-                )
+                ) {
                     navigate(
-                        isAdmin ? "/admin" : isTrainer ? "/trainer" : "/client"
+                        isAdmin === true
+                            ? "/admin"
+                            : isTrainer
+                            ? "/trainer"
+                            : "/client"
                     );
-                else {
+                } else {
                     navigate(this.props.initialURL);
                     this.props.setInitialURL(null);
                 }
@@ -93,7 +140,6 @@ class LoginPage extends Component {
         this.setState({ passwordType: newState });
     };
     toggleUserRole = () => {
-        // TODO check and impliment user role signup
         this.props.toggleUserRole();
     };
     togglePersistent = () => {
@@ -237,7 +283,7 @@ const mapDispatchToProps = {
     togglePersistent,
     doGetUserData,
     setInitialURL,
-    doSignOut
+    doSignOut,
 };
 const mapStateToProps = (state) => {
     return {
