@@ -8,25 +8,44 @@ import {
     TrainerRoute,
 } from "./Components/PrivateRoutes";
 import ResetPassword from "./Pages/ResetPassword";
-import ToolBar from "./Components/Navbar1";
-import { doGetUserData, setInitialURL } from "./features/user/userSlice";
+import ToolBar from "./Components/Toolbar";
+import {
+    doGetUserData,
+    resetMessages,
+    setInitialURL,
+} from "./features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
-
-//FIXME FIND a way such that alerts close on there own, maybe can add it here in OnUpdate
+// FIXME make urls from base like the one sir did
 class App extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            isResetingMessage: false,
+        };
         const currentLoc = window.location.pathname;
         if (this.props.initialURL === null) {
             this.props.setInitialURL(currentLoc);
         }
     }
-
+    componentDidUpdate() {
+        // clears messages throughout the app after 5 secs
+        const { error, success } = this.props;
+        if (!this.state.isResetingMessage && (error !== "" || success !== "")) {
+            this.setState((state) => (state.isResetingMessage = true));
+            setTimeout(() => {
+                this.props.resetMessages();
+                this.setState((state) => (state.isResetingMessage = true));
+            }, 5000);
+        }
+    }
     render() {
         return (
             <div>
-                <ToolBar />
+                {
+                    !this.props.isLoggedIn?null:
+                        <ToolBar />
+                }
                 <Routes>
                     <Route path="/" exact element={<LoginPage />} />
                     <Route
@@ -34,16 +53,27 @@ class App extends Component {
                         exact
                         element={
                             <AdminRoute>
-                                <>admin</>
+                                <>
+                                    Admin
+                                </>
                             </AdminRoute>
                         }
                     />
                     <Route
-                        path="/home"
+                        path="/myCourses"
                         exact
                         element={
                             <AdminRoute>
-                                <>home</>
+                                <>Courses</>
+                            </AdminRoute>
+                        }
+                    />
+                    <Route
+                        path="/explore"
+                        exact
+                        element={
+                            <AdminRoute>
+                                <>explore</>
                             </AdminRoute>
                         }
                     />
@@ -78,10 +108,13 @@ const mapStateToProps = (state) => ({
     isTrainer: state.user.isTrainer,
     initialURL: state.user.initialURL,
     isLoggedIn: state.user.isLoggedIn,
+    success: state.user.success,
+    error: state.user.error,
 });
 const mapDispatchToProps = {
     doGetUserData,
     setInitialURL,
+    resetMessages,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(withRouter(App));

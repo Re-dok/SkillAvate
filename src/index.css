@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      --primary: #7469B6;
+      --secondary: #77CDFF;
+      --secondaryHover: #0D92F4;
+      --tertiary: #AD88C8;
+      --dark: #26355D;
+      --text: gray;
+      --textHover: black;
+      --brand-primary: #b33939;
+      --brand-primaryHover: #cb1111;
+}
+
+.bg-primary-o {
+      background-color: var(--primary);
+}
+
+.main-text {
+      color: var(--text);
+}
+
+.main-text:hover {
+      color: var(--textHover);
+}
+
+.brand-text {
+      color: var(--brand-primary);
+      font-weight: bold;
+
+}
+
+.brand-text:hover {
+      color: var(--brand-primaryHover);
+}
+
+.nav-text {
+      color: black !important;
+      padding: 0.5rem 0.7rem;
+}
+
+/* TODO looked odd ,add lateer if needed  */
+/* .nav-text:where([aria-current="page"]) {
+      text-decoration: underline !important;
+      text-decoration-color: var(--secondary) !important;
+      text-underline-offset: 0.5rem !important;
+} */
+
+.text-dark-o {
+      color: var(--dark);
+}
+
+.input-focus-none {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: rgb(203, 202, 202) !important;
+}

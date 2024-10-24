@@ -5,8 +5,6 @@ import {
     doSignUpUser,
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
-// FIXME partian me for better usablility
-// FIXME make the messages go away
 import { getUserData } from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
@@ -110,6 +108,10 @@ const userSlice = createSlice({
         setInitialURL: (state, action) => {
             state.initialURL = action.payload;
         },
+        resetMessages: (state) => {
+            if (state.error !== "") state.error = "";
+            if (state.success !== "") state.success = "";
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -195,6 +197,6 @@ export const {
     toggleUserRole,
     togglePersistent,
     setInitialURL,
+    resetMessages,
 } = userSlice.actions;
-// TODO add signout method and also in the app
 export { doSignUp, doSignIn, doPasswordReset, doGetUserData, doSignOut };

@@ -4,24 +4,11 @@ import { emailChanged, doPasswordReset } from "../features/user/userSlice";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 
-// tODO add signup
-// tODO add role check box to sign UP
-
-// tODO add a msg section
-
-//check multiple signups with same email is possible
-//nop
-
-//tODO add sign in with email and the respective html
-//tODO add password reset, verify email logic
-// can we customize the verify email and password reset pages?
-
 class ResetPassword extends Component {
     constructor(props) {
         super(props);
     }
     handleSubmit = async () => {
-        //   tODO add forgot password logic
         await this.props.doPasswordReset();
     };
     handleChange = (e) => {
@@ -53,18 +40,18 @@ class ResetPassword extends Component {
                         {this.props.isLoading ? "Loading" : "Reset Password"}
                     </Button>
                     {(this.props.error || this.props.success) && (
-                        <Alert color={this.props.error ? "danger" : "success"}>
+                        <Alert
+                            color={this.props.error ? "danger" : "success"}
+                            fade={false}
+                        >
                             {this.props.error || this.props.success}
                         </Alert>
                     )}
                     <div className="gap-2 d-flex align-content-center">
-                    <Link
-                        to="/"
-                        className="text-decoration-none"
-                    >
-                       Go back to Login ?
-                    </Link>
-                </div>
+                        <Link to="/" className="text-decoration-none">
+                            Go back to Login ?
+                        </Link>
+                    </div>
                 </div>
             </div>
         );

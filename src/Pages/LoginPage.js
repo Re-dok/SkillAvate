@@ -24,17 +24,11 @@ import { connect } from "react-redux";
 
 import { auth } from "../Firbase/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
-// tODO add signup
-// tODO add role check box to sign UP
-
-// tODO add a msg section
-
+ 
 //check multiple signups with same email is possible
 //nop
-
-//tODO add sign in with email and the respective html
-//tODO add password reset, verify email logic
-//TODO can we customize the verify email and password reset pages?
+// prevent from adding to db if theres already an acc
+ 
 import withRouter from "../Components/WithRouter";
 
 class LoginPage extends Component {
