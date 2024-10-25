@@ -10,12 +10,13 @@ import {
 import ResetPassword from "./Pages/ResetPassword";
 import ToolBar from "./Components/Toolbar";
 import {
-    doGetUserData,
+    // doGetUserData,
     resetMessages,
     setInitialURL,
 } from "./features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
+import NotFound from "./Pages/NotFound";
 // FIXME make urls from base like the one sir did
 class App extends Component {
     constructor(props) {
@@ -42,10 +43,7 @@ class App extends Component {
     render() {
         return (
             <div>
-                {
-                    !this.props.isLoggedIn?null:
-                        <ToolBar />
-                }
+                {!this.props.isLoggedIn ? null : <ToolBar />}
                 <Routes>
                     <Route path="/" exact element={<LoginPage />} />
                     <Route
@@ -53,9 +51,7 @@ class App extends Component {
                         exact
                         element={
                             <AdminRoute>
-                                <>
-                                    Admin
-                                </>
+                                <>Admin</>
                             </AdminRoute>
                         }
                     />
@@ -63,26 +59,26 @@ class App extends Component {
                         path="/myCourses"
                         exact
                         element={
-                            <AdminRoute>
-                                <>Courses</>
-                            </AdminRoute>
+                            <ClientRoute>
+                                <>myCourses</>
+                            </ClientRoute>
                         }
                     />
                     <Route
                         path="/explore"
                         exact
                         element={
-                            <AdminRoute>
+                            <ClientRoute>
                                 <>explore</>
-                            </AdminRoute>
+                            </ClientRoute>
                         }
                     />
                     <Route
-                        path="/client"
+                        path="/settings"
                         exact
                         element={
                             <ClientRoute>
-                                <>client</>
+                                <>settings</>
                             </ClientRoute>
                         }
                     />
@@ -96,7 +92,8 @@ class App extends Component {
                         }
                     />
                     <Route path="/resetPassword" element={<ResetPassword />} />
-                    <Route path="/NOTFOUND" element={<>PLEAD</>} />
+                    <Route path="/notFound" element={<NotFound />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </div>
         );
@@ -112,7 +109,7 @@ const mapStateToProps = (state) => ({
     error: state.user.error,
 });
 const mapDispatchToProps = {
-    doGetUserData,
+    // doGetUserData,
     setInitialURL,
     resetMessages,
 };

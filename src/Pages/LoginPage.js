@@ -24,11 +24,11 @@ import { connect } from "react-redux";
 
 import { auth } from "../Firbase/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
- 
+
 //check multiple signups with same email is possible
 //nop
 // prevent from adding to db if theres already an acc
- 
+
 import withRouter from "../Components/WithRouter";
 
 class LoginPage extends Component {
@@ -61,15 +61,17 @@ class LoginPage extends Component {
                         if (
                             this.props.initialURL === "/" ||
                             this.props.initialURL === "/resetPassword" ||
-                            this.props.initialURL === null
+                            this.props.initialURL === null ||
+                            this.props.initialURL === "/notFound"
                         ) {
                             this.props.navigate(
                                 isAdmin === true
                                     ? "/admin"
                                     : isTrainer
                                     ? "/trainer"
-                                    : "/client"
+                                    : "/myCourses"
                             );
+                            this.props.setInitialURL(null);
                         } else {
                             this.props.navigate(this.props.initialURL);
                             if (this.props.initialURL)
@@ -82,7 +84,11 @@ class LoginPage extends Component {
             // if true make it go to home,since this meant that the user already logged in and came here only by accedent
             const { isAdmin, isTrainer } = this.props;
             this.props.navigate(
-                isAdmin === true ? "/admin" : isTrainer ? "/trainer" : "/client"
+                isAdmin === true
+                    ? "/admin"
+                    : isTrainer
+                    ? "/trainer"
+                    : "/myCourses"
             );
         }
     }
@@ -108,15 +114,17 @@ class LoginPage extends Component {
                 if (
                     this.props.initialURL === "/" ||
                     this.props.initialURL === null ||
-                    this.props.initialURL === "/resetPassword"
+                    this.props.initialURL === "/resetPassword" ||
+                    this.props.initialURL === "/notFound"
                 ) {
                     navigate(
                         isAdmin === true
                             ? "/admin"
                             : isTrainer
                             ? "/trainer"
-                            : "/client"
+                            : "/myCourses"
                     );
+                    this.props.setInitialURL(null);
                 } else {
                     navigate(this.props.initialURL);
                     this.props.setInitialURL(null);

@@ -24,7 +24,10 @@ class Toolbar extends Component {
         };
     }
     toggleIsOpen = () => {
-        this.setState({ drawIsOpen: !this.state.drawIsOpen });
+        this.setState({
+            drawIsOpen: !this.state.drawIsOpen,
+            tooltipOpen: false,
+        });
     };
     toggleBurger = () => {
         this.setState({ burgerIsopen: !this.state.burgerIsopen });
@@ -72,7 +75,6 @@ class Toolbar extends Component {
                         toggle={this.toggleIsOpen}
                         menuRole="menu"
                         className="d-none d-sm-block"
-                        // className="end"
                     >
                         <DropdownToggle tag={"i"} title="">
                             {!this.props.username ? (
