@@ -20,6 +20,8 @@ const initialState = {
     isTrainer: false,
     isPersistent: false,
 
+    courses: null,
+
     isLoggedIn: false,
     initialURL: null,
 };
@@ -169,6 +171,8 @@ const userSlice = createSlice({
                 // FIXME might need to change wayyy later when courses are added
                 state.userCredentials.email = action.payload.email;
                 state.isTrainer = action.payload.isTrainer;
+                // TODO check if the courses now carries both the progress,and the courseId
+                state.courses = action.payload.courses;
                 // handles the null case
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
                 state.success = "data fetch Successfull!";

@@ -17,6 +17,7 @@ async function getUserData(email) {
             isAdmin: userData.isAdmin,
             isPersistant: userData.isPersistant,
             email: email,
+            courses: userData.courses,
         };
     } else {
         throw new Error("User not found");
