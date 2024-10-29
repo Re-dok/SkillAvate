@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { doGetCourseDetails } from "../features/course/courseSlice";
-import { connect } from "react-redux";
 import {
-    Button,
-    CloseButton,
-    Collapse,
-    Progress,
-    UncontrolledTooltip,
-} from "reactstrap";
+    doGetCourseDetails,
+    setCurrentCourse,
+} from "../features/course/courseSlice";
+import { connect } from "react-redux";
+import { Button, CloseButton, Collapse, Progress } from "reactstrap";
 import { addCourse } from "../Firbase/firebaseCourseDB";
+import withRouter from "../Components/WithRouter";
+
 class CourseCard extends Component {
     // props = courseId,courseProgress
     constructor(props) {
@@ -28,8 +27,9 @@ class CourseCard extends Component {
     }
     async componentDidMount() {
         // TODO get course name, and calculate the progress %,module names also add to the user db, the progress and to the course db the total creds
-        if (!this.props.courseData)
+        if (this.props.courseData === null) {
             await this.props.doGetCourseDetails(this.props.courseId);
+        }
         const { courseName, modules, totalUnits, courseDiscp } =
             this.props.courseData;
         this.setState({
@@ -107,7 +107,10 @@ class CourseCard extends Component {
                             <Collapse isOpen={this.state.openModules}>
                                 {this.state.modules.map(
                                     (module, moduleNumber) => (
-                                        <p className="ps-5 my-3 fw-3">
+                                        <p
+                                            key={moduleNumber}
+                                            className="ps-5 my-3 fw-3"
+                                        >
                                             <span
                                                 onClick={() => {
                                                     if (
@@ -144,7 +147,7 @@ class CourseCard extends Component {
                                                 moduleNumber ? (
                                                     <i className="ms-2 fs-6 d-inline-block bi bi-info-circle"></i>
                                                 ) : (
-                                                    <i class="ms-2 fs-6 bi bi-x-circle"></i>
+                                                    <i className="ms-2 fs-6 bi bi-x-circle"></i>
                                                 )}
                                             </span>
                                         </p>
@@ -170,23 +173,35 @@ class CourseCard extends Component {
                                 className="fs-6"
                             ></CloseButton>
                         </div>
-                        <p className="fs-4 mb-0">
-                            {this.state.modules.map(
-                                (module, i) =>
-                                    i === this.state.openDetatils &&
-                                    module.moduleName
-                            )}
-                        </p>
-                        <p className="p-2 ps-0 mt-0 overflow-hidden">
-                            {this.state.modules.map(
-                                (module, i) =>
-                                    i === this.state.openDetatils &&
-                                    module.moduleDiscp
-                            )}
-                        </p>
+                        {this.state.modules.map(
+                            (module, i) =>
+                                i === this.state.openDetatils && (
+                                    <p className="fs-4 mb-0" key={i}>
+                                        {module.moduleName}
+                                    </p>
+                                )
+                        )}
+                        {this.state.modules.map(
+                            (module, i) =>
+                                i === this.state.openDetatils && (
+                                    <p
+                                        className="p-2 ps-0 mt-0 overflow-hidden"
+                                        key={i}
+                                    >
+                                        {module.moduleDiscp}
+                                    </p>
+                                )
+                        )}
                         <Button
                             className="rounded-3 p-3 mb-3 fw-bold"
                             size="sm"
+                            onClick={() => {
+                                this.props.setCurrentCourse(
+                                    this.props.courseId
+                                );
+                                // this.props.navigate("/viewCourse");
+                                this.props.navigate(`/viewCourse/${this.props.courseId}`)
+                            }}
                         >
                             <i className="bi bi-play-circle-fill me-1"></i>{" "}
                             Continue Learning
@@ -203,36 +218,49 @@ class CourseCard extends Component {
                         >
                             Module Overview {"  "}
                             {this.state.openHeadings ? (
-                                <i class="bi bi-chevron-up"></i>
+                                <i className="bi bi-chevron-up"></i>
                             ) : (
-                                <i class="bi bi-chevron-down"></i>
+                                <i className="bi bi-chevron-down"></i>
                             )}
                         </p>
                         <Collapse isOpen={this.state.openHeadings}>
                             {/* TODO add for each for them a nav to there page,& heiglight the current one */}
                             {this.state.modules.map(
                                 (module, moduleNumber) =>
-                                    moduleNumber === this.state.openDetatils &&
-                                    module.headings.map((heading) => (
-                                        <div className="m-0 p-0 ps-2">
-                                            <p className="border my-2 border-2 border-start-5 rounded-3 p-2 ps-3 overflow-hidden">
-                                                {heading.headingName}
-                                            </p>
-                                            {heading.subheadings.map(
-                                                (subheading) => (
-                                                    <div className="p-0 ps-5 m-0">
-                                                        <p className="border rounded-start-pill rounded-end-pill my-2 border-2 rounded-3 p-2 overflow-hidden">
-                                                            <i class="ms-1 me-2 bi bi-play-circle-fill"></i>
-
+                                    moduleNumber ===
+                                        this.state.openDetatils && (
+                                        <div key={moduleNumber}>
+                                            {module.headings.map(
+                                                (heading, i) => (
+                                                    <div
+                                                        className="m-0 p-0 ps-2"
+                                                        key={i}
+                                                    >
+                                                        <p className="border my-2 border-2 border-start-5 rounded-3 p-2 ps-3 overflow-hidden">
                                                             {
-                                                                subheading.subheadingName
+                                                                heading.headingName
                                                             }
                                                         </p>
+                                                        {heading.subheadings.map(
+                                                            (subheading, i) => (
+                                                                <div
+                                                                    className="p-0 ps-5 m-0"
+                                                                    key={i}
+                                                                >
+                                                                    <p className="border rounded-start-pill rounded-end-pill my-2 border-2 rounded-3 p-2 overflow-hidden">
+                                                                        <i className="ms-1 me-2 bi bi-play-circle-fill"></i>
+                                                                        {
+                                                                            subheading.subheadingName
+                                                                        }
+                                                                    </p>
+                                                                </div>
+                                                            )
+                                                        )}
                                                     </div>
                                                 )
                                             )}
                                         </div>
-                                    ))
+                                    )
                             )}
                         </Collapse>
                     </div>
@@ -243,6 +271,7 @@ class CourseCard extends Component {
 }
 const mapDispatchToProps = {
     doGetCourseDetails,
+    setCurrentCourse,
 };
 const mapStateToprops = (state) => {
     return {
@@ -251,20 +280,17 @@ const mapStateToprops = (state) => {
         success: state.course.courseSuccess,
         courses: state.user.courses,
         courseData: state.course.course,
-        courseId: state.user.courses[0].courseId,
-        courseProgress: state.user.courses[0].courseProgress,
+        courseId: state.user.courses[0]?.courseId,
+        courseProgress: state.user.courses[0]?.courseProgress,
     };
 };
-const ConectedCourseCare = connect(
+const ConectedCourseCard = connect(
     mapStateToprops,
     mapDispatchToProps
-)(CourseCard);
+)(withRouter(CourseCard));
 class MyCourses extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            course: "",
-        };
     }
     addCourse = () => {
         try {
@@ -278,7 +304,7 @@ class MyCourses extends Component {
         return (
             <div className="d-flex row justify-content-center">
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    <ConectedCourseCare />
+                    <ConectedCourseCard />
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
             </div>

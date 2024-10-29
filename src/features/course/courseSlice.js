@@ -3,6 +3,7 @@ import { getCourseDetails } from "../../Firbase/firebaseCourseDB";
 
 const initialState = {
     course: null,
+    currentCourse: null,
     courseLoading: false,
     courseError: "",
     courseSuccess: "",
@@ -27,6 +28,9 @@ const courseSlice = createSlice({
             if (state.courseError !== "") state.courseError = "";
             if (state.courseSuccess !== "") state.courseSuccess = "";
         },
+        setCurrentCourse: (state, action) => {
+            state.currentCourse = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -46,5 +50,5 @@ const courseSlice = createSlice({
     },
 });
 export default courseSlice.reducer;
-export const { resetCourseMessages } = courseSlice.actions;
+export const { resetCourseMessages, setCurrentCourse } = courseSlice.actions;
 export { doGetCourseDetails };

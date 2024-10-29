@@ -3,7 +3,6 @@ import { db } from "./firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 const coursesRef = collection(db, "courses");
 async function getCourseDetails(courseId) {
-    console.log(courseId);
     const q = query(coursesRef, where("courseId", "==", courseId));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
