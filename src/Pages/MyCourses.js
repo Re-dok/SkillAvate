@@ -26,16 +26,15 @@ class CourseCard extends Component {
         };
     }
     async componentDidMount() {
-        // TODO get course name, and calculate the progress %,module names also add to the user db, the progress and to the course db the total creds
         if (this.props.courseData === null) {
             await this.props.doGetCourseDetails(this.props.courseId);
         }
-        const { courseName, modules, totalUnits, courseDiscp } =
-            this.props.courseData;
+        const { courseName, modules, courseDiscp } = this.props.courseData;
+        const courseProgressPersent = this.props.courseProgress[0];
         this.setState({
             courseName: courseName,
             modules: modules,
-            progress: (100 * this.props.courseProgress + 13) / totalUnits,
+            progress: (100 * courseProgressPersent) / modules.length,
             courseDiscp: courseDiscp,
         });
     }
@@ -44,36 +43,25 @@ class CourseCard extends Component {
             <div className="row">
                 <div className="col-sm-6 col-12 p-3">
                     <div className="ps-3 border-start border-3">
-                        <span
-                            // role="button"
-                            // TODO add this later if needed
-                            // onClick={() => {
-                            //     if(this.state.openDetatils!==0){
-                            //         if(this.setState.openDetatils!==-1){
-
-                            //             this.setState({
-                            //                 openDetatils: -1,
-                            //             });
-                            //         }
-                            //         setTimeout(() => {
-                            //             this.setState({
-                            //                 openDetatils:
-                            //                     0,
-                            //             });
-                            //         }, 800);
-                            //     }
-                            //     else{
-                            //         this.setState({
-                            //             openDetatils: -1,
-                            //         });
-                            //     }
-                            // }}
-                            className="fs-2 text-uppercase align-items-center d-lg-inline d-flex"
-                        >
+                        <span className="fs-2 text-uppercase align-items-center d-lg-inline d-flex">
                             {this.state.courseName}
-                            {/* <i className="ms-2 fs-6 d-inline-block d-lg-none bi bi-info-circle"></i> */}
                         </span>
                         <p>{this.state.courseDiscp}</p>
+                        <Button
+                            className="rounded-3 p-3 mb-3 fw-bold"
+                            size="sm"
+                            onClick={() => {
+                                this.props.setCurrentCourse(
+                                    this.props.courseId
+                                );
+                                this.props.navigate(
+                                    `/viewCourse/${this.props.courseId}`
+                                );
+                            }}
+                        >
+                            <i className="bi bi-play-circle-fill me-1"></i>{" "}
+                            Continue Learning
+                        </Button>
                         <div className="my-3 mt-4 fw-light">
                             {this.state.progress}% complete
                             <Progress
@@ -120,6 +108,7 @@ class CourseCard extends Component {
                                                     ) {
                                                         this.setState({
                                                             openDetatils: -1,
+                                                            openHeadings: false,
                                                         });
                                                     } else {
                                                         this.setState({
@@ -192,21 +181,7 @@ class CourseCard extends Component {
                                     </p>
                                 )
                         )}
-                        <Button
-                            className="rounded-3 p-3 mb-3 fw-bold"
-                            size="sm"
-                            onClick={() => {
-                                this.props.setCurrentCourse(
-                                    this.props.courseId
-                                );
-                                // this.props.navigate("/viewCourse");
-                                this.props.navigate(`/viewCourse/${this.props.courseId}`)
-                            }}
-                        >
-                            <i className="bi bi-play-circle-fill me-1"></i>{" "}
-                            Continue Learning
-                        </Button>
-                        <br></br>
+
                         <p
                             role="button"
                             onClick={() =>
@@ -224,7 +199,6 @@ class CourseCard extends Component {
                             )}
                         </p>
                         <Collapse isOpen={this.state.openHeadings}>
-                            {/* TODO add for each for them a nav to there page,& heiglight the current one */}
                             {this.state.modules.map(
                                 (module, moduleNumber) =>
                                     moduleNumber ===
@@ -236,7 +210,8 @@ class CourseCard extends Component {
                                                         className="m-0 p-0 ps-2"
                                                         key={i}
                                                     >
-                                                        <p className="border my-2 border-2 border-start-5 rounded-3 p-2 ps-3 overflow-hidden">
+                                                        <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
+                                                            <i class="bi bi-dot"></i>{" "}
                                                             {
                                                                 heading.headingName
                                                             }
@@ -247,7 +222,7 @@ class CourseCard extends Component {
                                                                     className="p-0 ps-5 m-0"
                                                                     key={i}
                                                                 >
-                                                                    <p className="border rounded-start-pill rounded-end-pill my-2 border-2 rounded-3 p-2 overflow-hidden">
+                                                                    <p className="border rounded-start-pill rounded-end-pill mb-2 border-2 rounded-3 p-2 overflow-hidden">
                                                                         <i className="ms-1 me-2 bi bi-play-circle-fill"></i>
                                                                         {
                                                                             subheading.subheadingName
@@ -302,7 +277,7 @@ class MyCourses extends Component {
     };
     render() {
         return (
-            <div className="d-flex row justify-content-center">
+            <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
                     <ConectedCourseCard />
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
