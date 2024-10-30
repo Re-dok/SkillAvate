@@ -233,8 +233,6 @@ class ViewCourse extends Component {
                 console.error("Error loading course details:", error);
             }
         }
-        // console.log(this.props.courseData);
-        // console.log(this.state);
     }
     componentDidUpdate() {
         console.log(this.state.currentUnit);

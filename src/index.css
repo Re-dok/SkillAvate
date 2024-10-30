@@ -14,10 +14,30 @@ body {
       --textHover: black;
       --brand-primary: #b33939;
       --brand-primaryHover: #cb1111;
+      --darkBg: #f4f5f4;
+}
+
+.sticky-top {
+      position: sticky;
+      top: 0;
+      z-index: 1050;
+      /* Ensure it’s higher than other components */
+      background-color: white;
+      /* Optional: Add a solid background color */
 }
 
 .bg-primary-o {
       background-color: var(--primary);
+}
+.bg-secodary-o {
+      background-color: var(--secondary);
+}
+.paragram-text {
+      white-space: pre-wrap !important;
+}
+
+.bg-grey {
+      background-color: var(--darkBg);
 }
 
 .main-text {

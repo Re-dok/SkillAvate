@@ -280,6 +280,10 @@ class MyCourses extends Component {
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
                     <ConectedCourseCard />
+                    <ConectedCourseCard />
+                    <ConectedCourseCard />
+                    <ConectedCourseCard />
+                    <ConectedCourseCard />
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
             </div>
