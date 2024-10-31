@@ -2,17 +2,15 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getCourseDetails } from "../../Firbase/firebaseCourseDB";
 
 const initialState = {
-    course: null,
-    currentCourse: null,
+    course: [],
     courseLoading: false,
     courseError: "",
     courseSuccess: "",
 };
 const doGetCourseDetails = createAsyncThunk(
-    "courses/getCoursesDetails",
-    async (courseId, { getState }) => {
+    "courses/getCourseDetails",
+    async (courseId) => {
         try {
-            //TODO add firebase logic here,also to check if
             const courseData = await getCourseDetails(courseId);
             return courseData.courseData;
         } catch (err) {
@@ -28,8 +26,11 @@ const courseSlice = createSlice({
             if (state.courseError !== "") state.courseError = "";
             if (state.courseSuccess !== "") state.courseSuccess = "";
         },
-        setCurrentCourse: (state, action) => {
-            state.currentCourse = action.payload;
+        clearOtherUserCoursesInfo: (state, action) => {
+            const currentcourseId = action.payload;
+            state.course = state.course.filter(
+                (c) => c.courseId === currentcourseId
+            );
         },
     },
     extraReducers: (builder) => {
@@ -41,7 +42,7 @@ const courseSlice = createSlice({
             .addCase(doGetCourseDetails.fulfilled, (state, action) => {
                 state.courseLoading = false;
                 state.courseSuccess = "Courses data retrived";
-                state.course = action.payload;
+                state.course.push(action.payload);
             })
             .addCase(doGetCourseDetails.rejected, (state, action) => {
                 state.courseLoading = false;
@@ -50,5 +51,6 @@ const courseSlice = createSlice({
     },
 });
 export default courseSlice.reducer;
-export const { resetCourseMessages, setCurrentCourse } = courseSlice.actions;
+export const { resetCourseMessages, clearOtherUserCoursesInfo } =
+    courseSlice.actions;
 export { doGetCourseDetails };

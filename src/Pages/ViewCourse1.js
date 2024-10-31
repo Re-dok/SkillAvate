@@ -1,13 +1,6 @@
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
-import {
-    Pagination,
-    PaginationItem,
-    PaginationLink,
-    Badge,
-    Button,
-    Alert,
-} from "reactstrap";
+import { Badge, Button, Alert } from "reactstrap";
 import { doGetCourseDetails } from "../features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../Components/WithRouter";
@@ -117,7 +110,6 @@ const mapStatesToProps = (state) => ({
     isLoading: state.course.courseLoading || state.user.loading,
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,
-    currentCourse: state.course.currentCourse,
     courseData: state.course.course,
 });
 const mapDispatchToProps = {
