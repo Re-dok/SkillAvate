@@ -1,97 +1,221 @@
 import React, { Component } from "react";
+import ReactPlayer from "react-player";
 import {
-    Offcanvas,
-    OffcanvasHeader,
-    OffcanvasBody,
+    Badge,
+    Button,
+    Alert,
+    // Accordion,
+    // AccordionBody,
+    // AccordionHeader,
+    // AccordionItem,
     ListGroup,
     ListGroupItem,
     Collapse,
-    Button,
 } from "reactstrap";
+import { doGetCourseDetails } from "../features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../Components/WithRouter";
-import { doGetCourseDetails } from "../features/course/courseSlice";
-import ReactPlayer from "react-player";
-import { current } from "@reduxjs/toolkit";
+class QuestionCard extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            alertIsOpen: true,
+            currentQuestion: 1,
+            selectedOptions: null,
+            // TODO add logic to only allow submission when all questions are attempted AND unlock tests only after the video is watched
+            isDisabled: true,
+        };
+    }
+    nextQuestion = () => {
+        if (this.state.currentQuestion < this.props.test.length) {
+            this.setState({ currentQuestion: this.state.currentQuestion + 1 });
+        }
+    };
+    prevQuestion = () => {
+        if (this.state.currentQuestion > 1) {
+            this.setState({ currentQuestion: this.state.currentQuestion - 1 });
+        }
+    };
+    handleSubmit = () => {
+        alert("add submit logic");
+    };
+    render() {
+        if (this.props.test.length === 0) return <>Nothing</>;
+        const { completedQuestions } = this.props;
+        const { currentQuestion } = this.state;
+        const { question, options } = this.props.test[currentQuestion - 1];
+        const numberOfQuestions = this.props.test.length || 0;
+        const isDisabled = this.state.isDisabled;
+        return (
+            <div className="border border-1 rounded rounded-3 bg-white">
+                <div className="border-bottom border-1 py-2 d-flex justify-content-between">
+                    <div className="d-inline">
+                        <i
+                            onClick={this.prevQuestion}
+                            style={{
+                                cursor:
+                                    this.state.currentQuestion > 1
+                                        ? "pointer"
+                                        : "not-allowed",
+                            }}
+                            className="bi bi-chevron-left border-end border-2 p-2"
+                        ></i>
+                        <i
+                            onClick={this.nextQuestion}
+                            style={{
+                                cursor:
+                                    this.state.currentQuestion <
+                                    numberOfQuestions
+                                        ? "pointer"
+                                        : "not-allowed",
+                            }}
+                            className="bi bi-chevron-right border-2 border-end p-2 me-3"
+                        ></i>
+                        <p className="fw-bold d-inline">
+                            Question {currentQuestion}/{numberOfQuestions}
+                        </p>
+                    </div>
+                    {
+                        <Badge
+                            color={completedQuestions ? "info" : "warning"}
+                            pill
+                            className="me-3 text-dark"
+                        >
+                            {completedQuestions ? (
+                                <i className="bi bi-check-circle-fill me-2"></i>
+                            ) : (
+                                <i className="bi bi-exclamation-circle-fill me-1"></i>
+                            )}
+                            {completedQuestions ? "Completed" : "Mandatery"}
+                        </Badge>
+                    }
+                </div>
+                <div className="p-3 py-4">
+                    <p className="fw-bold">Question {currentQuestion} </p>
+                    <p className="fw-light">{question}</p>
+                </div>
+                {options.map((option, optionNumber) => (
+                    <div
+                        className="p-3 pb-0 d-flex border-top border-2"
+                        key={optionNumber}
+                    >
+                        <i className="bi bi-circle me-2 fw-light"></i>
+                        <p className="fw-light">{option}</p>
+                    </div>
+                ))}
+                <div
+                    className="border-top border-1 px-4 py-3 d-flex flex-row-reverse justify-content-between"
+                    onClick={() => {
+                        if (!isDisabled) {
+                            if (currentQuestion !== numberOfQuestions) {
+                                this.nextQuestion();
+                            } else {
+                                this.handleSubmit();
+                            }
+                        }
+                    }}
+                >
+                    <Button color="info" className="text-light" disabled>
+                        {currentQuestion !== numberOfQuestions
+                            ? "Next"
+                            : "Submit"}
+                    </Button>
+                </div>
+                <Alert
+                    color="primary"
+                    className="mx-2"
+                    isOpen={!this.state.alertIsOpen}
+                >
+                    This is a primary alert — check it out!
+                </Alert>
+            </div>
+        );
+    }
+}
+
 class SideBar extends Component {
     constructor(props) {
         super(props);
-        const { courseId } = this.props.params; // Access courseId from params
         this.state = {
-            courseId: courseId,
-            openUnit: -1,
             openModule: -1,
-            openheading: -1,
+            openHeading: -1,
+            currentSubheading: -1,
         };
     }
-
-    async componentDidMount() {
-        const { courseId } = this.state;
-        const { courseData, doGetCourseDetails } = this.props;
-
-        if (courseData === null) {
-            try {
-                await doGetCourseDetails(courseId); // Load course details
-            } catch (error) {
-                console.error("Error loading course details:", error);
-            }
-        }
-        const { currentUnit } = this.props;
-        const [openModule, openheading, openUnit] = currentUnit;
+    componentDidMount() {
+        const [moduleNumber, headingNumber, subHeadingNumber] =
+            this.props.openUnit;
         this.setState({
-            openUnit: openUnit,
-            openModule: openModule,
-            openheading: openheading,
+            openModule: moduleNumber,
+            openHeading: headingNumber,
+            currentSubheading: subHeadingNumber,
         });
-        console.log("hellow/^1");
-        console.log(currentUnit);
-        console.log("hellow/^2");
     }
-    componentDidUpdate() {
-        console.log(this.state);
+    componentDidUpdate(prevProps) {
+        if (prevProps.openUnit !== this.props.openUnit) {
+            const [moduleNumber, headingNumber, subHeadingNumber] =
+                this.props.openUnit;
+            this.setState({
+                openModule: moduleNumber,
+                openHeading: headingNumber,
+                currentSubheading: subHeadingNumber,
+            });
+            console.log(this.props.courseProgress);
+        }
     }
     render() {
-        const { isLoading, courseData, error } = this.props;
-
-        if (isLoading) return <p>Loading course details...</p>;
-        if (error)
-            return <p>Error loading course details. Please try again later.</p>;
-        if (!courseData) return <p>No course data available.</p>; // Handle missing data
+        const { courseData, courseProgress } = this.props;
+        const isAllowed = (newUnit) => {
+            if (newUnit[0] < courseProgress[0]) {
+                return true;
+            } else if (newUnit[0] === courseProgress[0]) {
+                if (newUnit[1] < courseProgress[1]) {
+                    return true;
+                } else if (newUnit[1] === courseProgress[1]) {
+                    return newUnit[2] <= courseProgress[2];
+                }
+            }
+            return false;
+        };
         return (
-            <div>
-                <div className="mb-3 fs-3 fw-bold">{courseData.courseName}</div>
+            <div className="mt-5">
+                <div className="px-2 mb-3 fs-6 fw-bold">
+                    {courseData?.courseName}
+                </div>
                 <ListGroup>
-                    {courseData.modules.map((module, moduleNumber) => (
+                    {courseData?.modules.map((module, moduleNumber) => (
                         <ListGroupItem key={moduleNumber}>
                             <p
                                 style={{ cursor: "pointer" }}
                                 onClick={() => {
                                     let newVal;
                                     if (
-                                        this.state.openModule ===
-                                        moduleNumber + 1
+                                        this.state.openModule === moduleNumber
                                     ) {
                                         newVal = -1;
                                     } else {
-                                        newVal = moduleNumber + 1;
+                                        newVal = moduleNumber;
                                     }
-                                    this.setState({ openheading: -1 });
+                                    this.setState({
+                                        openHeading: -1,
+                                        currentSubheading: -1,
+                                    });
                                     this.setState({ openModule: newVal });
                                 }}
+                                className="fs-6 m-0 py-2"
                             >
-                                {module.moduleName}
+                                Module {moduleNumber + 1}
+                                <br></br> {module.moduleName}
                             </p>
                             <Collapse
-                                isOpen={
-                                    this.state.openModule === moduleNumber + 1
-                                }
+                                isOpen={this.state.openModule === moduleNumber}
                             >
                                 {
                                     <div key={moduleNumber}>
                                         {module.headings.map(
                                             (heading, headingNumber) => (
                                                 <div
-                                                    className="m-0 p-0 ps-2"
+                                                    className="m-0 fs-6 p-0"
                                                     key={headingNumber}
                                                 >
                                                     <p
@@ -103,20 +227,20 @@ class SideBar extends Component {
                                                             let newVal;
                                                             if (
                                                                 this.state
-                                                                    .openheading ===
-                                                                headingNumber +
-                                                                    1
+                                                                    .openHeading ===
+                                                                headingNumber
                                                             ) {
                                                                 newVal = -1;
                                                             } else {
                                                                 newVal =
-                                                                    headingNumber +
-                                                                    1;
+                                                                    headingNumber;
                                                             }
                                                             this.setState({
-                                                                openheading:
+                                                                openHeading:
                                                                     newVal,
                                                                 openUnit: -1,
+                                                                currentSubheading:
+                                                                    -1,
                                                             });
                                                         }}
                                                     >
@@ -126,54 +250,94 @@ class SideBar extends Component {
                                                         isOpen={
                                                             this.state
                                                                 .openModule ===
-                                                                moduleNumber +
-                                                                    1 &&
+                                                                moduleNumber &&
                                                             this.state
-                                                                .openheading ===
-                                                                headingNumber +
-                                                                    1
+                                                                .openHeading ===
+                                                                headingNumber
                                                         }
                                                     >
                                                         {heading.subheadings.map(
                                                             (subheading, i) => (
                                                                 <div
-                                                                    className="p-0 ps-5 m-0"
                                                                     key={i}
-                                                                >
-                                                                    <p
-                                                                        className="border rounded-start-pill rounded-end-pill my-2 border-2 rounded-3 p-2 overflow-hidden"
-                                                                        style={{
-                                                                            cursor: "pointer",
-                                                                        }}
-                                                                        onClick={() => {
-                                                                            const {
-                                                                                openModule,
-                                                                                openheading,
-                                                                            } =
-                                                                                this
-                                                                                    .state;
-                                                                            console.log(
+                                                                    className="ms-3 my-1 px-3 p-2 border border-2 rounded-pill overflow-hidden text-nowrap d-flex align-content-center align-items-center"
+                                                                    style={{
+                                                                        cursor: isAllowed(
+                                                                            [
+                                                                                moduleNumber,
+                                                                                headingNumber,
+                                                                                i,
+                                                                            ]
+                                                                        )
+                                                                            ? "pointer"
+                                                                            : "no-drop",
+                                                                        backgroundColor:
+                                                                            this
+                                                                                .props
+                                                                                .openUnit[0] ===
+                                                                                moduleNumber &&
+                                                                            this
+                                                                                .props
+                                                                                .openUnit[1] ===
+                                                                                headingNumber &&
+                                                                            this
+                                                                                .props
+                                                                                .openUnit[2] ===
+                                                                                i
+                                                                                ? "#C6E7FF"
+                                                                                : "white",
+                                                                    }}
+                                                                    onClick={() => {
+                                                                        if (
+                                                                            isAllowed(
                                                                                 [
-                                                                                    openModule-1,
-                                                                                    openheading-1,
-                                                                                    i ,
+                                                                                    moduleNumber,
+                                                                                    headingNumber,
+                                                                                    i,
+                                                                                ]
+                                                                            )
+                                                                        ) {
+                                                                            this.props.setOpenUnit(
+                                                                                [
+                                                                                    moduleNumber,
+                                                                                    headingNumber,
+                                                                                    i,
                                                                                 ]
                                                                             );
-                                                                            this.props.setCurrentUnit(
-                                                                                [
-                                                                                    openModule-1,
-                                                                                    openheading-1,
-                                                                                    i
-                                                                                ]
-                                                                            );
-                                                                            this.props.toggleSideBar();
-                                                                        }}
-                                                                    >
-                                                                        <i className="ms-1 me-2 bi bi-play-circle-fill"></i>
-                                                                        {
-                                                                            subheading.subheadingName
                                                                         }
-                                                                    </p>
+                                                                    }}
+                                                                >
+                                                                    {courseProgress[0] ===
+                                                                        moduleNumber &&
+                                                                    courseProgress[1] ===
+                                                                        headingNumber &&
+                                                                    courseProgress[2] ===
+                                                                        i ? (
+                                                                        <i
+                                                                            className="bi bi-play-circle-fill me-2"
+                                                                            style={{
+                                                                                color: "#FA7070",
+                                                                            }}
+                                                                        ></i>
+                                                                    ) : isAllowed(
+                                                                          [
+                                                                              moduleNumber,
+                                                                              headingNumber,
+                                                                              i,
+                                                                          ]
+                                                                      ) ? (
+                                                                        <i
+                                                                            className="bi bi-check-circle-fill me-2"
+                                                                            style={{
+                                                                                color: "#0D92F4",
+                                                                            }}
+                                                                        ></i>
+                                                                    ) : (
+                                                                        <i className="bi bi-play-circle-fill me-2"></i>
+                                                                    )}
+                                                                    {
+                                                                        subheading.subheadingName
+                                                                    }
                                                                 </div>
                                                             )
                                                         )}
@@ -191,198 +355,96 @@ class SideBar extends Component {
         );
     }
 }
-
-const mapStateToprops = (state) => ({
-    isLoading: state.course.courseLoading,
-    error: state.course.courseError,
-    courseData: state.course.course,
-    courseProgress: state.user.courses[0]?.courseProgress,
-});
-
-const mapDispatchToProps = {
-    doGetCourseDetails,
-};
-
-const ConnectedSideBar = connect(
-    mapStateToprops,
-    mapDispatchToProps
-)(withRouter(SideBar));
-
 class ViewCourse extends Component {
     constructor(props) {
         super(props);
-        const { courseId } = this.props.params; // Access courseId from params
         this.state = {
-            navbarIsOpen: false,
-            qnaIsOpen: false,
-            courseId: courseId,
-            docType: 2,
-            currentUnit: [0, 0, 0],
-            courseProgress:null
+            openUnit: [0, 0, 0],
+            courseProgress: [0, 0, 0, 0],
         };
     }
     async componentDidMount() {
-        const { courseId } = this.state;
-        const { courseData, doGetCourseDetails, courseProgress } = this.props;
+        let { courseData, doGetCourseDetails, userCourses } = this.props;
+        const { courseId } = this.props.params;
+        const courseProgress = userCourses.filter(
+            (course) => course.courseId === courseId
+        )[0].courseProgress;
+        if (courseData.length === 0) {
+            await doGetCourseDetails(courseId);
+        }
+        this.setState({
+            openUnit: courseProgress,
+            courseProgress: courseProgress,
+        });
+    }
 
-        if (courseData === null) {
-            try {
-                await doGetCourseDetails(courseId); // Load course details
-                this.setState({ currentUnit: courseProgress,courseProgress:courseProgress });
-            } catch (error) {
-                console.error("Error loading course details:", error);
-            }
+    render() {
+        if (this.props.isLoading) return <>Loading...</>;
+        else {
+            const [moduleNumber, headingNumber, subHeadingNumber] =
+                this.state.openUnit;
+            const {
+                subheadingName,
+                subheadingDisc,
+                subheadingFileType,
+                subheadingLink,
+                test,
+            } =
+                this.props.courseData[0]?.modules[moduleNumber]?.headings[
+                    headingNumber
+                ]?.subheadings[subHeadingNumber] || "";
+            return (
+                <div className="row m-0">
+                    <div className="col-lg-3 d-none d-lg-block">
+                        <SideBar
+                            openUnit={this.state.openUnit}
+                            courseProgress={this.state.courseProgress}
+                            courseData={this.props.courseData[0]}
+                            setOpenUnit={(newUnit) => {
+                                this.setState({ openUnit: newUnit });
+                            }}
+                        />
+                    </div>
+                    <div className="col-lg-7 col bg-grey py-5 px-4">
+                        <div className="fw-bold mb-3">{subheadingName}</div>
+                        {subheadingFileType === 1 && (
+                            // TODO add a component for a doc type
+                            <div className="mb-5">
+                                <ReactPlayer
+                                    url={subheadingLink || ""}
+                                    width={"100%"}
+                                    controls
+                                ></ReactPlayer>
+                            </div>
+                        )}
+                        <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
+                            {subheadingDisc}
+                        </p>
+                        <QuestionCard
+                            test={test || []}
+                            completedQuestions={
+                                this.state.courseProgress[3] || false
+                            }
+                        />
+                    </div>
+                    <div className="col-lg-2 d-none d-lg-block"></div>
+                </div>
+            );
         }
     }
-    componentDidUpdate() {
-        console.log(this.state.currentUnit);
-    }
-    render() {
-        const { isLoading, courseData, error } = this.props;
-
-        if (isLoading) return <p>Loading course details...</p>;
-        if (error)
-            return <p>Error loading course details. Please try again later.</p>;
-        if (courseData === null) return <p>No course data available.</p>; // Handle missing data
-        const heading =
-            this.props.courseData.modules[this.state.currentUnit[0]]
-                .headings[this.state.currentUnit[1]];
-        const { headingName, subheadings } = heading;
-        const {
-            subheadingName,
-            subheadingDisc,
-            subheadingFileType,
-            subheadingLink,
-            question,
-            options,
-            // answer
-        } = subheadings[this.state.currentUnit[2]];
-        return (
-            <div className="row justify-content-center mw-100 mb-5">
-                <div className="col-12 d-flex justify-content-between px-5 mb-3">
-                    <div
-                        color="primary"
-                        role="button"
-                        className="border border-4 shadow rounded-pill p-2 px-3 d-inline-flex align-items-center align-content-center flex-wrap"
-                        onClick={() =>
-                            this.setState({
-                                navbarIsOpen: !this.state.navbarIsOpen,
-                            })
-                        }
-                    >
-                        <i className="me-2 bi bi-list"></i>
-                        Navigate
-                    </div>
-                    <div
-                        color="primary"
-                        role="button"
-                        className="border border-4 shadow rounded-pill p-2 px-3 d-inline-flex align-items-center align-content-center flex-wrap"
-                        onClick={() =>
-                            this.setState({ qnaIsOpen: !this.state.qnaIsOpen })
-                        }
-                    >
-                        <i className="me-2 bi bi-chat-right-dots"></i>
-                        Q&A
-                    </div>
-                </div>
-                <div id={"offcanvasContainer"}>
-                    <Offcanvas
-                        isOpen={this.state.navbarIsOpen}
-                        container={"offcanvasContainer"}
-                    >
-                        <OffcanvasHeader
-                            toggle={() =>
-                                this.setState({
-                                    navbarIsOpen: !this.state.navbarIsOpen,
-                                })
-                            }
-                        >
-                            {/* <p className="mb-0">
-                                <i className="me-2 bi bi-list"></i>
-                                Close NavBar
-                            </p> */}
-                        </OffcanvasHeader>
-                        <OffcanvasBody>
-                            <ConnectedSideBar
-                                toggleSideBar={() =>
-                                    this.setState({
-                                        navbarIsOpen: !this.state.navbarIsOpen,
-                                    })
-                                }
-                                setCurrentUnit={(newCurrentUnit) => {
-                                    this.setState({
-                                        currentUnit: newCurrentUnit,
-                                    });
-                                }}
-                                currentUnit={this.state.currentUnit}
-                            />
-                        </OffcanvasBody>
-                    </Offcanvas>
-                    <Offcanvas
-                        isOpen={this.state.qnaIsOpen}
-                        direction="end"
-                        container={"offcanvasContainer"}
-                    >
-                        <OffcanvasHeader
-                            toggle={() =>
-                                this.setState({
-                                    qnaIsOpen: !this.state.qnaIsOpen,
-                                })
-                            }
-                        >
-                            <p className="mb-0">
-                                <i className="me-2 bi bi-chat-right-dots mb-0"></i>
-                                Close Q&A
-                            </p>
-                        </OffcanvasHeader>
-                        <OffcanvasBody>
-                            <strong>This is the Offcanvas body.</strong>
-                        </OffcanvasBody>
-                    </Offcanvas>
-                </div>
-                <div className="col-9 d-flex flex-column align-items-center">
-                    <p>{subheadingName || "Content not available"}</p>
-
-                    <p>{subheadingDisc}</p>
-
-                    {subheadingFileType === 1 ? (
-                        <ReactPlayer
-                            url={subheadingLink}
-                            className="my-5"
-                            width={"100%"}
-                            controls
-                            height={"50vh"}
-                        />
-                    ) : (
-                        <Button
-                            size="lg"
-                            className="w-25 mb-5 fw-bold rounded-5 p-3"
-                            onClick={() =>
-                                window.open({ subheadingLink }, "_blank")
-                            }
-                            // disabled
-                        >
-                            <i className="bi bi-book-half me-2"></i> Read
-                            Document
-                        </Button>
-                    )}
-                    {/* TODO add write up? */}
-                    <ListGroup className="w-50">
-                        <ListGroupItem className="py-4 pb-0">
-                            <strong>{question}</strong>
-                            <p className="fw-light mt-2">This is a question</p>
-                        </ListGroupItem>
-                        <ListGroupItem action tag="button">
-                            <input type="radio" name="lol" className="me-2" />
-                            {options[0]}
-                        </ListGroupItem>
-                    </ListGroup>
-                </div>
-            </div>
-        );
-    }
 }
+const mapStatesToProps = (state) => ({
+    // TODO are these || working the way you think they are?
+    isLoading: state.course.courseLoading || state.user.loading,
+    error: state.course.courseError || state.user.error,
+    success: state.course.courseSuccess || state.user.success,
+    courseData: state.course.course,
+    userCourses: state.user.courses,
+});
+const mapDispatchToProps = {
+    doGetCourseDetails,
+};
 export default connect(
-    mapStateToprops,
+    mapStatesToProps,
     mapDispatchToProps
 )(withRouter(ViewCourse));

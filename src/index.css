@@ -29,9 +29,11 @@ body {
 .bg-primary-o {
       background-color: var(--primary);
 }
+
 .bg-secodary-o {
       background-color: var(--secondary);
 }
+
 .paragram-text {
       white-space: pre-wrap !important;
 }
@@ -62,13 +64,6 @@ body {
       color: black !important;
       padding: 0.5rem 0.7rem;
 }
-
-/* TODO looked odd ,add lateer if needed  */
-/* .nav-text:where([aria-current="page"]) {
-      text-decoration: underline !important;
-      text-decoration-color: var(--secondary) !important;
-      text-underline-offset: 0.5rem !important;
-} */
 
 .text-dark-o {
       color: var(--dark);

@@ -26,6 +26,7 @@ class CourseCard extends Component {
             test: true,
         };
     }
+    // FIXME getCourseDetails is being called twice per course, maybe cause of strict mode??
     async componentDidMount() {
         const currentCourseId = this.props.courseId;
         let courseData = this.props.coursesData.filter(
@@ -304,8 +305,9 @@ class MyCourses extends Component {
         return (
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.map((course) => (
+                    {this.props.courses.map((course, courseNumber) => (
                         <ConectedCourseCard
+                            key={courseNumber}
                             courseId={course.courseId}
                             courseProgress={course.courseProgress}
                         />
