@@ -20,6 +20,7 @@ import NotFound from "./Pages/NotFound";
 import MyCourses from "./Pages/MyCourses";
 // import ViewCourse from "./Pages/ViewCourse";
 import ViewCourse from "./Pages/ViewCourse";
+import ExplorePage from "./Pages/ExplorePage";
 // FIXME make urls from base like the one sir did
 class App extends Component {
     constructor(props) {
@@ -81,7 +82,7 @@ class App extends Component {
                         exact
                         element={
                             <ClientRoute>
-                                <>explore</>
+                                <ExplorePage/>
                             </ClientRoute>
                         }
                     />

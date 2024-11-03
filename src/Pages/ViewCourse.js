@@ -4,10 +4,9 @@ import {
     Badge,
     Button,
     Alert,
-    // Accordion,
-    // AccordionBody,
-    // AccordionHeader,
-    // AccordionItem,
+    Offcanvas,
+    OffcanvasHeader,
+    OffcanvasBody,
     ListGroup,
     ListGroupItem,
     Collapse,
@@ -177,6 +176,7 @@ class SideBar extends Component {
             }
             return false;
         };
+
         return (
             <div className="mt-5">
                 <div className="px-2 mb-3 fs-6 fw-bold">
@@ -304,6 +304,13 @@ class SideBar extends Component {
                                                                                     i,
                                                                                 ]
                                                                             );
+                                                                            if (
+                                                                                this
+                                                                                    .props
+                                                                                    .isCanvas
+                                                                            ) {
+                                                                                this.props.toggleSideBar();
+                                                                            }
                                                                         }
                                                                     }}
                                                                 >
@@ -360,7 +367,9 @@ class ViewCourse extends Component {
         super(props);
         this.state = {
             openUnit: [0, 0, 0],
-            courseProgress: [0, 0, 0, 0],
+            courseProgress: [1, 0, 0, 1],
+            navbarIsOpen: false,
+            qnaIsOpen: false,
         };
     }
     async componentDidMount() {
@@ -377,12 +386,15 @@ class ViewCourse extends Component {
             courseProgress: courseProgress,
         });
     }
-
+    openReadingAssignment = (docLink) => {
+        window.open(docLink, "_blank");
+    };
     render() {
         if (this.props.isLoading) return <>Loading...</>;
         else {
             const [moduleNumber, headingNumber, subHeadingNumber] =
                 this.state.openUnit;
+            const courseProgress = this.state.courseProgress;
             const {
                 subheadingName,
                 subheadingDisc,
@@ -393,8 +405,52 @@ class ViewCourse extends Component {
                 this.props.courseData[0]?.modules[moduleNumber]?.headings[
                     headingNumber
                 ]?.subheadings[subHeadingNumber] || "";
+            const completed = (badgeType) => {
+                if (moduleNumber < courseProgress[0]) {
+                    return true;
+                } else if (moduleNumber === courseProgress[0]) {
+                    if (headingNumber < courseProgress[1]) {
+                        return true;
+                    } else {
+                        if (subHeadingNumber < courseProgress[2]) {
+                            return true;
+                        }
+                        console.log("wnanna" + badgeType, courseProgress[3]);
+                        return badgeType <= courseProgress[3];
+                    }
+                }
+                return false;
+            };
             return (
                 <div className="row m-0">
+                    <div className="col-12 d-flex d-lg-none justify-content-between px-2 mb-3">
+                        <div
+                            color="primary"
+                            role="button"
+                            className="border border-4 shadow rounded-pill p-2 px-3 d-inline-flex align-items-center align-content-center flex-wrap"
+                            onClick={() =>
+                                this.setState({
+                                    navbarIsOpen: !this.state.navbarIsOpen,
+                                })
+                            }
+                        >
+                            <i className="me-2 bi bi-list"></i>
+                            Navigate
+                        </div>
+                        <div
+                            color="primary"
+                            role="button"
+                            className="border border-4 shadow rounded-pill p-2 px-3 d-inline-flex align-items-center align-content-center flex-wrap"
+                            onClick={() =>
+                                this.setState({
+                                    qnaIsOpen: !this.state.qnaIsOpen,
+                                })
+                            }
+                        >
+                            <i className="me-2 bi bi-chat-right-dots"></i>
+                            Q&A
+                        </div>
+                    </div>
                     <div className="col-lg-3 d-none d-lg-block">
                         <SideBar
                             openUnit={this.state.openUnit}
@@ -407,14 +463,73 @@ class ViewCourse extends Component {
                     </div>
                     <div className="col-lg-7 col bg-grey py-5 px-4">
                         <div className="fw-bold mb-3">{subheadingName}</div>
-                        {subheadingFileType === 1 && (
+                        {subheadingFileType === 1 ? (
                             // TODO add a component for a doc type
-                            <div className="mb-5">
+                            <div className="rounded position-relative fw-light bg-white mb-5">
+                                <div className="p-4">
+                                    <i className="bi bi-camera-reels me-2"></i>
+                                    Lecture Assignment
+                                    {
+                                        <Badge
+                                            color={
+                                                completed(1)
+                                                    ? "info"
+                                                    : "warning"
+                                            }
+                                            pill
+                                            className="position-absolute end-0 text-dark me-md-4 me-2"
+                                        >
+                                            {completed(1) ? (
+                                                <i className="bi bi-check-circle-fill me-2"></i>
+                                            ) : (
+                                                <i className="bi bi-exclamation-circle-fill me-1"></i>
+                                            )}
+                                            {completed(1)
+                                                ? "Completed"
+                                                : "Mandatery"}
+                                        </Badge>
+                                    }
+                                </div>
                                 <ReactPlayer
                                     url={subheadingLink || ""}
                                     width={"100%"}
                                     controls
                                 ></ReactPlayer>
+                            </div>
+                        ) : (
+                            <div>
+                                <div
+                                    role="button"
+                                    onClick={() =>
+                                        this.openReadingAssignment(
+                                            subheadingLink
+                                        )
+                                    }
+                                    className="rounded rounded-pill col-md-6 position-relative fw-light bg-white p-4"
+                                >
+                                    <i className="bi bi-journal-bookmark me-2"></i>
+                                    Reading Assignment
+                                    {
+                                        <Badge
+                                            color={
+                                                completed(1)
+                                                    ? "info"
+                                                    : "warning"
+                                            }
+                                            pill
+                                            className="position-absolute end-0 text-dark me-4"
+                                        >
+                                            {completed(1) ? (
+                                                <i className="bi bi-check-circle-fill me-2"></i>
+                                            ) : (
+                                                <i className="bi bi-exclamation-circle-fill me-1"></i>
+                                            )}
+                                            {completed(1)
+                                                ? "Completed"
+                                                : "Mandatery"}
+                                        </Badge>
+                                    }
+                                </div>
                             </div>
                         )}
                         <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
@@ -422,12 +537,66 @@ class ViewCourse extends Component {
                         </p>
                         <QuestionCard
                             test={test || []}
-                            completedQuestions={
-                                this.state.courseProgress[3] || false
-                            }
+                            completedQuestions={completed(3)}
                         />
                     </div>
                     <div className="col-lg-2 d-none d-lg-block"></div>
+                    <div id={"offcanvasContainer"} className="d-lg-none">
+                        <Offcanvas
+                            isOpen={this.state.navbarIsOpen}
+                            container={"offcanvasContainer"}
+                        >
+                            <OffcanvasHeader
+                                toggle={() =>
+                                    this.setState({
+                                        navbarIsOpen: !this.state.navbarIsOpen,
+                                    })
+                                }
+                            >
+                                Close Nabar
+                            </OffcanvasHeader>
+                            <OffcanvasBody>
+                                <SideBar
+                                    openUnit={this.state.openUnit}
+                                    courseProgress={this.state.courseProgress}
+                                    courseData={this.props.courseData[0]}
+                                    setOpenUnit={(newUnit) => {
+                                        this.setState({
+                                            openUnit: newUnit,
+                                        });
+                                    }}
+                                    isCanvas={true}
+                                    toggleSideBar={() =>
+                                        this.setState({
+                                            navbarIsOpen:
+                                                !this.state.navbarIsOpen,
+                                        })
+                                    }
+                                />
+                            </OffcanvasBody>
+                        </Offcanvas>
+                        <Offcanvas
+                            isOpen={this.state.qnaIsOpen}
+                            direction="end"
+                            container={"offcanvasContainer"}
+                        >
+                            <OffcanvasHeader
+                                toggle={() =>
+                                    this.setState({
+                                        qnaIsOpen: !this.state.qnaIsOpen,
+                                    })
+                                }
+                            >
+                                <p className="mb-0">
+                                    <i className="me-2 bi bi-chat-right-dots mb-0"></i>
+                                    Close Q&A
+                                </p>
+                            </OffcanvasHeader>
+                            <OffcanvasBody>
+                                <strong>This is the QNA body.</strong>
+                            </OffcanvasBody>
+                        </Offcanvas>
+                    </div>
                 </div>
             );
         }
