@@ -159,7 +159,6 @@ class SideBar extends Component {
                 openHeading: headingNumber,
                 currentSubheading: subHeadingNumber,
             });
-            console.log(this.props.courseProgress);
         }
     }
     render() {
@@ -415,7 +414,7 @@ class ViewCourse extends Component {
                         if (subHeadingNumber < courseProgress[2]) {
                             return true;
                         }
-                        console.log("wnanna" + badgeType, courseProgress[3]);
+
                         return badgeType <= courseProgress[3];
                     }
                 }
@@ -423,6 +422,7 @@ class ViewCourse extends Component {
             };
             return (
                 <div className="row m-0">
+                    {/* Button for sidebar on mobile */}
                     <div className="col-12 d-flex d-lg-none justify-content-between px-2 mb-3">
                         <div
                             color="primary"
@@ -451,6 +451,64 @@ class ViewCourse extends Component {
                             Q&A
                         </div>
                     </div>
+                    {/* sidebar for mobiles*/}
+                    <div id={"offcanvasContainer"} className="d-lg-none">
+                        <Offcanvas
+                            isOpen={this.state.navbarIsOpen}
+                            container={"offcanvasContainer"}
+                        >
+                            <OffcanvasHeader
+                                toggle={() =>
+                                    this.setState({
+                                        navbarIsOpen: !this.state.navbarIsOpen,
+                                    })
+                                }
+                            >
+                                Close Nabar
+                            </OffcanvasHeader>
+                            <OffcanvasBody>
+                                <SideBar
+                                    openUnit={this.state.openUnit}
+                                    courseProgress={this.state.courseProgress}
+                                    courseData={this.props.courseData[0]}
+                                    setOpenUnit={(newUnit) => {
+                                        this.setState({
+                                            openUnit: newUnit,
+                                        });
+                                    }}
+                                    isCanvas={true}
+                                    toggleSideBar={() =>
+                                        this.setState({
+                                            navbarIsOpen:
+                                                !this.state.navbarIsOpen,
+                                        })
+                                    }
+                                />
+                            </OffcanvasBody>
+                        </Offcanvas>
+                        <Offcanvas
+                            isOpen={this.state.qnaIsOpen}
+                            direction="end"
+                            container={"offcanvasContainer"}
+                        >
+                            <OffcanvasHeader
+                                toggle={() =>
+                                    this.setState({
+                                        qnaIsOpen: !this.state.qnaIsOpen,
+                                    })
+                                }
+                            >
+                                <p className="mb-0">
+                                    <i className="me-2 bi bi-chat-right-dots mb-0"></i>
+                                    Close Q&A
+                                </p>
+                            </OffcanvasHeader>
+                            <OffcanvasBody>
+                                <strong>This is the QNA body.</strong>
+                            </OffcanvasBody>
+                        </Offcanvas>
+                    </div>
+                    {/* sideBar for computers */}
                     <div className="col-lg-3 d-none d-lg-block">
                         <SideBar
                             openUnit={this.state.openUnit}
@@ -461,10 +519,10 @@ class ViewCourse extends Component {
                             }}
                         />
                     </div>
+                    {/* main content code */}
                     <div className="col-lg-7 col bg-grey py-5 px-4">
                         <div className="fw-bold mb-3">{subheadingName}</div>
                         {subheadingFileType === 1 ? (
-                            // TODO add a component for a doc type
                             <div className="rounded position-relative fw-light bg-white mb-5">
                                 <div className="p-4">
                                     <i className="bi bi-camera-reels me-2"></i>
@@ -539,63 +597,6 @@ class ViewCourse extends Component {
                             test={test || []}
                             completedQuestions={completed(3)}
                         />
-                    </div>
-                    <div className="col-lg-2 d-none d-lg-block"></div>
-                    <div id={"offcanvasContainer"} className="d-lg-none">
-                        <Offcanvas
-                            isOpen={this.state.navbarIsOpen}
-                            container={"offcanvasContainer"}
-                        >
-                            <OffcanvasHeader
-                                toggle={() =>
-                                    this.setState({
-                                        navbarIsOpen: !this.state.navbarIsOpen,
-                                    })
-                                }
-                            >
-                                Close Nabar
-                            </OffcanvasHeader>
-                            <OffcanvasBody>
-                                <SideBar
-                                    openUnit={this.state.openUnit}
-                                    courseProgress={this.state.courseProgress}
-                                    courseData={this.props.courseData[0]}
-                                    setOpenUnit={(newUnit) => {
-                                        this.setState({
-                                            openUnit: newUnit,
-                                        });
-                                    }}
-                                    isCanvas={true}
-                                    toggleSideBar={() =>
-                                        this.setState({
-                                            navbarIsOpen:
-                                                !this.state.navbarIsOpen,
-                                        })
-                                    }
-                                />
-                            </OffcanvasBody>
-                        </Offcanvas>
-                        <Offcanvas
-                            isOpen={this.state.qnaIsOpen}
-                            direction="end"
-                            container={"offcanvasContainer"}
-                        >
-                            <OffcanvasHeader
-                                toggle={() =>
-                                    this.setState({
-                                        qnaIsOpen: !this.state.qnaIsOpen,
-                                    })
-                                }
-                            >
-                                <p className="mb-0">
-                                    <i className="me-2 bi bi-chat-right-dots mb-0"></i>
-                                    Close Q&A
-                                </p>
-                            </OffcanvasHeader>
-                            <OffcanvasBody>
-                                <strong>This is the QNA body.</strong>
-                            </OffcanvasBody>
-                        </Offcanvas>
                     </div>
                 </div>
             );
