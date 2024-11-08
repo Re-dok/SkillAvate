@@ -182,69 +182,132 @@ class SideBar extends Component {
                     {courseData?.courseName}
                 </div>
                 <ListGroup>
-                    {courseData?.modules.map((module, moduleNumber) => (
+                    {courseData?.modules?.map((module, moduleNumber) => (
                         <ListGroupItem key={moduleNumber}>
-                            <p
-                                style={{ cursor: "pointer" }}
+                            <div
+                                role="button"
                                 onClick={() => {
-                                    let newVal;
-                                    if (
-                                        this.state.openModule === moduleNumber
+                                    if (!module.content) {
+                                        let newVal;
+                                        if (
+                                            this.state.openModule ===
+                                            moduleNumber
+                                        ) {
+                                            newVal = -1;
+                                        } else {
+                                            newVal = moduleNumber;
+                                        }
+                                        this.setState({
+                                            openHeading: -1,
+                                            currentSubheading: -1,
+                                        });
+                                        this.setState({ openModule: newVal });
+                                    } else if (
+                                        isAllowed([moduleNumber, -1, -1])
                                     ) {
-                                        newVal = -1;
-                                    } else {
-                                        newVal = moduleNumber;
+                                        this.setState({
+                                            openModule: moduleNumber,
+                                            openHeading: -1,
+                                            currentSubheading: -1,
+                                        });
+                                        this.props.setOpenUnit([
+                                            moduleNumber,
+                                            -1,
+                                            -1,
+                                        ]);
                                     }
-                                    this.setState({
-                                        openHeading: -1,
-                                        currentSubheading: -1,
-                                    });
-                                    this.setState({ openModule: newVal });
                                 }}
-                                className="fs-6 m-0 py-2"
+                                className={
+                                    "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between "
+                                }
                             >
-                                Module {moduleNumber + 1}
-                                <br></br> {module.moduleName}
-                            </p>
+                                <p>
+                                    Module {moduleNumber + 1}
+                                    <br></br> {module.moduleName}
+                                </p>
+                                {module.content ? (
+                                    isAllowed([moduleNumber + 1, -1, -1]) ? (
+                                        <i class="bi bi-check-circle-fill"></i>
+                                    ) : (
+                                        <i class="bi bi-chevron-right ms-3"></i>
+                                    )
+                                ) : this.state.openModule === moduleNumber ? (
+                                    <i class="bi bi-chevron-up ms-3"></i>
+                                ) : (
+                                    <i class="bi bi-chevron-down ms-3"></i>
+                                )}
+                            </div>
                             <Collapse
                                 isOpen={this.state.openModule === moduleNumber}
                             >
                                 {
                                     <div key={moduleNumber}>
-                                        {module.headings.map(
+                                        {module.headings?.map(
                                             (heading, headingNumber) => (
                                                 <div
                                                     className="m-0 fs-6 p-0"
                                                     key={headingNumber}
                                                 >
-                                                    <p
-                                                        className="border my-2 border-2 border-start-5 rounded-3 p-2 ps-3 overflow-hidden"
-                                                        style={{
-                                                            cursor: "pointer",
-                                                        }}
+                                                    <div
+                                                        className="border my-2 border-2 border-start-5 rounded-3 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center"
+                                                        role="button"
                                                         onClick={() => {
-                                                            let newVal;
                                                             if (
-                                                                this.state
-                                                                    .openHeading ===
-                                                                headingNumber
+                                                                !heading.content
                                                             ) {
-                                                                newVal = -1;
-                                                            } else {
-                                                                newVal =
-                                                                    headingNumber;
-                                                            }
-                                                            this.setState({
-                                                                openHeading:
-                                                                    newVal,
-                                                                openUnit: -1,
-                                                                currentSubheading:
+                                                                let newVal;
+                                                                if (
+                                                                    this.state
+                                                                        .openHeading ===
+                                                                    headingNumber
+                                                                ) {
+                                                                    newVal = -1;
+                                                                } else {
+                                                                    newVal =
+                                                                        headingNumber;
+                                                                }
+                                                                this.setState({
+                                                                    openHeading:
+                                                                        newVal,
+                                                                    openUnit:
+                                                                        -1,
+                                                                    currentSubheading:
+                                                                        -1,
+                                                                });
+                                                            } else if (
+                                                                isAllowed([
+                                                                    moduleNumber,
+                                                                    headingNumber,
                                                                     -1,
-                                                            });
+                                                                ])
+                                                            ) {
+                                                                this.props.setOpenUnit(
+                                                                    [
+                                                                        moduleNumber,
+                                                                        headingNumber,
+                                                                        -1,
+                                                                    ]
+                                                                );
+                                                            }
                                                         }}
                                                     >
                                                         {heading.headingName}
-                                                    </p>
+
+                                                        {heading.content ? (
+                                                            isAllowed([
+                                                                moduleNumber,
+                                                                headingNumber +
+                                                                    1,
+                                                                -1,
+                                                            ]) ? (
+                                                                <i class="bi bi-check-circle-fill"></i>
+                                                            ) : (
+                                                                <i className="bi bi-chevron-right ms-3"></i>
+                                                            )
+                                                        ) : (
+                                                            <i className="bi bi-chevron-down ms-3"></i>
+                                                        )}
+                                                    </div>
                                                     <Collapse
                                                         isOpen={
                                                             this.state
@@ -255,37 +318,12 @@ class SideBar extends Component {
                                                                 headingNumber
                                                         }
                                                     >
-                                                        {heading.subheadings.map(
+                                                        {heading.subheadings?.map(
                                                             (subheading, i) => (
                                                                 <div
                                                                     key={i}
-                                                                    className="ms-3 my-1 px-3 p-2 border border-2 rounded-pill overflow-hidden text-nowrap d-flex align-content-center align-items-center"
-                                                                    style={{
-                                                                        cursor: isAllowed(
-                                                                            [
-                                                                                moduleNumber,
-                                                                                headingNumber,
-                                                                                i,
-                                                                            ]
-                                                                        )
-                                                                            ? "pointer"
-                                                                            : "no-drop",
-                                                                        backgroundColor:
-                                                                            this
-                                                                                .props
-                                                                                .openUnit[0] ===
-                                                                                moduleNumber &&
-                                                                            this
-                                                                                .props
-                                                                                .openUnit[1] ===
-                                                                                headingNumber &&
-                                                                            this
-                                                                                .props
-                                                                                .openUnit[2] ===
-                                                                                i
-                                                                                ? "#C6E7FF"
-                                                                                : "white",
-                                                                    }}
+                                                                    className="ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between"
+                                                                    role="button"
                                                                     onClick={() => {
                                                                         if (
                                                                             isAllowed(
@@ -313,37 +351,18 @@ class SideBar extends Component {
                                                                         }
                                                                     }}
                                                                 >
-                                                                    {courseProgress[0] ===
-                                                                        moduleNumber &&
-                                                                    courseProgress[1] ===
-                                                                        headingNumber &&
-                                                                    courseProgress[2] ===
-                                                                        i ? (
-                                                                        <i
-                                                                            className="bi bi-play-circle-fill me-2"
-                                                                            style={{
-                                                                                color: "#FA7070",
-                                                                            }}
-                                                                        ></i>
-                                                                    ) : isAllowed(
-                                                                          [
-                                                                              moduleNumber,
-                                                                              headingNumber,
-                                                                              i,
-                                                                          ]
-                                                                      ) ? (
-                                                                        <i
-                                                                            className="bi bi-check-circle-fill me-2"
-                                                                            style={{
-                                                                                color: "#0D92F4",
-                                                                            }}
-                                                                        ></i>
-                                                                    ) : (
-                                                                        <i className="bi bi-play-circle-fill me-2"></i>
-                                                                    )}
                                                                     {
                                                                         subheading.subheadingName
                                                                     }
+                                                                    {isAllowed([
+                                                                        moduleNumber,
+                                                                        headingNumber,
+                                                                        i + 1,
+                                                                    ]) ? (
+                                                                        <i className="bi bi-check-circle-fill ms-3"></i>
+                                                                    ) : (
+                                                                        <i className="bi bi-chevron-right ms-3"></i>
+                                                                    )}
                                                                 </div>
                                                             )
                                                         )}
@@ -362,21 +381,29 @@ class SideBar extends Component {
     }
 }
 class ContentCard extends Component {
+    openReadingAssignment = (docLink) => {
+        window.open(docLink, "_blank");
+    };
     render() {
         if (this.props.modules === undefined) return <>loading</>;
         else {
             const modules = this.props.modules;
+            const i = this.props.openUnit[0];
+            const j = this.props.openUnit[1];
+            const k = this.props.openUnit[2];
+            const t = this.props.openUnit[3];
             const { content, heading } = (() => {
                 let content, heading;
-                if (modules[0].content) {
-                    content = modules[0].content;
-                    heading = modules[0].moduleName;
-                } else if (modules[0].headings[0].content) {
-                    content = modules[0].headings[0].content;
-                    heading = modules[0].headings[0].headingName;
+                if (modules[i].content) {
+                    content = modules[i].content;
+                    heading = modules[i].moduleName;
+                } else if (modules[i].headings[j].content) {
+                    content = modules[i].headings[j].content;
+                    heading = modules[i].headings[j].headingName;
                 } else {
-                    content = modules[0].headings[0].subheadings[0].content;
-                    heading = modules[0].subheadings[0].subheadingName;
+                    content = modules[i].headings[j].subheadings[k].content;
+                    heading =
+                        modules[i].headings[j].subheadings[k].subheadingName;
                 }
                 return { content, heading };
             })();
@@ -423,6 +450,7 @@ class ContentCard extends Component {
                             ></ReactPlayer>
                         </div>
                     )}
+                    {/* TODO add the docLink condition later on when you have added it to the db */}
                     {/* {docLink && ( */}
                     <div>
                         <div
@@ -467,48 +495,31 @@ class ContentCard extends Component {
 class ViewCourse2 extends Component {
     constructor(props) {
         super(props);
-        //   this.state = {
-        // openUnit: [0, 0, 0],
-        //       courseProgress: [1, 0, 0, 1],
-        //       navbarIsOpen: false,
-        //       qnaIsOpen: false,
-        //   };
+        this.state = {
+            openUnit: [0, 0, 0],
+            courseProgress: [1, 0, 0, 1],
+            navbarIsOpen: false,
+            qnaIsOpen: false,
+        };
     }
     async componentDidMount() {
         let { courseData, doGetCourseDetails, userCourses } = this.props;
         const { courseId } = this.props.params;
-        //   const courseProgress = userCourses.filter(
-        //       (course) => course.courseId === courseId
-        //   )[0].courseProgress;
+        const courseProgress = userCourses.filter(
+            (course) => course.courseId === courseId
+        )[0].courseProgress;
         if (courseData === undefined || courseData.length === 0) {
             await doGetCourseDetails(courseId);
         }
-        //   this.setState({
-        //       openUnit: courseProgress,
-        //       courseProgress: courseProgress,
-        //   });
+        this.setState({
+            openUnit: courseProgress,
+            courseProgress: courseProgress,
+        });
     }
-    //     openReadingAssignment = (docLink) => {
-    //         window.open(docLink, "_blank");
-    //     };
+
     render() {
         if (!this.props.courseData) return <>Loading...</>;
-        //   if (false) {
-        // return <>hi</>;
         else {
-            // const [moduleNumber, headingNumber, subHeadingNumber] =
-            //     this.state.openUnit;
-            // const courseProgress = this.state.courseProgress;
-            // const {
-            //     subheadingName,
-            //     subheadingDisc,
-            //     subheadingFileType,
-            //     subheadingLink,
-            //     test,
-            // } =
-            //     this.props.courseData[0]?.modules[moduleNumber]?.headings[
-            //         headingNumber
-            //     ]?.subheadings[subHeadingNumber] || "";
             // const completed = (badgeType) => {
             //     if (moduleNumber < courseProgress[0]) {
             //         return true;
@@ -614,21 +625,23 @@ class ViewCourse2 extends Component {
                         </Offcanvas>
                     </div> */}
                     {/* sideBar for computers */}
-                    {/* <div className="col-lg-3 d-none d-lg-block">
+                    <div className="col-lg-3 d-none d-lg-block">
                         <SideBar
                             openUnit={this.state.openUnit}
                             courseProgress={this.state.courseProgress}
-                            courseData={this.props.courseData[0]}
+                            courseData={this.props.courseData}
                             setOpenUnit={(newUnit) => {
                                 this.setState({ openUnit: newUnit });
                             }}
                         />
-                    </div> */}
-                    {/* TODO try and make this 2:10 instead */}
-                    <div className="col-lg-3"></div>
+                    </div>
+
                     {/* main content code */}
                     <div className="col-lg-9 col bg-grey py-5 px-lg-5">
-                        <ContentCard modules={this.props.courseData.modules} />
+                        <ContentCard
+                            modules={this.props.courseData.modules}
+                            openUnit={this.state.openUnit}
+                        />
                     </div>
                 </div>
             );
