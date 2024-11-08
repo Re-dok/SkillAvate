@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import ReactPlayer from "react-player";
 import {
     Offcanvas,
     OffcanvasHeader,
@@ -30,6 +29,7 @@ class SideBar extends Component {
             openHeading: headingNumber,
             currentSubheading: subHeadingNumber,
         });
+        console.log(this.props.openUnit);
     }
     componentDidUpdate(prevProps) {
         if (prevProps.openUnit !== this.props.openUnit) {
@@ -40,8 +40,27 @@ class SideBar extends Component {
                 openHeading: headingNumber,
                 currentSubheading: subHeadingNumber,
             });
+            console.log(this.props.openUnit);
         }
     }
+
+    handleSetIndex(isOpen, hasContent, isAllowed) {
+        if (isOpen) {
+            if (hasContent) return 0;
+            else return 1;
+        } else {
+            if (hasContent) {
+                if (isAllowed) {
+                    return 2;
+                } else {
+                    return 0;
+                }
+            } else {
+                return 1;
+            }
+        }
+    }
+
     render() {
         const { courseData, courseProgress } = this.props;
         const isAllowed = (newUnit) => {
@@ -68,36 +87,33 @@ class SideBar extends Component {
                             <div
                                 role="button"
                                 onClick={() => {
-                                    if (!module.content) {
-                                        let newVal;
-                                        if (
-                                            this.state.openModule ===
-                                            moduleNumber
-                                        ) {
-                                            newVal = -1;
-                                        } else {
-                                            newVal = moduleNumber;
-                                        }
-                                        this.setState({
-                                            openHeading: -1,
-                                            currentSubheading: -1,
-                                        });
-                                        this.setState({ openModule: newVal });
-                                    } else if (
+                                    let isOpen =
+                                        this.state.openModule === moduleNumber;
+                                    let code = this.handleSetIndex(
+                                        isOpen,
+                                        module?.content,
                                         isAllowed([moduleNumber, -1, -1])
-                                    ) {
-                                        this.setState({
-                                            openModule: moduleNumber,
-                                            openHeading: -1,
-                                            currentSubheading: -1,
-                                        });
-                                        this.props.setOpenUnit([
-                                            moduleNumber,
-                                            -1,
-                                            -1,
-                                        ]);
-                                        if (this.props.isCanvas)
-                                            this.props.toggleSideBar();
+                                    );
+                                    switch (code) {
+                                        case 1:
+                                            let newVal = isOpen
+                                                ? -1
+                                                : moduleNumber;
+                                            this.setState({
+                                                openModule: newVal,
+                                            });
+                                            break;
+                                        case 2:
+                                            this.props.setOpenUnit([
+                                                moduleNumber,
+                                                -1,
+                                                -1,
+                                            ]);
+                                            if (this.props.isCanvas)
+                                                this.props.toggleSideBar();
+                                            break;
+                                        default:
+                                            break;
                                     }
                                 }}
                                 className={
@@ -135,47 +151,55 @@ class SideBar extends Component {
                                                         className="border my-2 border-2 border-start-5 rounded-3 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center"
                                                         role="button"
                                                         onClick={() => {
-                                                            if (
-                                                                !heading.content
-                                                            ) {
-                                                                let newVal;
-                                                                if (
-                                                                    this.state
-                                                                        .openHeading ===
-                                                                    headingNumber
-                                                                ) {
-                                                                    newVal = -1;
-                                                                } else {
-                                                                    newVal =
-                                                                        headingNumber;
-                                                                }
-                                                                this.setState({
-                                                                    openHeading:
-                                                                        newVal,
-                                                                    openUnit:
-                                                                        -1,
-                                                                    currentSubheading:
-                                                                        -1,
-                                                                });
-                                                            } else if (
-                                                                isAllowed([
-                                                                    moduleNumber,
-                                                                    headingNumber,
-                                                                    -1,
-                                                                ])
-                                                            ) {
-                                                                this.props.setOpenUnit(
-                                                                    [
+                                                            let isOpen =
+                                                                this.state
+                                                                    .openModule ===
+                                                                    moduleNumber &&
+                                                                this.state
+                                                                    .openHeading ===
+                                                                    headingNumber;
+                                                            let code =
+                                                                this.handleSetIndex(
+                                                                    isOpen,
+                                                                    heading?.content,
+                                                                    isAllowed([
                                                                         moduleNumber,
                                                                         headingNumber,
                                                                         -1,
-                                                                    ]
+                                                                    ])
                                                                 );
-                                                                if (
-                                                                    this.props
-                                                                        .isCanvas
-                                                                )
-                                                                    this.props.toggleSideBar();
+                                                            switch (code) {
+                                                                case 1:
+                                                                    let newVal =
+                                                                        isOpen
+                                                                            ? -1
+                                                                            : headingNumber;
+                                                                    this.setState(
+                                                                        {
+                                                                            openModule:
+                                                                                moduleNumber,
+                                                                            openHeading:
+                                                                                newVal,
+                                                                        }
+                                                                    );
+                                                                    break;
+                                                                case 2:
+                                                                    this.props.setOpenUnit(
+                                                                        [
+                                                                            moduleNumber,
+                                                                            headingNumber,
+                                                                            -1,
+                                                                        ]
+                                                                    );
+                                                                    if (
+                                                                        this
+                                                                            .props
+                                                                            .isCanvas
+                                                                    )
+                                                                        this.props.toggleSideBar();
+                                                                    break;
+                                                                default:
+                                                                    break;
                                                             }
                                                         }}
                                                     >
@@ -213,29 +237,43 @@ class SideBar extends Component {
                                                                     className="ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between"
                                                                     role="button"
                                                                     onClick={() => {
-                                                                        if (
-                                                                            isAllowed(
-                                                                                [
-                                                                                    moduleNumber,
-                                                                                    headingNumber,
-                                                                                    i,
-                                                                                ]
-                                                                            )
-                                                                        ) {
-                                                                            this.props.setOpenUnit(
-                                                                                [
-                                                                                    moduleNumber,
-                                                                                    headingNumber,
-                                                                                    i,
-                                                                                ]
+                                                                        let isOpen =
+                                                                            this
+                                                                                .state
+                                                                                .currentSubheading ===
+                                                                            i;
+                                                                        let code =
+                                                                            this.handleSetIndex(
+                                                                                isOpen,
+                                                                                true,
+                                                                                isAllowed(
+                                                                                    [
+                                                                                        moduleNumber,
+                                                                                        headingNumber,
+                                                                                        i,
+                                                                                    ]
+                                                                                )
                                                                             );
-                                                                            if (
-                                                                                this
-                                                                                    .props
-                                                                                    .isCanvas
-                                                                            ) {
-                                                                                this.props.toggleSideBar();
-                                                                            }
+                                                                        switch (
+                                                                            code
+                                                                        ) {
+                                                                            case 2:
+                                                                                this.props.setOpenUnit(
+                                                                                    [
+                                                                                        moduleNumber,
+                                                                                        headingNumber,
+                                                                                        i,
+                                                                                    ]
+                                                                                );
+                                                                                if (
+                                                                                    this
+                                                                                        .props
+                                                                                        .isCanvas
+                                                                                )
+                                                                                    this.props.toggleSideBar();
+                                                                                break;
+                                                                            default:
+                                                                                break;
                                                                         }
                                                                     }}
                                                                 >
