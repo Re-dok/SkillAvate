@@ -200,66 +200,75 @@ class CourseCard extends Component {
                                         </p>
                                     )
                             )}
+                            {this.state.modules[this.state.openDetatils]
+                                ?.headings && (
+                                <>
+                                    <p
+                                        role="button"
+                                        onClick={() =>
+                                            this.setState({
+                                                openHeadings:
+                                                    !this.state.openHeadings,
+                                            })
+                                        }
+                                        className="d-inline-block mb-0"
+                                    >
+                                        Module Overview {"  "}
+                                        {this.state.openHeadings ? (
+                                            <i className="bi bi-chevron-up"></i>
+                                        ) : (
+                                            <i className="bi bi-chevron-down"></i>
+                                        )}
+                                    </p>
 
-                            <p
-                                role="button"
-                                onClick={() =>
-                                    this.setState({
-                                        openHeadings: !this.state.openHeadings,
-                                    })
-                                }
-                                className="d-inline-block mb-0"
-                            >
-                                Module Overview {"  "}
-                                {this.state.openHeadings ? (
-                                    <i className="bi bi-chevron-up"></i>
-                                ) : (
-                                    <i className="bi bi-chevron-down"></i>
-                                )}
-                            </p>
-                            <Collapse isOpen={this.state.openHeadings}>
-                                {this.state.modules.map(
-                                    (module, moduleNumber) =>
-                                        moduleNumber ===
-                                            this.state.openDetatils && (
-                                            <div key={moduleNumber}>
-                                                {module.headings.map(
-                                                    (heading, i) => (
-                                                        <div
-                                                            className="m-0 p-0 ps-2"
-                                                            key={i}
-                                                        >
-                                                            <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
-                                                                <i class="bi bi-dot"></i>{" "}
-                                                                {
-                                                                    heading.headingName
-                                                                }
-                                                            </p>
-                                                            {heading.subheadings.map(
-                                                                (
-                                                                    subheading,
-                                                                    i
-                                                                ) => (
-                                                                    <div
-                                                                        className="p-0 ps-5 m-0"
-                                                                        key={i}
-                                                                    >
-                                                                        <p className="border rounded-start-pill rounded-end-pill mb-2 border-2 rounded-3 p-2 overflow-hidden">
-                                                                            <i className="ms-1 me-2 bi bi-play-circle-fill"></i>
-                                                                            {
-                                                                                subheading.subheadingName
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        )
-                                )}
-                            </Collapse>
+                                    <Collapse isOpen={this.state.openHeadings}>
+                                        {this.state.modules.map(
+                                            (module, moduleNumber) =>
+                                                moduleNumber ===
+                                                    this.state.openDetatils && (
+                                                    <div key={moduleNumber}>
+                                                        {module.headings.map(
+                                                            (heading, i) => (
+                                                                <div
+                                                                    className="m-0 p-0 ps-2"
+                                                                    key={i}
+                                                                >
+                                                                    <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
+                                                                        <i class="bi bi-dot"></i>{" "}
+                                                                        {
+                                                                            heading.headingName
+                                                                        }
+                                                                    </p>
+                                                                    {heading?.subheadings && (
+                                                                        <div className="d-inline-flex justify-content-start flex-column">
+                                                                            {heading?.subheadings?.map(
+                                                                                (
+                                                                                    subheading,
+                                                                                    i
+                                                                                ) => (
+                                                                                    <div
+                                                                                        className="border rounded-pill mb-2 ms-5 border-2 px-3 py-2 overflow-hidden d-inline-block"
+                                                                                        key={
+                                                                                            i
+                                                                                        }
+                                                                                    >
+                                                                                        {
+                                                                                            subheading.subheadingName
+                                                                                        }
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )
+                                        )}
+                                    </Collapse>
+                                </>
+                            )}
                         </div>
                     </Collapse>
                 </div>
@@ -289,9 +298,6 @@ const mapStateToPropsForMyCourses = (state) => {
     };
 };
 class MyCourses extends Component {
-    constructor(props) {
-        super(props);
-    }
     // TODO remove me later once the admin pages add Course is done
     addCourse = () => {
         try {
@@ -301,6 +307,9 @@ class MyCourses extends Component {
             alert(err.message);
         }
     };
+    componentDidMount(props){
+        window.scrollTo(0,0);
+    }
     render() {
         return (
             <div className="d-flex row mw-100 justify-content-center">

@@ -83,7 +83,7 @@ class SideBar extends Component {
                 </div>
                 <ListGroup>
                     {courseData?.modules?.map((module, moduleNumber) => (
-                        <ListGroupItem key={moduleNumber}>
+                        <ListGroupItem key={moduleNumber} className="p-0">
                             <div
                                 role="button"
                                 onClick={() => {
@@ -117,7 +117,12 @@ class SideBar extends Component {
                                     }
                                 }}
                                 className={
-                                    "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between "
+                                    "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between " +
+                                    (module?.content === undefined
+                                        ? ""
+                                        : isAllowed([moduleNumber, -1, -1])
+                                        ? "bg-done"
+                                        : "bg-not-open")
                                 }
                             >
                                 <p>
@@ -126,14 +131,14 @@ class SideBar extends Component {
                                 </p>
                                 {module.content ? (
                                     isAllowed([moduleNumber + 1, -1, -1]) ? (
-                                        <i class="bi bi-check-circle-fill"></i>
+                                        <i className="bi bi-check-circle-fill ms-3"></i>
                                     ) : (
-                                        <i class="bi bi-chevron-right ms-3"></i>
+                                        <i className="bi bi-chevron-right ms-3"></i>
                                     )
                                 ) : this.state.openModule === moduleNumber ? (
-                                    <i class="bi bi-chevron-up ms-3"></i>
+                                    <i className="bi bi-chevron-up ms-3"></i>
                                 ) : (
-                                    <i class="bi bi-chevron-down ms-3"></i>
+                                    <i className="bi bi-chevron-down ms-3"></i>
                                 )}
                             </div>
                             <Collapse
@@ -144,11 +149,23 @@ class SideBar extends Component {
                                         {module.headings?.map(
                                             (heading, headingNumber) => (
                                                 <div
-                                                    className="m-0 fs-6 p-0"
+                                                    className="m-0 ms-2 fs-6 p-0"
                                                     key={headingNumber}
                                                 >
                                                     <div
-                                                        className="border my-2 border-2 border-start-5 rounded-3 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center"
+                                                        className={
+                                                            "border my-0 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
+                                                            (heading.content ===
+                                                            undefined
+                                                                ? ""
+                                                                : isAllowed([
+                                                                      moduleNumber,
+                                                                      headingNumber,
+                                                                      -1,
+                                                                  ])
+                                                                ? "bg-done"
+                                                                : "bg-not-open")
+                                                        }
                                                         role="button"
                                                         onClick={() => {
                                                             let isOpen =
@@ -212,7 +229,7 @@ class SideBar extends Component {
                                                                     1,
                                                                 -1,
                                                             ]) ? (
-                                                                <i class="bi bi-check-circle-fill"></i>
+                                                                <i className="bi bi-check-circle-fill ms-3"></i>
                                                             ) : (
                                                                 <i className="bi bi-chevron-right ms-3"></i>
                                                             )
@@ -234,7 +251,19 @@ class SideBar extends Component {
                                                             (subheading, i) => (
                                                                 <div
                                                                     key={i}
-                                                                    className="ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between"
+                                                                    className={"ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between "+
+                                                                        (subheading.content ===
+                                                                            undefined
+                                                                                ? ""
+                                                                                : isAllowed([
+                                                                                      moduleNumber,
+                                                                                      headingNumber,
+                                                                                      i,
+                                                                                  ])
+                                                                                ? "bg-done"
+                                                                                : "bg-not-open")
+                                                                        
+                                                                    }
                                                                     role="button"
                                                                     onClick={() => {
                                                                         let isOpen =
@@ -318,6 +347,7 @@ class ViewCourse2 extends Component {
         };
     }
     async componentDidMount() {
+        window.scrollTo(0, 0);
         let { courseData, doGetCourseDetails, userCourses } = this.props;
         const { courseId } = this.props.params;
         const courseProgress = userCourses.filter(
@@ -386,7 +416,8 @@ class ViewCourse2 extends Component {
                         </Offcanvas>
                     </div>
                     {/* sideBar for computers */}
-                    <div className="col-lg-3 d-none d-lg-block">
+                    <div className="col-lg-3 d-none d-lg-block"></div>
+                    <div className="col-lg-3 d-none d-lg-block h-100 overflow-y-scroll position-fixed pb-5 mb-5">
                         <SideBar
                             openUnit={this.state.openUnit}
                             courseProgress={this.state.courseProgress}
@@ -396,6 +427,7 @@ class ViewCourse2 extends Component {
                             }}
                             isCanvas={false}
                         />
+                        <div className="my-5"></div>
                     </div>
                     {/* main content*/}
                     <div className="col-lg-9 col bg-grey py-5 px-lg-5">

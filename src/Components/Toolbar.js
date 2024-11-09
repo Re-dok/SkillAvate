@@ -37,7 +37,7 @@ class Toolbar extends Component {
     };
     render() {
         return (
-            <div className="sticky-top">
+            <div className="sticky-top-toolbar">
                 <div className="shadow d-flex flex-row justify-content-between align-items-center mb-2 px-3 px-sm-5 py-3 border-dark">
                     <NavbarBrand className="brand-text" href="/">
                         DecHealth

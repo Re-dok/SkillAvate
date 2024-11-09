@@ -41,6 +41,8 @@ class LoginPage extends Component {
     }
 
     componentDidMount() {
+        window.scrollTo(0,0);
+
         // the isLoggedIn is false,
         if (!this.props.isLoggedIn) {
             // this means we have to check persitence

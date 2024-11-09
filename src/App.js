@@ -84,7 +84,7 @@ class App extends Component {
                         exact
                         element={
                             <ClientRoute>
-                                <ViewCourse />
+                                <ViewCourse2 />
                             </ClientRoute>
                         }
                     />

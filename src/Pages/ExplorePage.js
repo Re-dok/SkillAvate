@@ -28,6 +28,8 @@ class CourseCard extends Component {
     }
     // FIXME getCourseDetails is being called twice per course, maybe cause of strict mode??
     async componentDidMount() {
+         
+
         const currentCourseId = this.props.courseId;
         let courseData = this.props.coursesData.filter(
             (course) => course.courseId === currentCourseId
@@ -61,23 +63,34 @@ class CourseCard extends Component {
                                 {this.state.courseName}
                             </span>
                             <p>{this.state.courseDiscp}</p>
-                            <Button
+                            {/* <Button
                                 className="rounded-3 p-3 mb-3 fw-bold"
                                 size="sm"
                                 onClick={() => {
-                                    // this.props.navigate(
-                                    //     `/viewCourse/${this.props.courseId}`
-                                    // );
-                                    alert("add BUY logic")  
+                                    this.props.navigate(
+                                        `/viewCourse/${this.props.courseId}`
+                                    );
                                     this.props.clearOtherUserCoursesInfo(
                                         this.props.courseId
                                     );
                                 }}
                             >
-                                {/* <i className="bi bi-play-circle-fill me-1"></i>{" "} */}
-                                <i className="bi bi-bag-fill me-1"></i>{" "}
-                                Buy Course
-                            </Button>
+                                <i className="bi bi-play-circle-fill me-1"></i>{" "}
+                                Continue Learning
+                            </Button> */}
+                            {/* <div className="my-3 mt-4 fw-light">
+                                {this.state.progress}% complete
+                                <Progress
+                                    value={this.state.progress}
+                                    barClassName="bg-primary-o"
+                                    className="mt-1"
+                                    style={{
+                                        height: "7px",
+                                        width: "50%",
+                                        color: "red !important",
+                                    }}
+                                />
+                            </div> */}
                             <div>
                                 <p
                                     role="button"
@@ -89,12 +102,12 @@ class CourseCard extends Component {
                                         })
                                     }
                                 >
-                                    Modules :
-                                    {/* {!this.state.openModules ? (
+                                    Modules
+                                    {!this.state.openModules ? (
                                         <i className="ms-2 bi bi-chevron-down"></i>
                                     ) : (
                                         <i className="ms-2 bi bi-chevron-up"></i>
-                                    )} */}
+                                    )}
                                 </p>
                                 <Collapse isOpen={true}>
                                     {this.state.modules.map(
@@ -189,66 +202,75 @@ class CourseCard extends Component {
                                         </p>
                                     )
                             )}
+                            {this.state.modules[this.state.openDetatils]
+                                ?.headings && (
+                                <>
+                                    <p
+                                        role="button"
+                                        onClick={() =>
+                                            this.setState({
+                                                openHeadings:
+                                                    !this.state.openHeadings,
+                                            })
+                                        }
+                                        className="d-inline-block mb-0"
+                                    >
+                                        Module Overview {"  "}
+                                        {this.state.openHeadings ? (
+                                            <i className="bi bi-chevron-up"></i>
+                                        ) : (
+                                            <i className="bi bi-chevron-down"></i>
+                                        )}
+                                    </p>
 
-                            <p
-                                role="button"
-                                onClick={() =>
-                                    this.setState({
-                                        openHeadings: !this.state.openHeadings,
-                                    })
-                                }
-                                className="d-inline-block mb-0"
-                            >
-                                Module Overview {"  "}
-                                {this.state.openHeadings ? (
-                                    <i className="bi bi-chevron-up"></i>
-                                ) : (
-                                    <i className="bi bi-chevron-down"></i>
-                                )}
-                            </p>
-                            <Collapse isOpen={true}>
-                                {this.state.modules.map(
-                                    (module, moduleNumber) =>
-                                        moduleNumber ===
-                                            this.state.openDetatils && (
-                                            <div key={moduleNumber}>
-                                                {module.headings.map(
-                                                    (heading, i) => (
-                                                        <div
-                                                            className="m-0 p-0 ps-2"
-                                                            key={i}
-                                                        >
-                                                            <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
-                                                                <i class="bi bi-dot"></i>{" "}
-                                                                {
-                                                                    heading.headingName
-                                                                }
-                                                            </p>
-                                                            {heading.subheadings.map(
-                                                                (
-                                                                    subheading,
-                                                                    i
-                                                                ) => (
-                                                                    <div
-                                                                        className="p-0 ps-5 m-0"
-                                                                        key={i}
-                                                                    >
-                                                                        <p className="border rounded-start-pill rounded-end-pill mb-2 border-2 rounded-3 p-2 overflow-hidden">
-                                                                            <i className="ms-1 me-2 bi bi-play-circle-fill"></i>
-                                                                            {
-                                                                                subheading.subheadingName
-                                                                            }
-                                                                        </p>
-                                                                    </div>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        )
-                                )}
-                            </Collapse>
+                                    <Collapse isOpen={true}>
+                                        {this.state.modules.map(
+                                            (module, moduleNumber) =>
+                                                moduleNumber ===
+                                                    this.state.openDetatils && (
+                                                    <div key={moduleNumber}>
+                                                        {module.headings.map(
+                                                            (heading, i) => (
+                                                                <div
+                                                                    className="m-0 p-0 ps-2"
+                                                                    key={i}
+                                                                >
+                                                                    <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
+                                                                        <i class="bi bi-dot"></i>{" "}
+                                                                        {
+                                                                            heading.headingName
+                                                                        }
+                                                                    </p>
+                                                                    {heading?.subheadings && (
+                                                                        <div className="d-inline-flex justify-content-start flex-column">
+                                                                            {heading?.subheadings?.map(
+                                                                                (
+                                                                                    subheading,
+                                                                                    i
+                                                                                ) => (
+                                                                                    <div
+                                                                                        className="border rounded-pill mb-2 ms-5 border-2 px-3 py-2 overflow-hidden d-inline-block"
+                                                                                        key={
+                                                                                            i
+                                                                                        }
+                                                                                    >
+                                                                                        {
+                                                                                            subheading.subheadingName
+                                                                                        }
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )
+                                        )}
+                                    </Collapse>
+                                </>
+                            )}
                         </div>
                     </Collapse>
                 </div>
@@ -278,8 +300,8 @@ const mapStateToPropsForMyCourses = (state) => {
     };
 };
 class ExplorePage extends Component {
-    constructor(props) {
-        super(props);
+    componentDidMount(props){
+        window.scrollTo(0,0);
     }
     
     render() {
