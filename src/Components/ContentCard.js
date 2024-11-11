@@ -1,7 +1,9 @@
 import { Badge, Button, Alert } from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
-
+import { doUpdateCourseProgress } from "../features/user/userSlice";
+import { connect } from "react-redux";
+import withRouter from "./WithRouter";
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
@@ -14,7 +16,10 @@ class QuestionCard extends Component {
         };
     }
     nextQuestion = () => {
-        if (this.state.currentQuestion < this.props.test.length) {
+        if (
+            this.state.currentQuestion < this.props.test.length &&
+            this.state.currentQuestion < this.props.courseProgress[4]
+        ) {
             this.setState({ currentQuestion: this.state.currentQuestion + 1 });
         }
     };
@@ -23,16 +28,48 @@ class QuestionCard extends Component {
             this.setState({ currentQuestion: this.state.currentQuestion - 1 });
         }
     };
-    handleSubmit = () => {
-        alert("add submit logic");
+    handleSubmit = async() => {
+        const { test } = this.props;
+        const { currentQuestion } = this.state;
+        if (
+            test[currentQuestion - 1].answer ===
+            this.state.selectedOptions + 1
+        ) {
+            // console.log("correct");
+            let newProgress = [...this.props.courseProgress];
+            newProgress[4] += 1;
+            const courseId = this.props.params.courseId;
+            // console.log(courseId);
+            await this.props.doUpdateCourseProgress({ newProgress, courseId }).then(()=>{
+                this.setState({ currentQuestion: currentQuestion + 1 });
+            });
+        } else alert("wrong");
     };
+    componentDidMount(props){
+        // super(props);
+            console.log(this.state);
+            console.log(this.props);
+    }
+    componentDidUpdate(prevProps) {
+        if (prevProps.courseProgress !== this.props.courseProgress) {
+            // console.log("courseProgress updated in Redux");
+            this.setState((prevState) => ({
+                currentQuestion: prevState.currentQuestion + 1
+            }));
+        }
+        // console.log("compo update");
+        // console.log(this.state);
+        // console.log(this.props);
+        // console.log("compo update");
+    }
     render() {
         if (this.props.test.length === 0) return <>Nothing</>;
-        const { completedQuestions } = this.props;
+        // const { courseProgress } = this.props;
+        const completedQuestions = this.props.courseProgress[4];
         const { currentQuestion } = this.state;
         const { question, options } = this.props.test[currentQuestion - 1];
         const numberOfQuestions = this.props.test.length || 0;
-        const isDisabled = this.state.isDisabled;
+        const isDisabled = this.state.selectedOptions === null;
         return (
             <div className="border border-1 rounded rounded-3 bg-white">
                 <div className="border-bottom border-1 py-2 d-flex justify-content-between">
@@ -52,7 +89,9 @@ class QuestionCard extends Component {
                             style={{
                                 cursor:
                                     this.state.currentQuestion <
-                                    numberOfQuestions
+                                        numberOfQuestions &&
+                                    this.state.currentQuestion <
+                                        completedQuestions
                                         ? "pointer"
                                         : "not-allowed",
                             }}
@@ -60,6 +99,7 @@ class QuestionCard extends Component {
                         ></i>
                         <p className="fw-bold d-inline">
                             Question {currentQuestion}/{numberOfQuestions}
+                            {completedQuestions}
                         </p>
                     </div>
                     {
@@ -83,29 +123,45 @@ class QuestionCard extends Component {
                 </div>
                 {options.map((option, optionNumber) => (
                     <div
-                        className="p-3 pb-0 d-flex border-top border-2"
+                        className={
+                            "p-3 pb-0 d-flex border-top border-2 " +
+                            (this.state.selectedOptions === optionNumber
+                                ? "bg-secodary-o"
+                                : "")
+                        }
                         key={optionNumber}
+                        onClick={() => {
+                            if (optionNumber === this.state.selectedOptions) {
+                                this.setState({ selectedOptions: null });
+                            } else
+                                this.setState({
+                                    selectedOptions: optionNumber,
+                                });
+                        }}
                     >
-                        <i className="bi bi-circle me-2 fw-light"></i>
+                        <i
+                            className={
+                                "bi me-2 fw-light " +
+                                (this.state.selectedOptions === optionNumber
+                                    ? "bi-record-circle"
+                                    : "bi-circle")
+                            }
+                        ></i>
                         <p className="fw-light">{option}</p>
                     </div>
                 ))}
-                <div
-                    className="border-top border-1 px-4 py-3 d-flex flex-row-reverse justify-content-between"
-                    onClick={() => {
-                        if (!isDisabled) {
-                            if (currentQuestion !== numberOfQuestions) {
-                                this.nextQuestion();
-                            } else {
+                <div className="border-top border-1 px-4 py-3 d-flex flex-row-reverse justify-content-between">
+                    <Button
+                        color="info"
+                        className="text-light"
+                        disabled={isDisabled}
+                        onClick={() => {
+                            if (!isDisabled) {
                                 this.handleSubmit();
                             }
-                        }
-                    }}
-                >
-                    <Button color="info" className="text-light" disabled>
-                        {currentQuestion !== numberOfQuestions
-                            ? "Next"
-                            : "Submit"}
+                        }}
+                    >
+                        Submit
                     </Button>
                 </div>
                 <Alert
@@ -119,12 +175,20 @@ class QuestionCard extends Component {
         );
     }
 }
+const mapDispatchToProps = {
+    doUpdateCourseProgress,
+};
+const ConnectedQuestionCard = connect(
+    null,
+    mapDispatchToProps
+)(withRouter(QuestionCard));
 export default class ContentCard extends Component {
     openReadingAssignment = (docLink) => {
         window.open(docLink, "_blank");
     };
+    // FIXME change the badge logic for complition etc
     render() {
-        if (this.props.modules === undefined) return <>loading</>;
+        if (this.props.modules === undefined||this.props.openUnit===null) return <>loading</>;
         else {
             const modules = this.props.modules;
             const courseProgress = this.props.courseProgress;
@@ -239,10 +303,12 @@ export default class ContentCard extends Component {
                             {writeUp}
                         </p>
                     )}
-                    <QuestionCard
-                        test={test || []}
-                        completedQuestions={completed(3)}
-                    />
+                    {test.length !== 0 && (
+                        <ConnectedQuestionCard
+                            test={test || []}
+                            courseProgress={this.props.courseProgress}
+                        />
+                    )}
                 </div>
             );
         }

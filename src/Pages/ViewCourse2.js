@@ -29,7 +29,7 @@ class SideBar extends Component {
             openHeading: headingNumber,
             currentSubheading: subHeadingNumber,
         });
-        console.log(this.props.openUnit);
+        // console.log(this.props.openUnit);
     }
     componentDidUpdate(prevProps) {
         if (prevProps.openUnit !== this.props.openUnit) {
@@ -40,7 +40,7 @@ class SideBar extends Component {
                 openHeading: headingNumber,
                 currentSubheading: subHeadingNumber,
             });
-            console.log(this.props.openUnit);
+            // console.log(this.props.openUnit);
         }
     }
 
@@ -62,277 +62,302 @@ class SideBar extends Component {
     }
 
     render() {
-        const { courseData, courseProgress } = this.props;
-        const isAllowed = (newUnit) => {
-            if (newUnit[0] < courseProgress[0]) {
-                return true;
-            } else if (newUnit[0] === courseProgress[0]) {
-                if (newUnit[1] < courseProgress[1]) {
+        const { courseData, courseProgress, openUnit } = this.props;
+        if (!this.props.courseData) return <>Loading</>;
+        else {
+            const isAllowed = (newUnit) => {
+                if (newUnit[0] < courseProgress[0]) {
                     return true;
-                } else if (newUnit[1] === courseProgress[1]) {
-                    return newUnit[2] <= courseProgress[2];
+                } else if (newUnit[0] === courseProgress[0]) {
+                    if (newUnit[1] < courseProgress[1]) {
+                        return true;
+                    } else if (newUnit[1] === courseProgress[1]) {
+                        return newUnit[2] <= courseProgress[2];
+                    }
                 }
-            }
-            return false;
-        };
+                return false;
+            };
 
-        return (
-            <div className="mt-5">
-                <div className="px-2 mb-3 fs-6 fw-bold">
-                    {courseData?.courseName}
-                </div>
-                <ListGroup>
-                    {courseData?.modules?.map((module, moduleNumber) => (
-                        <ListGroupItem key={moduleNumber} className="p-0">
-                            <div
-                                role="button"
-                                onClick={() => {
-                                    let isOpen =
-                                        this.state.openModule === moduleNumber;
-                                    let code = this.handleSetIndex(
-                                        isOpen,
-                                        module?.content,
-                                        isAllowed([moduleNumber, -1, -1])
-                                    );
-                                    switch (code) {
-                                        case 1:
-                                            let newVal = isOpen
-                                                ? -1
-                                                : moduleNumber;
-                                            this.setState({
-                                                openModule: newVal,
-                                            });
-                                            break;
-                                        case 2:
-                                            this.props.setOpenUnit([
-                                                moduleNumber,
-                                                -1,
-                                                -1,
-                                            ]);
-                                            if (this.props.isCanvas)
-                                                this.props.toggleSideBar();
-                                            break;
-                                        default:
-                                            break;
+            return (
+                <div className="mt-5">
+                    <div className="px-2 mb-3 fs-6 fw-bold">
+                        {courseData?.courseName}
+                    </div>
+                    <ListGroup>
+                        {courseData?.modules?.map((module, moduleNumber) => (
+                            <ListGroupItem key={moduleNumber} className="p-0">
+                                <div
+                                    role="button"
+                                    onClick={() => {
+                                        let isOpen =
+                                            this.state.openModule ===
+                                            moduleNumber;
+                                        let code = this.handleSetIndex(
+                                            isOpen,
+                                            module?.content,
+                                            isAllowed([moduleNumber, -1, -1])
+                                        );
+                                        switch (code) {
+                                            case 1:
+                                                let newVal = isOpen
+                                                    ? -1
+                                                    : moduleNumber;
+                                                this.setState({
+                                                    openModule: newVal,
+                                                });
+                                                break;
+                                            case 2:
+                                                this.props.setOpenUnit([
+                                                    moduleNumber,
+                                                    -1,
+                                                    -1,
+                                                ]);
+                                                if (this.props.isCanvas)
+                                                    this.props.toggleSideBar();
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }}
+                                    className={
+                                        "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between " +
+                                        (module?.content === undefined
+                                            ? ""
+                                            : isAllowed([moduleNumber, -1, -1])
+                                            ? "bg-done"
+                                            : "bg-not-open")
                                     }
-                                }}
-                                className={
-                                    "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between " +
-                                    (module?.content === undefined
-                                        ? ""
-                                        : isAllowed([moduleNumber, -1, -1])
-                                        ? "bg-done"
-                                        : "bg-not-open")
-                                }
-                            >
-                                <p>
-                                    Module {moduleNumber + 1}
-                                    <br></br> {module.moduleName}
-                                </p>
-                                {module.content ? (
-                                    isAllowed([moduleNumber + 1, -1, -1]) ? (
-                                        <i className="bi bi-check-circle-fill ms-3"></i>
+                                >
+                                    <p>
+                                        Module {moduleNumber + 1}
+                                        <br></br> {module.moduleName}
+                                    </p>
+                                    {module.content ? (
+                                        isAllowed([
+                                            moduleNumber + 1,
+                                            -1,
+                                            -1,
+                                        ]) ? (
+                                            <i className="bi bi-check-circle-fill ms-3"></i>
+                                        ) : (
+                                            <i className="bi bi-chevron-right ms-3"></i>
+                                        )
+                                    ) : this.state.openModule ===
+                                      moduleNumber ? (
+                                        <i className="bi bi-chevron-up ms-3"></i>
                                     ) : (
-                                        <i className="bi bi-chevron-right ms-3"></i>
-                                    )
-                                ) : this.state.openModule === moduleNumber ? (
-                                    <i className="bi bi-chevron-up ms-3"></i>
-                                ) : (
-                                    <i className="bi bi-chevron-down ms-3"></i>
-                                )}
-                            </div>
-                            <Collapse
-                                isOpen={this.state.openModule === moduleNumber}
-                            >
-                                {
-                                    <div key={moduleNumber}>
-                                        {module.headings?.map(
-                                            (heading, headingNumber) => (
-                                                <div
-                                                    className="m-0 ms-2 fs-6 p-0"
-                                                    key={headingNumber}
-                                                >
+                                        <i className="bi bi-chevron-down ms-3"></i>
+                                    )}
+                                </div>
+                                <Collapse
+                                    isOpen={
+                                        this.state.openModule === moduleNumber
+                                    }
+                                >
+                                    {
+                                        <div key={moduleNumber}>
+                                            {module.headings?.map(
+                                                (heading, headingNumber) => (
                                                     <div
-                                                        className={
-                                                            "border my-0 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
-                                                            (heading.content ===
-                                                            undefined
-                                                                ? ""
-                                                                : isAllowed([
-                                                                      moduleNumber,
-                                                                      headingNumber,
-                                                                      -1,
-                                                                  ])
-                                                                ? "bg-done"
-                                                                : "bg-not-open")
-                                                        }
-                                                        role="button"
-                                                        onClick={() => {
-                                                            let isOpen =
+                                                        className="m-0 ms-2 fs-6 p-0"
+                                                        key={headingNumber}
+                                                    >
+                                                        <div
+                                                            className={
+                                                                "border my-0 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
+                                                                (heading.content ===
+                                                                undefined
+                                                                    ? ""
+                                                                    : isAllowed(
+                                                                          [
+                                                                              moduleNumber,
+                                                                              headingNumber,
+                                                                              -1,
+                                                                          ]
+                                                                      )
+                                                                    ? "bg-done"
+                                                                    : "bg-not-open")
+                                                            }
+                                                            role="button"
+                                                            onClick={() => {
+                                                                let isOpen =
+                                                                    this.state
+                                                                        .openModule ===
+                                                                        moduleNumber &&
+                                                                    this.state
+                                                                        .openHeading ===
+                                                                        headingNumber;
+                                                                let code =
+                                                                    this.handleSetIndex(
+                                                                        isOpen,
+                                                                        heading?.content,
+                                                                        isAllowed(
+                                                                            [
+                                                                                moduleNumber,
+                                                                                headingNumber,
+                                                                                -1,
+                                                                            ]
+                                                                        )
+                                                                    );
+                                                                switch (code) {
+                                                                    case 1:
+                                                                        let newVal =
+                                                                            isOpen
+                                                                                ? -1
+                                                                                : headingNumber;
+                                                                        this.setState(
+                                                                            {
+                                                                                openModule:
+                                                                                    moduleNumber,
+                                                                                openHeading:
+                                                                                    newVal,
+                                                                            }
+                                                                        );
+                                                                        break;
+                                                                    case 2:
+                                                                        this.props.setOpenUnit(
+                                                                            [
+                                                                                moduleNumber,
+                                                                                headingNumber,
+                                                                                -1,
+                                                                            ]
+                                                                        );
+                                                                        if (
+                                                                            this
+                                                                                .props
+                                                                                .isCanvas
+                                                                        )
+                                                                            this.props.toggleSideBar();
+                                                                        break;
+                                                                    default:
+                                                                        break;
+                                                                }
+                                                            }}
+                                                        >
+                                                            {
+                                                                heading.headingName
+                                                            }
+
+                                                            {heading.content ? (
+                                                                isAllowed([
+                                                                    moduleNumber,
+                                                                    headingNumber +
+                                                                        1,
+                                                                    -1,
+                                                                ]) ? (
+                                                                    <i className="bi bi-check-circle-fill ms-3"></i>
+                                                                ) : (
+                                                                    <i className="bi bi-chevron-right ms-3"></i>
+                                                                )
+                                                            ) : (
+                                                                <i className="bi bi-chevron-down ms-3"></i>
+                                                            )}
+                                                        </div>
+                                                        <Collapse
+                                                            isOpen={
                                                                 this.state
                                                                     .openModule ===
                                                                     moduleNumber &&
                                                                 this.state
                                                                     .openHeading ===
-                                                                    headingNumber;
-                                                            let code =
-                                                                this.handleSetIndex(
-                                                                    isOpen,
-                                                                    heading?.content,
-                                                                    isAllowed([
-                                                                        moduleNumber,
-                                                                        headingNumber,
-                                                                        -1,
-                                                                    ])
-                                                                );
-                                                            switch (code) {
-                                                                case 1:
-                                                                    let newVal =
-                                                                        isOpen
-                                                                            ? -1
-                                                                            : headingNumber;
-                                                                    this.setState(
-                                                                        {
-                                                                            openModule:
-                                                                                moduleNumber,
-                                                                            openHeading:
-                                                                                newVal,
-                                                                        }
-                                                                    );
-                                                                    break;
-                                                                case 2:
-                                                                    this.props.setOpenUnit(
-                                                                        [
-                                                                            moduleNumber,
-                                                                            headingNumber,
-                                                                            -1,
-                                                                        ]
-                                                                    );
-                                                                    if (
-                                                                        this
-                                                                            .props
-                                                                            .isCanvas
-                                                                    )
-                                                                        this.props.toggleSideBar();
-                                                                    break;
-                                                                default:
-                                                                    break;
+                                                                    headingNumber
                                                             }
-                                                        }}
-                                                    >
-                                                        {heading.headingName}
-
-                                                        {heading.content ? (
-                                                            isAllowed([
-                                                                moduleNumber,
-                                                                headingNumber +
-                                                                    1,
-                                                                -1,
-                                                            ]) ? (
-                                                                <i className="bi bi-check-circle-fill ms-3"></i>
-                                                            ) : (
-                                                                <i className="bi bi-chevron-right ms-3"></i>
-                                                            )
-                                                        ) : (
-                                                            <i className="bi bi-chevron-down ms-3"></i>
-                                                        )}
-                                                    </div>
-                                                    <Collapse
-                                                        isOpen={
-                                                            this.state
-                                                                .openModule ===
-                                                                moduleNumber &&
-                                                            this.state
-                                                                .openHeading ===
-                                                                headingNumber
-                                                        }
-                                                    >
-                                                        {heading.subheadings?.map(
-                                                            (subheading, i) => (
-                                                                <div
-                                                                    key={i}
-                                                                    className={"ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between "+
-                                                                        (subheading.content ===
+                                                        >
+                                                            {heading.subheadings?.map(
+                                                                (
+                                                                    subheading,
+                                                                    i
+                                                                ) => (
+                                                                    <div
+                                                                        key={i}
+                                                                        className={
+                                                                            "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between " +
+                                                                            (subheading.content ===
                                                                             undefined
                                                                                 ? ""
-                                                                                : isAllowed([
-                                                                                      moduleNumber,
-                                                                                      headingNumber,
-                                                                                      i,
-                                                                                  ])
+                                                                                : isAllowed(
+                                                                                      [
+                                                                                          moduleNumber,
+                                                                                          headingNumber,
+                                                                                          i,
+                                                                                      ]
+                                                                                  )
                                                                                 ? "bg-done"
                                                                                 : "bg-not-open")
-                                                                        
-                                                                    }
-                                                                    role="button"
-                                                                    onClick={() => {
-                                                                        let isOpen =
-                                                                            this
-                                                                                .state
-                                                                                .currentSubheading ===
-                                                                            i;
-                                                                        let code =
-                                                                            this.handleSetIndex(
-                                                                                isOpen,
-                                                                                true,
-                                                                                isAllowed(
-                                                                                    [
-                                                                                        moduleNumber,
-                                                                                        headingNumber,
-                                                                                        i,
-                                                                                    ]
-                                                                                )
-                                                                            );
-                                                                        switch (
-                                                                            code
-                                                                        ) {
-                                                                            case 2:
-                                                                                this.props.setOpenUnit(
-                                                                                    [
-                                                                                        moduleNumber,
-                                                                                        headingNumber,
-                                                                                        i,
-                                                                                    ]
-                                                                                );
-                                                                                if (
-                                                                                    this
-                                                                                        .props
-                                                                                        .isCanvas
-                                                                                )
-                                                                                    this.props.toggleSideBar();
-                                                                                break;
-                                                                            default:
-                                                                                break;
                                                                         }
-                                                                    }}
-                                                                >
-                                                                    {
-                                                                        subheading.subheadingName
-                                                                    }
-                                                                    {isAllowed([
-                                                                        moduleNumber,
-                                                                        headingNumber,
-                                                                        i + 1,
-                                                                    ]) ? (
-                                                                        <i className="bi bi-check-circle-fill ms-3"></i>
-                                                                    ) : (
-                                                                        <i className="bi bi-chevron-right ms-3"></i>
-                                                                    )}
-                                                                </div>
-                                                            )
-                                                        )}
-                                                    </Collapse>
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                }
-                            </Collapse>
-                        </ListGroupItem>
-                    ))}
-                </ListGroup>
-            </div>
-        );
+                                                                        role="button"
+                                                                        onClick={() => {
+                                                                            let isOpen =
+                                                                                this
+                                                                                    .state
+                                                                                    .currentSubheading ===
+                                                                                i;
+                                                                            let code =
+                                                                                this.handleSetIndex(
+                                                                                    isOpen,
+                                                                                    true,
+                                                                                    isAllowed(
+                                                                                        [
+                                                                                            moduleNumber,
+                                                                                            headingNumber,
+                                                                                            i,
+                                                                                        ]
+                                                                                    )
+                                                                                );
+                                                                            switch (
+                                                                                code
+                                                                            ) {
+                                                                                case 2:
+                                                                                    this.props.setOpenUnit(
+                                                                                        [
+                                                                                            moduleNumber,
+                                                                                            headingNumber,
+                                                                                            i,
+                                                                                        ]
+                                                                                    );
+                                                                                    if (
+                                                                                        this
+                                                                                            .props
+                                                                                            .isCanvas
+                                                                                    )
+                                                                                        this.props.toggleSideBar();
+                                                                                    break;
+                                                                                default:
+                                                                                    break;
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {
+                                                                            subheading.subheadingName
+                                                                        }
+                                                                        {isAllowed(
+                                                                            [
+                                                                                moduleNumber,
+                                                                                headingNumber,
+                                                                                i +
+                                                                                    1,
+                                                                            ]
+                                                                        ) ? (
+                                                                            <i className="bi bi-check-circle-fill ms-3"></i>
+                                                                        ) : (
+                                                                            <i className="bi bi-chevron-right ms-3"></i>
+                                                                        )}
+                                                                    </div>
+                                                                )
+                                                            )}
+                                                        </Collapse>
+                                                    </div>
+                                                )
+                                            )}
+                                        </div>
+                                    }
+                                </Collapse>
+                            </ListGroupItem>
+                        ))}
+                    </ListGroup>
+                </div>
+            );
+        }
     }
 }
 
@@ -341,7 +366,7 @@ class ViewCourse2 extends Component {
         super(props);
         this.state = {
             openUnit: [0, 0, 0],
-            courseProgress: [1, 0, 0, 1],
+            courseProgress: [0, 0, 0, 0, 0, false],
             navbarIsOpen: false,
             qnaIsOpen: false,
         };
@@ -350,18 +375,38 @@ class ViewCourse2 extends Component {
         window.scrollTo(0, 0);
         let { courseData, doGetCourseDetails, userCourses } = this.props;
         const { courseId } = this.props.params;
-        const courseProgress = userCourses.filter(
-            (course) => course.courseId === courseId
-        )[0].courseProgress;
+        // const courseProgress = userCourses.filter(
+        //     (course) => course.courseId === courseId
+        // )[0].courseProgress;
         if (courseData === undefined || courseData.length === 0) {
             await doGetCourseDetails(courseId);
         }
+        const { courseProgress } = this.props;
         this.setState({
             openUnit: courseProgress,
             courseProgress: courseProgress,
         });
     }
-
+    async componentDidUpdate(prevProps) {
+        if (prevProps.courseProgress !== this.props.courseProgress) {
+            // console.log("courseProgress updated in Redux");
+            let { courseData, doGetCourseDetails, userCourses } = this.props;
+            const { courseId } = this.props.params;
+            // const courseProgress = userCourses.filter(
+            //     (course) => course.courseId === courseId
+            // )[0].courseProgress;
+            if (courseData === undefined || courseData.length === 0) {
+                await doGetCourseDetails(courseId);
+            }
+            const { courseProgress } = this.props;
+            console.log("this si courp");
+            console.log(courseProgress);
+            this.setState({
+                openUnit: courseProgress,
+                courseProgress: courseProgress,
+            });
+        }
+    }
     render() {
         if (this.props.isLoading) return <>Loading...</>;
         else {
@@ -433,7 +478,7 @@ class ViewCourse2 extends Component {
                     <div className="col-lg-9 col bg-grey py-5 px-lg-5">
                         <ContentCard
                             modules={this.props.courseData[0]?.modules}
-                            openUnit={this.state.openUnit}
+                            openUnit={this.state.openUnit || null}
                             courseProgress={this.state.courseProgress}
                         />
                     </div>
@@ -448,6 +493,7 @@ const mapStatesToProps = (state) => ({
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,
     courseData: state.course.course,
+    courseProgress: state.user.courses[0]?.courseProgress,
     userCourses: state.user.courses,
 });
 const mapDispatchToProps = {

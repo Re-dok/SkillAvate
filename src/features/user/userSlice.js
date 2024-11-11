@@ -5,7 +5,7 @@ import {
     doSignUpUser,
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
-import { getUserData } from "../../Firbase/firbaseUserDB";
+import { getUserData, updateProgress } from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
     error: "",
@@ -44,7 +44,21 @@ const doSignUp = createAsyncThunk(
         }
     }
 );
+const doUpdateCourseProgress = createAsyncThunk("user/updateProgress",
+    async ({newProgress,courseId}, { getState }) => {
+        try {
+            const state = getState();
 
+            const { email } = state.user.userCredentials;
+            // const { courseId } = state.user.courses[2];
+            
+            await updateProgress(email, courseId, newProgress);
+            return newProgress;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const doSignOut = createAsyncThunk("user/signOutUser", async () => {
     try {
         await doSignoutUser();
@@ -191,6 +205,18 @@ const userSlice = createSlice({
             .addCase(doSignOut.rejected, (state, action) => {
                 state.error = action.error.message;
                 state.loading = false;
+            })
+            .addCase(doUpdateCourseProgress.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doUpdateCourseProgress.fulfilled, (state,action) => {
+                state.loading = false;
+                state.courses[2].courseProgress=action.payload;
+                // console.log(action.payload);
+            })
+            .addCase(doUpdateCourseProgress.rejected, (state,action) => {
+                state.error = action.error.message;
+                state.loading = false;
             });
     },
 });
@@ -203,4 +229,4 @@ export const {
     setInitialURL,
     resetMessages,
 } = userSlice.actions;
-export { doSignUp, doSignIn, doPasswordReset, doGetUserData, doSignOut };
+export { doSignUp, doSignIn, doPasswordReset, doGetUserData, doSignOut,doUpdateCourseProgress };
