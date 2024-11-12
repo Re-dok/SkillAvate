@@ -35,12 +35,13 @@ class SideBar extends Component {
         if (prevProps.openUnit !== this.props.openUnit) {
             const [moduleNumber, headingNumber, subHeadingNumber] =
                 this.props.openUnit;
+            if (prevProps.openUnit[3] !== this.props.openUnit[3])
+                window.scrollTo(0, 0);
             this.setState({
                 openModule: moduleNumber,
                 openHeading: headingNumber,
                 currentSubheading: subHeadingNumber,
             });
-            // console.log(this.props.openUnit);
         }
     }
 
@@ -104,6 +105,8 @@ class SideBar extends Component {
                                                     : moduleNumber;
                                                 this.setState({
                                                     openModule: newVal,
+                                                    openHeading: -1,
+                                                    currentSubheading: -1,
                                                 });
                                                 break;
                                             case 2:
@@ -164,7 +167,7 @@ class SideBar extends Component {
                                                     >
                                                         <div
                                                             className={
-                                                                "border my-0 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
+                                                                "border my-2 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
                                                                 (heading.content ===
                                                                 undefined
                                                                     ? ""
@@ -211,6 +214,8 @@ class SideBar extends Component {
                                                                                     moduleNumber,
                                                                                 openHeading:
                                                                                     newVal,
+                                                                                currentSubheading:
+                                                                                    -1,
                                                                             }
                                                                         );
                                                                         break;
@@ -375,32 +380,32 @@ class ViewCourse2 extends Component {
         window.scrollTo(0, 0);
         let { courseData, doGetCourseDetails, userCourses } = this.props;
         const { courseId } = this.props.params;
-        // const courseProgress = userCourses.filter(
-        //     (course) => course.courseId === courseId
-        // )[0].courseProgress;
+        const courseProgress = userCourses.filter(
+            (course) => course.courseId === courseId
+        )[0].courseProgress;
         if (courseData === undefined || courseData.length === 0) {
             await doGetCourseDetails(courseId);
         }
-        const { courseProgress } = this.props;
+
+        console.log("THIS IS FROM VIEW 1\n");
+        console.log(courseProgress, courseId);
         this.setState({
             openUnit: courseProgress,
             courseProgress: courseProgress,
         });
     }
-    async componentDidUpdate(prevProps) {
-        if (prevProps.courseProgress !== this.props.courseProgress) {
-            // console.log("courseProgress updated in Redux");
-            let { courseData, doGetCourseDetails, userCourses } = this.props;
-            const { courseId } = this.props.params;
-            // const courseProgress = userCourses.filter(
-            //     (course) => course.courseId === courseId
-            // )[0].courseProgress;
-            if (courseData === undefined || courseData.length === 0) {
-                await doGetCourseDetails(courseId);
-            }
-            const { courseProgress } = this.props;
-            console.log("this si courp");
-            console.log(courseProgress);
+    async componentDidUpdate(prevProps, prevState) {
+        const { courseId } = this.props.params;
+        let {   userCourses } = this.props;
+        const prevCourseProgress = prevProps.userCourses.filter(
+            (course) => course.courseId === courseId
+        )[0].courseProgress;
+        const courseProgress = userCourses.filter(
+            (course) => course.courseId === courseId
+        )[0].courseProgress;
+        if (prevCourseProgress !== courseProgress) {
+            console.log("THIS IS FROM VIEW 2 on update\n");
+            console.log(courseProgress, courseId);
             this.setState({
                 openUnit: courseProgress,
                 courseProgress: courseProgress,
@@ -489,11 +494,11 @@ class ViewCourse2 extends Component {
 }
 const mapStatesToProps = (state) => ({
     // TODO are these || working the way you think they are?
-    isLoading: state.course.courseLoading || state.user.loading,
+    isLoading: state.course.courseLoading,
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,
     courseData: state.course.course,
-    courseProgress: state.user.courses[0]?.courseProgress,
+    // courseProgress: state.user.courses[0]?.courseProgress,
     userCourses: state.user.courses,
 });
 const mapDispatchToProps = {

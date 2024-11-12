@@ -4,23 +4,58 @@ import ReactPlayer from "react-player";
 import { doUpdateCourseProgress } from "../features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
+
 class QuestionCard extends Component {
+    // TODO works preety much for single content page, need to add messages, after that you'll have to write logic to move to new module/content page
     constructor(props) {
         super(props);
         this.state = {
-            alertIsOpen: true,
+            alertMessage: null,
+            answerIsCurrect: true,
             currentQuestion: 1,
             selectedOptions: null,
-            // TODO add logic to only allow submission when all questions are attempted AND unlock tests only after the video is watched
-            isDisabled: true,
         };
+    }
+    componentDidMount() {
+        console.log("THIS IS FROM qustion 1\n");
+        console.log(this.props.courseProgress[4]);
+        if (!this.props.isComplete)
+            this.setState({
+                currentQuestion: this.props.courseProgress[4] + 1,
+            });
+        else {
+            this.setState({ currentQuestion: this.props.test.length });
+        }
+    }
+    componentDidUpdate(prevProps) {
+        if (prevProps?.test[0].question != this.props?.test[0].question) {
+            // the content page is changed, so move to last question and top of the page
+            window.scrollTo(0, 0);
+            if (this.props.isComplete) {
+                this.setState({ currentQuestion: this.props.test.length });
+            }
+        }
+        if (prevProps.courseProgress[4] !== this.props.courseProgress[4]) {
+            // the progress was updated so ,move the question forward
+            this.setState({
+                currentQuestion: this.props.courseProgress[4] + 1,
+                answerIsCurrect: true,
+                selectedOptions: null,
+                alertMessage: null,
+            });
+        }
     }
     nextQuestion = () => {
         if (
             this.state.currentQuestion < this.props.test.length &&
-            this.state.currentQuestion < this.props.courseProgress[4]
+            this.state.currentQuestion <= this.props.courseProgress[4]
         ) {
-            this.setState({ currentQuestion: this.state.currentQuestion + 1 });
+            this.setState({
+                currentQuestion: this.state.currentQuestion + 1,
+                selectedOptions: null,
+                alertMessage: null,
+                answerIsCurrect: true,
+            });
         }
     };
     prevQuestion = () => {
@@ -28,103 +63,121 @@ class QuestionCard extends Component {
             this.setState({ currentQuestion: this.state.currentQuestion - 1 });
         }
     };
-    handleSubmit = async() => {
+    handleSubmit = async () => {
         const { test } = this.props;
         const { currentQuestion } = this.state;
         if (
             test[currentQuestion - 1].answer ===
             this.state.selectedOptions + 1
         ) {
-            // console.log("correct");
             let newProgress = [...this.props.courseProgress];
-            newProgress[4] += 1;
-            const courseId = this.props.params.courseId;
-            // console.log(courseId);
-            await this.props.doUpdateCourseProgress({ newProgress, courseId }).then(()=>{
-                this.setState({ currentQuestion: currentQuestion + 1 });
+
+            // FIXME should add more complex function to increace progress
+            if (currentQuestion < this.props.test.length) {
+                // if more questions are there then just ++
+                newProgress[4] += 1;
+                const courseId = this.props.params.courseId;
+                await this.props.doUpdateCourseProgress({
+                    newProgress,
+                    courseId,
+                });
+            } else {
+                // if no more questions, find the next content page
+                newProgress[4] += 1;
+            }
+            this.setState({
+                alertMessage: "Correct Answer!",
+                answerIsCurrect: true,
             });
-        } else alert("wrong");
-    };
-    componentDidMount(props){
-        // super(props);
-            console.log(this.state);
-            console.log(this.props);
-    }
-    componentDidUpdate(prevProps) {
-        if (prevProps.courseProgress !== this.props.courseProgress) {
-            // console.log("courseProgress updated in Redux");
-            this.setState((prevState) => ({
-                currentQuestion: prevState.currentQuestion + 1
-            }));
+        } else {
+            this.setState({
+                alertMessage:
+                    "Wrong Answer, you have one more attempt after which you will be moved to the next question!",
+                answerIsCurrect: false,
+            });
         }
-        // console.log("compo update");
-        // console.log(this.state);
-        // console.log(this.props);
-        // console.log("compo update");
-    }
+    };
+
     render() {
         if (this.props.test.length === 0) return <>Nothing</>;
-        // const { courseProgress } = this.props;
+
         const completedQuestions = this.props.courseProgress[4];
         const { currentQuestion } = this.state;
-        const { question, options } = this.props.test[currentQuestion - 1];
+        console.log("this is for currrent qestion\n" + currentQuestion);
+        const { question, options } =
+            this.props?.test[
+                currentQuestion - 1 < this.props.test.length
+                    ? currentQuestion - 1
+                    : 0
+            ];
         const numberOfQuestions = this.props.test.length || 0;
-        const isDisabled = this.state.selectedOptions === null;
+        const isDisabled =
+            this.state.selectedOptions === null ||
+            this.state.alertMessage !== null;
         return (
             <div className="border border-1 rounded rounded-3 bg-white">
                 <div className="border-bottom border-1 py-2 d-flex justify-content-between">
                     <div className="d-inline">
                         <i
+                            role="button"
                             onClick={this.prevQuestion}
-                            style={{
-                                cursor:
-                                    this.state.currentQuestion > 1
-                                        ? "pointer"
-                                        : "not-allowed",
-                            }}
-                            className="bi bi-chevron-left border-end border-2 p-2"
+                            className={
+                                "bi bi-chevron-left border-end border-2 p-2" +
+                                " " +
+                                (this.state.currentQuestion > 1
+                                    ? " "
+                                    : "bg-grey")
+                            }
                         ></i>
                         <i
                             onClick={this.nextQuestion}
-                            style={{
-                                cursor:
-                                    this.state.currentQuestion <
-                                        numberOfQuestions &&
-                                    this.state.currentQuestion <
-                                        completedQuestions
-                                        ? "pointer"
-                                        : "not-allowed",
-                            }}
-                            className="bi bi-chevron-right border-2 border-end p-2 me-3"
+                            role="button"
+                            className={
+                                "bi bi-chevron-right border-2 border-end p-2 me-3" +
+                                " " +
+                                (currentQuestion < numberOfQuestions &&
+                                currentQuestion <= completedQuestions
+                                    ? " "
+                                    : "bg-grey")
+                            }
                         ></i>
                         <p className="fw-bold d-inline">
-                            Question {currentQuestion}/{numberOfQuestions}
+                            Question {currentQuestion}/{numberOfQuestions}{" "}
                             {completedQuestions}
                         </p>
                     </div>
                     {
                         <Badge
-                            color={completedQuestions ? "info" : "warning"}
+                            color={
+                                this.props.isComplete ||
+                                completedQuestions >= currentQuestion
+                                    ? "info"
+                                    : "warning"
+                            }
                             pill
                             className="me-3 text-dark"
                         >
-                            {completedQuestions ? (
+                            {this.props.isComplete ||
+                            completedQuestions === currentQuestion ? (
                                 <i className="bi bi-check-circle-fill me-2"></i>
                             ) : (
                                 <i className="bi bi-exclamation-circle-fill me-1"></i>
                             )}
-                            {completedQuestions ? "Completed" : "Mandatery"}
+                            {this.props.isComplete ||
+                            completedQuestions === currentQuestion
+                                ? "Completed"
+                                : "Mandatory"}
                         </Badge>
                     }
                 </div>
-                <div className="p-3 py-4">
+                <div className="p-3 py-4 border-bottom border-2">
                     <p className="fw-bold">Question {currentQuestion} </p>
                     <p className="fw-light">{question}</p>
                 </div>
                 {options.map((option, optionNumber) => (
                     <div
                         className={
-                            "p-3 pb-0 d-flex border-top border-2 " +
+                            "p-3 pb-0 d-flex border-bottom border-2 " +
                             (this.state.selectedOptions === optionNumber
                                 ? "bg-secodary-o"
                                 : "")
@@ -138,6 +191,7 @@ class QuestionCard extends Component {
                                     selectedOptions: optionNumber,
                                 });
                         }}
+                        role="button"
                     >
                         <i
                             className={
@@ -150,27 +204,40 @@ class QuestionCard extends Component {
                         <p className="fw-light">{option}</p>
                     </div>
                 ))}
-                <div className="border-top border-1 px-4 py-3 d-flex flex-row-reverse justify-content-between">
-                    <Button
-                        color="info"
-                        className="text-light"
-                        disabled={isDisabled}
-                        onClick={() => {
-                            if (!isDisabled) {
-                                this.handleSubmit();
-                            }
-                        }}
-                    >
-                        Submit
-                    </Button>
-                </div>
                 <Alert
-                    color="primary"
-                    className="mx-2"
-                    isOpen={!this.state.alertIsOpen}
+                    color={this.state.answerIsCurrect ? "success" : "danger"}
+                    className="mx-2 my-2"
+                    isOpen={this.state.alertMessage}
+                    toggle={() => {
+                        if (this.state.answerIsCurrect === true) {
+                            this.nextQuestion();
+                        }
+                        this.setState({
+                            alertMessage: null,
+                            answerIsCurrect: null,
+                            selectedOptions: null,
+                        });
+                    }}
                 >
-                    This is a primary alert — check it out!
+                    {this.state.alertMessage}
                 </Alert>
+                {currentQuestion <= completedQuestions ||
+                    (!this.props.isComplete && (
+                        <div className="border-0 px-4 py-3 d-flex flex-row-reverse justify-content-between">
+                            <Button
+                                color="info"
+                                className="text-light"
+                                disabled={isDisabled}
+                                onClick={() => {
+                                    if (!isDisabled) {
+                                        this.handleSubmit();
+                                    }
+                                }}
+                            >
+                                Submit
+                            </Button>
+                        </div>
+                    ))}
             </div>
         );
     }
@@ -183,12 +250,14 @@ const ConnectedQuestionCard = connect(
     mapDispatchToProps
 )(withRouter(QuestionCard));
 export default class ContentCard extends Component {
+    // TODO add logic to only allow submission when all questions are attempted AND unlock tests only after the video is watched
     openReadingAssignment = (docLink) => {
         window.open(docLink, "_blank");
     };
     // FIXME change the badge logic for complition etc
     render() {
-        if (this.props.modules === undefined||this.props.openUnit===null) return <>loading</>;
+        if (this.props.modules === undefined || this.props.openUnit === null)
+            return <>loading</>;
         else {
             const modules = this.props.modules;
             const courseProgress = this.props.courseProgress;
@@ -229,7 +298,6 @@ export default class ContentCard extends Component {
                         if (j < courseProgress[2]) {
                             return true;
                         }
-
                         return badgeType <= courseProgress[3];
                     }
                 }
@@ -259,7 +327,7 @@ export default class ContentCard extends Component {
                                         )}
                                         {completed(1)
                                             ? "Completed"
-                                            : "Mandatery"}
+                                            : "Mandatory"}
                                     </Badge>
                                 }
                             </div>
@@ -291,7 +359,7 @@ export default class ContentCard extends Component {
                                     ) : (
                                         <i className="bi bi-exclamation-circle-fill me-1"></i>
                                     )}
-                                    {completed(1) ? "Completed" : "Mandatery"}
+                                    {completed(1) ? "Completed" : "Mandatory"}
                                 </Badge>
                             }
                         </div>
@@ -307,6 +375,7 @@ export default class ContentCard extends Component {
                         <ConnectedQuestionCard
                             test={test || []}
                             courseProgress={this.props.courseProgress}
+                            isComplete={completed(3)}
                         />
                     )}
                 </div>

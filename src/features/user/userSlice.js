@@ -211,7 +211,14 @@ const userSlice = createSlice({
             })
             .addCase(doUpdateCourseProgress.fulfilled, (state,action) => {
                 state.loading = false;
-                state.courses[2].courseProgress=action.payload;
+    
+                // Find the index of the course with the matching courseId
+                const courseIndex = state.courses.findIndex(course => course.courseId === action.meta.arg.courseId);
+                
+                if (courseIndex !== -1) {
+                    // Update courseProgress for the correct course
+                    state.courses[courseIndex].courseProgress = action.payload;
+                }
                 // console.log(action.payload);
             })
             .addCase(doUpdateCourseProgress.rejected, (state,action) => {
