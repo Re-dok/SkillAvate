@@ -4,9 +4,9 @@ import ReactPlayer from "react-player";
 import { doUpdateCourseProgress } from "../features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
-
+// 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
+// FIXME 4. Add logic to store the course Marks, add logic to allow only 2 submissions
 class QuestionCard extends Component {
-    // TODO works preety much for single content page, need to add messages, after that you'll have to write logic to move to new module/content page
     constructor(props) {
         super(props);
         this.state = {
@@ -17,8 +17,6 @@ class QuestionCard extends Component {
         };
     }
     componentDidMount() {
-        console.log("THIS IS FROM qustion 1\n");
-        console.log(this.props.courseProgress[4]);
         if (!this.props.isComplete)
             this.setState({
                 currentQuestion: this.props.courseProgress[4] + 1,
@@ -32,15 +30,27 @@ class QuestionCard extends Component {
             // the content page is changed, so move to last question and top of the page
             window.scrollTo(0, 0);
             if (this.props.isComplete) {
-                this.setState({ currentQuestion: this.props.test.length });
+                this.setState({
+                    currentQuestion: this.props.test.length,
+                    selectedOptions: null,
+                    answerIsCurrect: true,
+                    alertMessage: null,
+                });
+            } else {
+                this.setState({
+                    currentQuestion: this.props.courseProgress[4] + 1,
+                    selectedOptions: null,
+                    answerIsCurrect: true,
+                    alertMessage: null,
+                });
             }
         }
         if (prevProps.courseProgress[4] !== this.props.courseProgress[4]) {
             // the progress was updated so ,move the question forward
             this.setState({
                 currentQuestion: this.props.courseProgress[4] + 1,
-                answerIsCurrect: true,
                 selectedOptions: null,
+                answerIsCurrect: true,
                 alertMessage: null,
             });
         }
@@ -48,7 +58,8 @@ class QuestionCard extends Component {
     nextQuestion = () => {
         if (
             this.state.currentQuestion < this.props.test.length &&
-            this.state.currentQuestion <= this.props.courseProgress[4]
+            (this.state.currentQuestion <= this.props.courseProgress[4] ||
+                this.props.isComplete)
         ) {
             this.setState({
                 currentQuestion: this.state.currentQuestion + 1,
@@ -71,29 +82,35 @@ class QuestionCard extends Component {
             this.state.selectedOptions + 1
         ) {
             let newProgress = [...this.props.courseProgress];
+            const courseId = this.props.params.courseId;
 
-            // FIXME should add more complex function to increace progress
             if (currentQuestion < this.props.test.length) {
                 // if more questions are there then just ++
                 newProgress[4] += 1;
-                const courseId = this.props.params.courseId;
                 await this.props.doUpdateCourseProgress({
                     newProgress,
                     courseId,
                 });
             } else {
-                // if no more questions, find the next content page
-                newProgress[4] += 1;
+                newProgress = this.props.getNextUnit();
+
+                await this.props.doUpdateCourseProgress({
+                    newProgress,
+                    courseId,
+                });
+                window.scrollTo(0, 0);
             }
             this.setState({
-                alertMessage: "Correct Answer!",
-                answerIsCurrect: true,
+                alertMessage: null,
+                answerIsCurrect: null,
+                selectedOptions: null,
             });
         } else {
             this.setState({
                 alertMessage:
                     "Wrong Answer, you have one more attempt after which you will be moved to the next question!",
                 answerIsCurrect: false,
+                selectedOptions: null,
             });
         }
     };
@@ -103,7 +120,7 @@ class QuestionCard extends Component {
 
         const completedQuestions = this.props.courseProgress[4];
         const { currentQuestion } = this.state;
-        console.log("this is for currrent qestion\n" + currentQuestion);
+
         const { question, options } =
             this.props?.test[
                 currentQuestion - 1 < this.props.test.length
@@ -136,7 +153,8 @@ class QuestionCard extends Component {
                                 "bi bi-chevron-right border-2 border-end p-2 me-3" +
                                 " " +
                                 (currentQuestion < numberOfQuestions &&
-                                currentQuestion <= completedQuestions
+                                (currentQuestion <= completedQuestions ||
+                                    this.props.isComplete)
                                     ? " "
                                     : "bg-grey")
                             }
@@ -158,13 +176,13 @@ class QuestionCard extends Component {
                             className="me-3 text-dark"
                         >
                             {this.props.isComplete ||
-                            completedQuestions === currentQuestion ? (
+                            completedQuestions >= currentQuestion ? (
                                 <i className="bi bi-check-circle-fill me-2"></i>
                             ) : (
                                 <i className="bi bi-exclamation-circle-fill me-1"></i>
                             )}
                             {this.props.isComplete ||
-                            completedQuestions === currentQuestion
+                            completedQuestions >= currentQuestion
                                 ? "Completed"
                                 : "Mandatory"}
                         </Badge>
@@ -178,7 +196,8 @@ class QuestionCard extends Component {
                     <div
                         className={
                             "p-3 pb-0 d-flex border-bottom border-2 " +
-                            (this.state.selectedOptions === optionNumber
+                            (this.state.selectedOptions === optionNumber &&
+                            !this.props.isComplete
                                 ? "bg-secodary-o"
                                 : "")
                         }
@@ -196,7 +215,8 @@ class QuestionCard extends Component {
                         <i
                             className={
                                 "bi me-2 fw-light " +
-                                (this.state.selectedOptions === optionNumber
+                                (this.state.selectedOptions === optionNumber &&
+                                !this.props.isComplete
                                     ? "bi-record-circle"
                                     : "bi-circle")
                             }
@@ -250,11 +270,63 @@ const ConnectedQuestionCard = connect(
     mapDispatchToProps
 )(withRouter(QuestionCard));
 export default class ContentCard extends Component {
-    // TODO add logic to only allow submission when all questions are attempted AND unlock tests only after the video is watched
+    constructor(props) {
+        super(props);
+        this.getNextUnit = this.getNextUnit.bind(this); // Bind the method here
+    }
     openReadingAssignment = (docLink) => {
         window.open(docLink, "_blank");
     };
-    // FIXME change the badge logic for complition etc
+    getNextUnit() {
+        const modules = this.props.modules;
+        const courseProgress = this.props.courseProgress;
+        let i = courseProgress[0];
+        // heading number
+        let j = courseProgress[1];
+        // sybHeading number
+        let k = courseProgress[2];
+        let done = false;
+
+        if (k !== -1) {
+            if (k < modules[i].headings[j].subheadings.length - 1) {
+                k++;
+                done = true;
+            } else k = -1;
+        }
+        if (!done && j !== -1) {
+            if (j < modules[i].headings.length - 1) {
+                j++;
+                !(modules[i].headings[j]?.content === undefined)
+                    ? (k = -1)
+                    : (k = 0);
+                done = true;
+            } else j = -1;
+        }
+        if (!done && i !== -1) {
+            if (i < modules.length - 1) {
+                i++;
+                if (modules[i].content) {
+                    j = -1;
+                    k = -1;
+                } else {
+                    j = 0;
+                    modules[i].headings[0]?.content ? (k = -1) : (k = 0);
+                    done = true;
+                }
+            } else {
+                // else course is completed
+                i = courseProgress[0];
+                // heading number
+                j = courseProgress[1];
+                // sybHeading number
+                k = courseProgress[2];
+                return [i, j, k, 1, 0, false];
+                // FIXME figure out how to handle this completed course case
+            }
+        }
+        return [i, j, k, 0, 0, false];
+    }
+
     render() {
         if (this.props.modules === undefined || this.props.openUnit === null)
             return <>loading</>;
@@ -267,8 +339,6 @@ export default class ContentCard extends Component {
             const j = this.props.openUnit[1];
             // sybHeading number
             const k = this.props.openUnit[2];
-            // how many of the assmts in the content are done
-            const l = this.props.openUnit[3];
             const { content, heading } = (() => {
                 let content, heading;
                 if (modules[i].content) {
@@ -289,16 +359,18 @@ export default class ContentCard extends Component {
             const videoLink = content.videoLink;
             const test = content.test;
             const completed = (badgeType) => {
+                // console.log(this.props.openUnit, this.props.courseProgress);
                 if (i < courseProgress[0]) {
                     return true;
                 } else if (i === courseProgress[0]) {
                     if (j < courseProgress[1]) {
                         return true;
                     } else {
-                        if (j < courseProgress[2]) {
+                        if (k < courseProgress[2]) {
                             return true;
                         }
-                        return badgeType <= courseProgress[3];
+                        // return badgeType <= courseProgress[3];
+                        return false;
                     }
                 }
                 return false;
@@ -312,7 +384,7 @@ export default class ContentCard extends Component {
                             <div className="p-4">
                                 <i className="bi bi-camera-reels me-2"></i>
                                 Lecture Assignment
-                                {
+                                {/* {
                                     <Badge
                                         color={
                                             completed(1) ? "info" : "warning"
@@ -329,7 +401,7 @@ export default class ContentCard extends Component {
                                             ? "Completed"
                                             : "Mandatory"}
                                     </Badge>
-                                }
+                                } */}
                             </div>
                             <ReactPlayer
                                 url={videoLink || ""}
@@ -349,18 +421,18 @@ export default class ContentCard extends Component {
                             <i className="bi bi-journal-bookmark me-2"></i>
                             Reading Assignment
                             {
-                                <Badge
-                                    color={completed(1) ? "info" : "warning"}
-                                    pill
-                                    className="position-absolute end-0 text-dark me-4"
-                                >
-                                    {completed(1) ? (
-                                        <i className="bi bi-check-circle-fill me-2"></i>
-                                    ) : (
-                                        <i className="bi bi-exclamation-circle-fill me-1"></i>
-                                    )}
-                                    {completed(1) ? "Completed" : "Mandatory"}
-                                </Badge>
+                                // <Badge
+                                //     color={completed(1) ? "info" : "warning"}
+                                //     pill
+                                //     className="position-absolute end-0 text-dark me-4"
+                                // >
+                                //     {completed(1) ? (
+                                //         <i className="bi bi-check-circle-fill me-2"></i>
+                                //     ) : (
+                                //         <i className="bi bi-exclamation-circle-fill me-1"></i>
+                                //     )}
+                                //     {completed(1) ? "Completed" : "Mandatory"}
+                                // </Badge>
                             }
                         </div>
                     </div>
@@ -376,6 +448,7 @@ export default class ContentCard extends Component {
                             test={test || []}
                             courseProgress={this.props.courseProgress}
                             isComplete={completed(3)}
+                            getNextUnit={this.getNextUnit}
                         />
                     )}
                 </div>

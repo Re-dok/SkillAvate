@@ -29,7 +29,6 @@ class SideBar extends Component {
             openHeading: headingNumber,
             currentSubheading: subHeadingNumber,
         });
-        // console.log(this.props.openUnit);
     }
     componentDidUpdate(prevProps) {
         if (prevProps.openUnit !== this.props.openUnit) {
@@ -387,8 +386,6 @@ class ViewCourse2 extends Component {
             await doGetCourseDetails(courseId);
         }
 
-        console.log("THIS IS FROM VIEW 1\n");
-        console.log(courseProgress, courseId);
         this.setState({
             openUnit: courseProgress,
             courseProgress: courseProgress,
@@ -396,7 +393,7 @@ class ViewCourse2 extends Component {
     }
     async componentDidUpdate(prevProps, prevState) {
         const { courseId } = this.props.params;
-        let {   userCourses } = this.props;
+        let { userCourses } = this.props;
         const prevCourseProgress = prevProps.userCourses.filter(
             (course) => course.courseId === courseId
         )[0].courseProgress;
@@ -404,12 +401,17 @@ class ViewCourse2 extends Component {
             (course) => course.courseId === courseId
         )[0].courseProgress;
         if (prevCourseProgress !== courseProgress) {
-            console.log("THIS IS FROM VIEW 2 on update\n");
-            console.log(courseProgress, courseId);
-            this.setState({
-                openUnit: courseProgress,
-                courseProgress: courseProgress,
-            });
+            if (courseProgress[3]) {
+                this.setState({
+                    openUnit: courseProgress,
+                    courseProgress: courseProgress,
+                });
+            } else {
+                this.setState({
+                    openUnit: courseProgress,
+                    courseProgress: courseProgress,
+                });
+            }
         }
     }
     render() {
