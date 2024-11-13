@@ -26,7 +26,7 @@ class QuestionCard extends Component {
         }
     }
     componentDidUpdate(prevProps) {
-        if (prevProps?.test[0].question != this.props?.test[0].question) {
+        if (prevProps?.test[0].question !== this.props?.test[0].question) {
             // the content page is changed, so move to last question and top of the page
             window.scrollTo(0, 0);
             if (this.props.isComplete) {
@@ -81,22 +81,27 @@ class QuestionCard extends Component {
             test[currentQuestion - 1].answer ===
             this.state.selectedOptions + 1
         ) {
-            let newProgress = [...this.props.courseProgress];
+            let prevProgress = [...this.props.courseProgress];
+            let newProgress = [...prevProgress];
             const courseId = this.props.params.courseId;
 
             if (currentQuestion < this.props.test.length) {
                 // if more questions are there then just ++
                 newProgress[4] += 1;
+                // is of the form "1010101"
+                prevProgress[3] = "1";
                 await this.props.doUpdateCourseProgress({
                     newProgress,
                     courseId,
+                    prevProgress,
                 });
             } else {
                 newProgress = this.props.getNextUnit();
-
+                prevProgress[3] = "1";
                 await this.props.doUpdateCourseProgress({
                     newProgress,
                     courseId,
+                    prevProgress,
                 });
                 window.scrollTo(0, 0);
             }
@@ -359,7 +364,6 @@ export default class ContentCard extends Component {
             const videoLink = content.videoLink;
             const test = content.test;
             const completed = (badgeType) => {
-                // console.log(this.props.openUnit, this.props.courseProgress);
                 if (i < courseProgress[0]) {
                     return true;
                 } else if (i === courseProgress[0]) {

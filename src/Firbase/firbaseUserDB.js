@@ -13,14 +13,13 @@ const usersRef = collection(db, "users");
 const addUserToDB = async ({ email, isTrainer }) => {
     await addDoc(usersRef, { email, isTrainer });
 };
-async function updateProgress(email, courseId, newProgress) {
+async function updateProgress(email, courseId, newProgress, prevProgress) {
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userRef = userDoc.ref;
         const userData = userDoc.data();
-
 
         let updatedCourses = userData.courses.map((course) => {
             if (course.courseId === courseId) {
@@ -29,16 +28,43 @@ async function updateProgress(email, courseId, newProgress) {
                 return course;
             }
         });
-
-
+        let updatedCourseGrades = userData.Grades.map((course) => {
+            if (course.courseId === courseId) {
+                const newUnit = [
+                    prevProgress[0],
+                    prevProgress[1],
+                    prevProgress[2],
+                ].toString();
+                let unitExsists = false;
+                course.courseGrades = course.courseGrades.map((grade) => {
+                    if (grade.unit === newUnit) {
+                        unitExsists = true;
+                        let newGrade = grade.unitGrade + "," + prevProgress[3];
+                        return { ...grade, unitGrade: newGrade };
+                    } else return grade;
+                });
+                if (!unitExsists) {
+                    course.courseGrades.push({
+                        unit: newUnit,
+                        unitGrade: prevProgress[3],
+                    });
+                }
+                return course;
+            } else {
+                return course;
+            }
+        });
         try {
             // Attempt to update Firestore with modified data
-            await updateDoc(userRef, { courses: updatedCourses });
+            await updateDoc(userRef, {
+                courses: updatedCourses,
+                Grades: updatedCourseGrades,
+            });
         } catch (error) {
             throw new Error(error.message);
         }
     } else {
-        throw new Error("User not found");
+        throw new Error("Problem updating course progress");
     }
 }
 

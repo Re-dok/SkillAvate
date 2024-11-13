@@ -400,18 +400,11 @@ class ViewCourse2 extends Component {
         const courseProgress = userCourses.filter(
             (course) => course.courseId === courseId
         )[0].courseProgress;
-        if (prevCourseProgress !== courseProgress) {
-            if (courseProgress[3]) {
+        if (prevCourseProgress !== courseProgress) { 
                 this.setState({
                     openUnit: courseProgress,
                     courseProgress: courseProgress,
                 });
-            } else {
-                this.setState({
-                    openUnit: courseProgress,
-                    courseProgress: courseProgress,
-                });
-            }
         }
     }
     render() {
