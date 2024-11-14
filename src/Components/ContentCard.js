@@ -4,8 +4,13 @@ import ReactPlayer from "react-player";
 import { doUpdateCourseProgress } from "../features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
+// import bcrypt from "bcrypt"
 // 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
 // FIXME 4. Add logic to store the course Marks, add logic to allow only 2 submissions
+// 5. add encrptions
+// 6. change my courses to accom completed and incomplete
+// 6.add modal
+// 7. change colors for nav
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
@@ -47,12 +52,21 @@ class QuestionCard extends Component {
         }
         if (prevProps.courseProgress[4] !== this.props.courseProgress[4]) {
             // the progress was updated so ,move the question forward
-            this.setState({
-                currentQuestion: this.props.courseProgress[4] + 1,
-                selectedOptions: null,
-                answerIsCurrect: true,
-                alertMessage: null,
-            });
+            if (this.props.isComplete) {
+                this.setState({
+                    currentQuestion: this.props.test.length,
+                    selectedOptions: null,
+                    answerIsCurrect: true,
+                    alertMessage: null,
+                });
+            } else {
+                this.setState({
+                    currentQuestion: this.props.courseProgress[4] + 1,
+                    selectedOptions: null,
+                    answerIsCurrect: true,
+                    alertMessage: null,
+                });
+            }
         }
     }
     nextQuestion = () => {
@@ -77,6 +91,9 @@ class QuestionCard extends Component {
     handleSubmit = async () => {
         const { test } = this.props;
         const { currentQuestion } = this.state;
+        // const ans=await bcrypt.hash(test.options[this.state.selectedOptions]);
+        // const isCorrect=await bcrypt.compare(ans,test[currentQuestion-1].answer);
+        // console.log(isCorrect);
         if (
             test[currentQuestion - 1].answer ===
             this.state.selectedOptions + 1
@@ -277,7 +294,7 @@ const ConnectedQuestionCard = connect(
 export default class ContentCard extends Component {
     constructor(props) {
         super(props);
-        this.getNextUnit = this.getNextUnit.bind(this); // Bind the method here
+        this.getNextUnit = this.getNextUnit.bind(this);
     }
     openReadingAssignment = (docLink) => {
         window.open(docLink, "_blank");
@@ -325,7 +342,7 @@ export default class ContentCard extends Component {
                 j = courseProgress[1];
                 // sybHeading number
                 k = courseProgress[2];
-                return [i, j, k, 1, 0, false];
+                return [i, j, k, 0, courseProgress[4] + 1, false];
                 // FIXME figure out how to handle this completed course case
             }
         }
@@ -363,7 +380,7 @@ export default class ContentCard extends Component {
             const docLink = content.docLink;
             const videoLink = content.videoLink;
             const test = content.test;
-            const completed = (badgeType) => {
+            const completed = (numberOfQuestions) => {
                 if (i < courseProgress[0]) {
                     return true;
                 } else if (i === courseProgress[0]) {
@@ -372,13 +389,16 @@ export default class ContentCard extends Component {
                     } else {
                         if (k < courseProgress[2]) {
                             return true;
+                        } else {
+                            if (courseProgress[4] === numberOfQuestions)
+                                return true;
+                            return false;
                         }
-                        // return badgeType <= courseProgress[3];
-                        return false;
                     }
                 }
                 return false;
             };
+             
             return (
                 <div className="mx-lg-5 px-lg-4">
                     {heading && <div className="fw-bold mb-3">{heading}</div>}
@@ -388,24 +408,6 @@ export default class ContentCard extends Component {
                             <div className="p-4">
                                 <i className="bi bi-camera-reels me-2"></i>
                                 Lecture Assignment
-                                {/* {
-                                    <Badge
-                                        color={
-                                            completed(1) ? "info" : "warning"
-                                        }
-                                        pill
-                                        className="position-absolute end-0 text-dark me-md-4 me-2"
-                                    >
-                                        {completed(1) ? (
-                                            <i className="bi bi-check-circle-fill me-2"></i>
-                                        ) : (
-                                            <i className="bi bi-exclamation-circle-fill me-1"></i>
-                                        )}
-                                        {completed(1)
-                                            ? "Completed"
-                                            : "Mandatory"}
-                                    </Badge>
-                                } */}
                             </div>
                             <ReactPlayer
                                 url={videoLink || ""}
@@ -424,20 +426,6 @@ export default class ContentCard extends Component {
                         >
                             <i className="bi bi-journal-bookmark me-2"></i>
                             Reading Assignment
-                            {
-                                // <Badge
-                                //     color={completed(1) ? "info" : "warning"}
-                                //     pill
-                                //     className="position-absolute end-0 text-dark me-4"
-                                // >
-                                //     {completed(1) ? (
-                                //         <i className="bi bi-check-circle-fill me-2"></i>
-                                //     ) : (
-                                //         <i className="bi bi-exclamation-circle-fill me-1"></i>
-                                //     )}
-                                //     {completed(1) ? "Completed" : "Mandatory"}
-                                // </Badge>
-                            }
                         </div>
                     </div>
                     {/* )} */}
@@ -451,7 +439,7 @@ export default class ContentCard extends Component {
                         <ConnectedQuestionCard
                             test={test || []}
                             courseProgress={this.props.courseProgress}
-                            isComplete={completed(3)}
+                            isComplete={completed(test?.length || 0)}
                             getNextUnit={this.getNextUnit}
                         />
                     )}
