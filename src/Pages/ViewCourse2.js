@@ -480,6 +480,8 @@ class ViewCourse2 extends Component {
                             modules={this.props.courseData[0]?.modules}
                             openUnit={this.state.openUnit || null}
                             courseProgress={this.state.courseProgress}
+                            courseName={this.props.courseData[0]?.courseName}
+                            createrName={this.props.courseData[0]?.createrName}
                         />
                     </div>
                 </div>

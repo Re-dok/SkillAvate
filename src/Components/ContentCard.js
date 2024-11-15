@@ -1,4 +1,4 @@
-import { Badge, Button, Alert } from "reactstrap";
+import { Badge, Button, Alert, Modal, ModalBody } from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import {
@@ -10,10 +10,11 @@ import withRouter from "./WithRouter";
 // import bcrypt from "bcrypt"
 // 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
 // 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
-// TODO 5. add encrptions
 // 6. change my courses to accom completed and incomplete
 // 6.add modal
-// 7. change colors for nav
+// TODO 7.0.add encrptions
+// 7.1 change colors for nav
+
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
@@ -127,6 +128,7 @@ class QuestionCard extends Component {
                 // this will only happen if the course is complete,since the unit is complete but the number of questions completed = total questions
                 if (newProgress[4] === this.props.test.length) {
                     await this.props.doMarkCourseAsComplete(courseId);
+                    this.props.triggerModal();
                 }
                 window.scrollTo(0, 0);
             }
@@ -176,6 +178,7 @@ class QuestionCard extends Component {
                     // this will only happen if the course is complete,since the unit is complete but the number of questions completed = total questions
                     if (newProgress[4] === this.props.test.length) {
                         await this.props.doMarkCourseAsComplete(courseId);
+                        this.props.triggerModal();
                     }
                     window.scrollTo(0, 0);
                 }
@@ -343,10 +346,13 @@ const ConnectedQuestionCard = connect(
     null,
     mapDispatchToProps
 )(withRouter(QuestionCard));
-export default class ContentCard extends Component {
+class ContentCard extends Component {
     constructor(props) {
         super(props);
         this.getNextUnit = this.getNextUnit.bind(this);
+        this.state = {
+            showModal: false,
+        };
     }
     openReadingAssignment = (docLink) => {
         window.open(docLink, "_blank");
@@ -399,7 +405,9 @@ export default class ContentCard extends Component {
         }
         return [i, j, k, 0, 0, false];
     }
-
+    triggerModal() {
+        this.setState({ showModal: true });
+    }
     render() {
         if (this.props.modules === undefined || this.props.openUnit === null)
             return <>loading</>;
@@ -492,10 +500,37 @@ export default class ContentCard extends Component {
                             courseProgress={this.props.courseProgress}
                             isComplete={completed(test?.length || 0)}
                             getNextUnit={this.getNextUnit}
+                            triggerModal={() =>
+                                this.setState({ showModal: true })
+                            }
                         />
                     )}
+                    <Modal isOpen={this.state.showModal}>
+                        <ModalBody className="pb-5 p-4 p-4 row gap-3">
+                            <div className="fw-bold fs-5">Congratulations!</div>
+                            <div className="col-12">
+                                You have successfully completed the course "
+                                <strong>{this.props.courseName}</strong>,"
+                                created by{" "}
+                                <span className="fst-italic fw-bold">
+                                    {this.props.createrName} !
+                                </span>
+                            </div>
+                            <Button
+                                //  className="rounded-3 p-3 mb-3 fw-bold"
+                                //     size="sm"
+                                className="mx-auto col-6 mt-4 rounded-3 p-3 fw-bold"
+                                // color="primary"
+                                size="sm"
+                                onClick={() => this.props.navigate("/explore")}
+                            >
+                                Explore Courses
+                            </Button>{" "}
+                        </ModalBody>
+                    </Modal>
                 </div>
             );
         }
     }
 }
+export default withRouter(ContentCard);
