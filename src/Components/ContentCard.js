@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import withRouter from "./WithRouter";
 // import bcrypt from "bcrypt"
 // 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
-// FIXME 4. Add logic to store the course Marks, add logic to allow only 2 submissions
+// FIXME 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
 // 5. add encrptions
 // 6. change my courses to accom completed and incomplete
 // 6.add modal
@@ -94,17 +94,18 @@ class QuestionCard extends Component {
         // const ans=await bcrypt.hash(test.options[this.state.selectedOptions]);
         // const isCorrect=await bcrypt.compare(ans,test[currentQuestion-1].answer);
         // console.log(isCorrect);
+        let prevProgress = [...this.props.courseProgress];
+        // gives unit coordinates and grade
+        let newProgress = [...prevProgress];
+        const courseId = this.props.params.courseId;
         if (
             test[currentQuestion - 1].answer ===
             this.state.selectedOptions + 1
         ) {
-            let prevProgress = [...this.props.courseProgress];
-            let newProgress = [...prevProgress];
-            const courseId = this.props.params.courseId;
-
             if (currentQuestion < this.props.test.length) {
                 // if more questions are there then just ++
                 newProgress[4] += 1;
+                newProgress[5] = false;
                 // is of the form "1010101"
                 prevProgress[3] = "1";
                 await this.props.doUpdateCourseProgress({
@@ -128,12 +129,51 @@ class QuestionCard extends Component {
                 selectedOptions: null,
             });
         } else {
-            this.setState({
-                alertMessage:
-                    "Wrong Answer, you have one more attempt after which you will be moved to the next question!",
-                answerIsCurrect: false,
-                selectedOptions: null,
-            });
+            // if first time mark as first and put alert
+            const isFirstAttempt = !prevProgress[5];
+            if (isFirstAttempt) {
+                newProgress[5] = true;
+                prevProgress = [];
+                await this.props.doUpdateCourseProgress({
+                    newProgress,
+                    courseId,
+                    prevProgress,
+                });
+                this.setState({
+                    alertMessage:
+                        "Wrong Answer, you have one more attempt after which you will be moved to the next question!",
+                    answerIsCurrect: false,
+                    selectedOptions: null,
+                });
+            } else {
+                // else mark as wrong and move on
+                if (currentQuestion < this.props.test.length) {
+                    // if more questions are there then just ++
+                    newProgress[5] = false;
+                    newProgress[4] += 1;
+                    // is of the form "1010101"
+                    prevProgress[3] = "0";
+                    await this.props.doUpdateCourseProgress({
+                        newProgress,
+                        courseId,
+                        prevProgress,
+                    });
+                } else {
+                    newProgress = this.props.getNextUnit();
+                    prevProgress[3] = "0";
+                    await this.props.doUpdateCourseProgress({
+                        newProgress,
+                        courseId,
+                        prevProgress,
+                    });
+                    window.scrollTo(0, 0);
+                }
+                this.setState({
+                    alertMessage: null,
+                    answerIsCurrect: null,
+                    selectedOptions: null,
+                });
+            }
         }
     };
 
@@ -398,7 +438,7 @@ export default class ContentCard extends Component {
                 }
                 return false;
             };
-             
+
             return (
                 <div className="mx-lg-5 px-lg-4">
                     {heading && <div className="fw-bold mb-3">{heading}</div>}

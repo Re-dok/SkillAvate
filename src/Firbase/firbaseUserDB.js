@@ -36,14 +36,22 @@ async function updateProgress(email, courseId, newProgress, prevProgress) {
                     prevProgress[2],
                 ].toString();
                 let unitExsists = false;
+                //TODO both wrong working, check other cases
+                // TODO check if wrong ans on course complete
                 course.courseGrades = course.courseGrades.map((grade) => {
                     if (grade.unit === newUnit) {
                         unitExsists = true;
-                        let newGrade = grade.unitGrade + "," + prevProgress[3];
+                        // only alter grade if the anser was correct or wrong on the last attemp,i.e,prevProgress!=0
+                        let newGrade = grade.unitGrade;
+                        if (prevProgress.length) {
+                            newGrade += "," + prevProgress[3].toString();
+                        }
+
                         return { ...grade, unitGrade: newGrade };
                     } else return grade;
                 });
-                if (!unitExsists) {
+                // only add grade if the anser was correct or wrong on the last attemp,i.e,prevProgress!=0
+                if (!unitExsists && prevProgress.length) {
                     course.courseGrades.push({
                         unit: newUnit,
                         unitGrade: prevProgress[3],
