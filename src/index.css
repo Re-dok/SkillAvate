@@ -17,13 +17,37 @@ body {
       --darkBg: #f4f5f4;
 }
 
-.sticky-top {
+.border-primary-color {
+      border-color: var(--primary) !important;
+}
+
+.sticky-top-toolbar {
       position: sticky;
       top: 0;
       z-index: 1050;
       /* Ensure it’s higher than other components */
       background-color: white;
       /* Optional: Add a solid background color */
+}
+
+.bg-done {
+      /* background-image:  linear-gradient(to bottom right,#FFF1DB,#7cd179); */
+      background-color: #0F9D58;
+      color: white;
+      /* opacity: 50%; */
+      /* color: green; */
+      /* color: white; */
+}
+
+/* .bg-done i{
+      color: #54473F;
+} */
+.bg-not-open {
+      /* background-image: linear-gradient(to bottom,white,gray); */
+      background-color: #B7B7B7;
+      color: white;
+      opacity: 70%;
+
 }
 
 .bg-primary-o {

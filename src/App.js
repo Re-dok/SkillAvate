@@ -18,9 +18,8 @@ import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
 import NotFound from "./Pages/NotFound";
 import MyCourses from "./Pages/MyCourses";
-// import ViewCourse from "./Pages/ViewCourse";
-import ViewCourse from "./Pages/ViewCourse";
 import ExplorePage from "./Pages/ExplorePage";
+import ViewCourse from "./Pages/ViewCourse";
 // FIXME make urls from base like the one sir did
 class App extends Component {
     constructor(props) {
@@ -59,6 +58,7 @@ class App extends Component {
                             </AdminRoute>
                         }
                     />
+                    {/* TODO remove me before you merge this branch */}
                     <Route
                         path="/myCourses"
                         exact
@@ -82,7 +82,7 @@ class App extends Component {
                         exact
                         element={
                             <ClientRoute>
-                                <ExplorePage/>
+                                <ExplorePage />
                             </ClientRoute>
                         }
                     />

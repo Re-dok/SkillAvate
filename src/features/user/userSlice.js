@@ -5,7 +5,11 @@ import {
     doSignUpUser,
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
-import { getUserData } from "../../Firbase/firbaseUserDB";
+import {
+    getUserData,
+    markCourseAsComplete,
+    updateProgress,
+} from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
     error: "",
@@ -21,7 +25,7 @@ const initialState = {
     isPersistent: false,
 
     courses: null,
-
+    courseGrades: null,
     isLoggedIn: false,
     initialURL: null,
 };
@@ -44,7 +48,35 @@ const doSignUp = createAsyncThunk(
         }
     }
 );
-
+const doUpdateCourseProgress = createAsyncThunk(
+    "user/updateProgressAndGrades",
+    async ({ newProgress, courseId, prevProgress }, { getState }) => {
+        try {
+            const state = getState();
+            const { email } = state.user.userCredentials;
+            // console.log("Hi");//
+            await updateProgress(email, courseId, newProgress, prevProgress);
+            // console.log("Hi2");
+            return newProgress;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
+const doMarkCourseAsComplete = createAsyncThunk(
+    "user/markCourseAsComplete",
+    async (courseId, { getState }) => {
+        try {
+            const state = getState();
+            const { email } = state.user.userCredentials;
+            console.log(courseId);
+            const resp = await markCourseAsComplete(email, courseId);
+            return resp;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const doSignOut = createAsyncThunk("user/signOutUser", async () => {
     try {
         await doSignoutUser();
@@ -191,6 +223,38 @@ const userSlice = createSlice({
             .addCase(doSignOut.rejected, (state, action) => {
                 state.error = action.error.message;
                 state.loading = false;
+            })
+            .addCase(doUpdateCourseProgress.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doUpdateCourseProgress.fulfilled, (state, action) => {
+                state.loading = false;
+
+                // Find the index of the course with the matching courseId
+                const courseIndex = state.courses.findIndex(
+                    (course) => course.courseId === action.meta.arg.courseId
+                );
+
+                if (courseIndex !== -1) {
+                    // Update courseProgress for the correct course
+                    state.courses[courseIndex].courseProgress = action.payload;
+                }
+                // console.log(action.payload);
+            })
+            .addCase(doUpdateCourseProgress.rejected, (state, action) => {
+                state.error = action.error.message;
+                state.loading = false;
+            })
+            .addCase(doMarkCourseAsComplete.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doMarkCourseAsComplete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doMarkCourseAsComplete.fulfilled, (state, action) => {
+                state.loading = false;
+                state.courses = action.payload;
             });
     },
 });
@@ -203,4 +267,12 @@ export const {
     setInitialURL,
     resetMessages,
 } = userSlice.actions;
-export { doSignUp, doSignIn, doPasswordReset, doGetUserData, doSignOut };
+export {
+    doSignUp,
+    doSignIn,
+    doPasswordReset,
+    doGetUserData,
+    doSignOut,
+    doUpdateCourseProgress,
+    doMarkCourseAsComplete,
+};
