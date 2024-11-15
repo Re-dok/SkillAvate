@@ -7,13 +7,13 @@ import {
 } from "../features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
-// import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs";
 // 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
 // 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
 // 6. change my courses to accom completed and incomplete
 // 6.add modal
-// TODO 7.0.add encrptions
 // 7.1 change colors for nav
+// TODO 7.0.add encrptions
 
 class QuestionCard extends Component {
     constructor(props) {
@@ -95,17 +95,17 @@ class QuestionCard extends Component {
     handleSubmit = async () => {
         const { test } = this.props;
         const { currentQuestion } = this.state;
-        // const ans=await bcrypt.hash(test.options[this.state.selectedOptions]);
-        // const isCorrect=await bcrypt.compare(ans,test[currentQuestion-1].answer);
-        // console.log(isCorrect);
+        console.log(test);
+        const hashedAns = test[currentQuestion - 1].answer;
+        const isCorrect = await bcrypt.compare(
+            test[currentQuestion - 1].options[this.state.selectedOptions],
+            hashedAns
+        );
         let prevProgress = [...this.props.courseProgress];
         // gives unit coordinates and grade
         let newProgress = [...prevProgress];
         const courseId = this.props.params.courseId;
-        if (
-            test[currentQuestion - 1].answer ===
-            this.state.selectedOptions + 1
-        ) {
+        if (isCorrect) {
             if (currentQuestion < this.props.test.length) {
                 // if more questions are there then just ++
                 newProgress[4] += 1;
