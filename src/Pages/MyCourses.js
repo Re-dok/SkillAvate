@@ -26,7 +26,6 @@ class CourseCard extends Component {
             test: true,
         };
     }
-    // FIXME getCourseDetails is being called twice per course, maybe cause of strict mode??
     async componentDidMount() {
         const currentCourseId = this.props.courseId;
         let courseData = this.props.coursesData.filter(
@@ -35,12 +34,14 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        // FIXME check if this always works? I thinks its better to use filter again here
         courseData = this.props.coursesData[this.props.coursesData.length - 1];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
             let courseProgressPersent = 100 * this.props.courseProgress[0];
             if (modules.length) courseProgressPersent /= modules.length;
+            if (this.props.isComplete) {
+                courseProgressPersent = 100;
+            }
             this.setState({
                 courseName: courseName,
                 modules: modules,
@@ -74,7 +75,9 @@ class CourseCard extends Component {
                                 }}
                             >
                                 <i className="bi bi-play-circle-fill me-1"></i>{" "}
-                                Continue Learning
+                                {this.props.isComplete
+                                    ? "View Course"
+                                    : "Continue Learning"}
                             </Button>
                             <div className="my-3 mt-4 fw-light">
                                 {this.state.progress}% complete
@@ -307,8 +310,8 @@ class MyCourses extends Component {
             alert(err.message);
         }
     };
-    componentDidMount(props){
-        window.scrollTo(0,0);
+    componentDidMount() {
+        window.scrollTo(0, 0);
     }
     render() {
         return (
@@ -319,6 +322,7 @@ class MyCourses extends Component {
                             key={courseNumber}
                             courseId={course.courseId}
                             courseProgress={course.courseProgress}
+                            isComplete={course.isComplete}
                         />
                     ))}
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}

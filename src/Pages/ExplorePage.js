@@ -26,7 +26,7 @@ class CourseCard extends Component {
             test: true,
         };
     }
-    // FIXME getCourseDetails is being called twice per course, maybe cause of strict mode??
+     
     async componentDidMount() {
          
 
@@ -37,7 +37,7 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        // FIXME check if this always works? I thinks its better to use filter again here
+        // 
         courseData = this.props.coursesData[this.props.coursesData.length - 1];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
@@ -303,7 +303,7 @@ class ExplorePage extends Component {
     componentDidMount(props){
         window.scrollTo(0,0);
     }
-    
+    // FIXME make it such that only non enrolled courses show up
     render() {
         return (
             <div className="d-flex row mw-100 justify-content-center">

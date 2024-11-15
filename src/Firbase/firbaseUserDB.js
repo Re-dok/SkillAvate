@@ -75,7 +75,34 @@ async function updateProgress(email, courseId, newProgress, prevProgress) {
         throw new Error("Problem updating course progress");
     }
 }
-
+async function markCourseAsComplete(email, courseId) {
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userRef = userDoc.ref;
+        const userData = userDoc.data();
+        let updatedCourses = userData.courses.map((course) => {
+            if (course.courseId === courseId) {
+                console.log({ ...course, isComplete: true });
+                return { ...course, isComplete: true };
+            } else {
+                console.log("hi");
+                return course;
+            }
+        });
+        try {
+            await updateDoc(userRef, {
+                courses: updatedCourses,
+            });
+            return updatedCourses;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    } else {
+        throw new Error("Problem marking course as complete!");
+    }
+}
 async function getUserData(email) {
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -94,4 +121,4 @@ async function getUserData(email) {
     }
 }
 
-export { getUserData, addUserToDB, updateProgress };
+export { getUserData, addUserToDB, updateProgress, markCourseAsComplete };

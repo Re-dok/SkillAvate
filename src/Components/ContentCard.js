@@ -1,13 +1,16 @@
 import { Badge, Button, Alert } from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
-import { doUpdateCourseProgress } from "../features/user/userSlice";
+import {
+    doMarkCourseAsComplete,
+    doUpdateCourseProgress,
+} from "../features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
 // import bcrypt from "bcrypt"
 // 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
-// FIXME 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
-// 5. add encrptions
+// 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
+// TODO 5. add encrptions
 // 6. change my courses to accom completed and incomplete
 // 6.add modal
 // 7. change colors for nav
@@ -121,6 +124,10 @@ class QuestionCard extends Component {
                     courseId,
                     prevProgress,
                 });
+                // this will only happen if the course is complete,since the unit is complete but the number of questions completed = total questions
+                if (newProgress[4] === this.props.test.length) {
+                    await this.props.doMarkCourseAsComplete(courseId);
+                }
                 window.scrollTo(0, 0);
             }
             this.setState({
@@ -151,7 +158,7 @@ class QuestionCard extends Component {
                     // if more questions are there then just ++
                     newProgress[5] = false;
                     newProgress[4] += 1;
-                    // is of the form "1010101"
+                    // is of the form "1,0,1,0,1,0,1"
                     prevProgress[3] = "0";
                     await this.props.doUpdateCourseProgress({
                         newProgress,
@@ -166,6 +173,10 @@ class QuestionCard extends Component {
                         courseId,
                         prevProgress,
                     });
+                    // this will only happen if the course is complete,since the unit is complete but the number of questions completed = total questions
+                    if (newProgress[4] === this.props.test.length) {
+                        await this.props.doMarkCourseAsComplete(courseId);
+                    }
                     window.scrollTo(0, 0);
                 }
                 this.setState({
@@ -326,6 +337,7 @@ class QuestionCard extends Component {
 }
 const mapDispatchToProps = {
     doUpdateCourseProgress,
+    doMarkCourseAsComplete,
 };
 const ConnectedQuestionCard = connect(
     null,
@@ -383,7 +395,6 @@ export default class ContentCard extends Component {
                 // sybHeading number
                 k = courseProgress[2];
                 return [i, j, k, 0, courseProgress[4] + 1, false];
-                // FIXME figure out how to handle this completed course case
             }
         }
         return [i, j, k, 0, 0, false];

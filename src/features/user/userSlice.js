@@ -5,7 +5,11 @@ import {
     doSignUpUser,
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
-import { getUserData, updateProgress } from "../../Firbase/firbaseUserDB";
+import {
+    getUserData,
+    markCourseAsComplete,
+    updateProgress,
+} from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
     error: "",
@@ -54,6 +58,20 @@ const doUpdateCourseProgress = createAsyncThunk(
             await updateProgress(email, courseId, newProgress, prevProgress);
             // console.log("Hi2");
             return newProgress;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
+const doMarkCourseAsComplete = createAsyncThunk(
+    "user/markCourseAsComplete",
+    async (courseId, { getState }) => {
+        try {
+            const state = getState();
+            const { email } = state.user.userCredentials;
+            console.log(courseId);
+            const resp = await markCourseAsComplete(email, courseId);
+            return resp;
         } catch (error) {
             throw new Error(error.message);
         }
@@ -226,6 +244,17 @@ const userSlice = createSlice({
             .addCase(doUpdateCourseProgress.rejected, (state, action) => {
                 state.error = action.error.message;
                 state.loading = false;
+            })
+            .addCase(doMarkCourseAsComplete.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doMarkCourseAsComplete.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doMarkCourseAsComplete.fulfilled, (state, action) => {
+                state.loading = false;
+                state.courses = action.payload;
             });
     },
 });
@@ -245,4 +274,5 @@ export {
     doGetUserData,
     doSignOut,
     doUpdateCourseProgress,
+    doMarkCourseAsComplete,
 };
