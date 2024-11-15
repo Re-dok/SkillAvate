@@ -4,7 +4,7 @@ import {
     doGetCourseDetails,
 } from "../features/course/courseSlice";
 import { connect } from "react-redux";
-import { Button, CloseButton, Collapse, Progress } from "reactstrap";
+import { Button, CloseButton, Collapse, Progress, Nav } from "reactstrap";
 import { addCourse } from "../Firbase/firebaseCourseDB";
 import withRouter from "../Components/WithRouter";
 
@@ -34,7 +34,10 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        courseData = this.props.coursesData[this.props.coursesData.length - 1];
+        // courseData = this.props.coursesData[this.props.coursesData.length - 1];
+        courseData = this.props.coursesData.filter(
+            (course) => course.courseId === currentCourseId
+        )[0];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
             let courseProgressPersent = 100 * this.props.courseProgress[0];
@@ -301,6 +304,12 @@ const mapStateToPropsForMyCourses = (state) => {
     };
 };
 class MyCourses extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            openCompletedCourses: true,
+        };
+    }
     // TODO remove me later once the admin pages add Course is done
     addCourse = () => {
         try {
@@ -314,17 +323,58 @@ class MyCourses extends Component {
         window.scrollTo(0, 0);
     }
     render() {
+        const openCompletedCourses = this.state.openCompletedCourses;
         return (
             <div className="d-flex row mw-100 justify-content-center">
+                <div className="col-12 col-md-10 pt-3 px-5 px-md-0">
+                    <Nav>
+                        <div
+                            role="button"
+                            className={
+                                "nav-text me-3 " +
+                                (openCompletedCourses
+                                    ? "border-bottom border-5 border-primary-color"
+                                    : "")
+                            }
+                            onClick={() =>
+                                this.setState({
+                                    openCompletedCourses: true,
+                                })
+                            }
+                        >
+                            Ongoing
+                        </div>
+                        <div
+                            role="button"
+                            onClick={() =>
+                                this.setState({
+                                    openCompletedCourses: false,
+                                })
+                            }
+                            className={
+                                "nav-text " +
+                                (!openCompletedCourses
+                                    ? "border-bottom border-5 border-primary-color"
+                                    : "")
+                            }
+                        >
+                            Completed
+                        </div>
+                    </Nav>
+                </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.map((course, courseNumber) => (
-                        <ConectedCourseCard
-                            key={courseNumber}
-                            courseId={course.courseId}
-                            courseProgress={course.courseProgress}
-                            isComplete={course.isComplete}
-                        />
-                    ))}
+                    {this.props.courses.map((course, courseNumber) => {
+                        if (course.isComplete !== openCompletedCourses) {
+                            return (
+                                <ConectedCourseCard
+                                    key={courseNumber}
+                                    courseId={course.courseId}
+                                    courseProgress={course.courseProgress}
+                                    isComplete={course.isComplete}
+                                />
+                            );
+                        } else return <>Nothing here!</>;
+                    })}
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
             </div>
