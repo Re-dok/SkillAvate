@@ -85,7 +85,10 @@ class SideBar extends Component {
                     </div>
                     <ListGroup>
                         {courseData?.modules?.map((module, moduleNumber) => (
-                            <ListGroupItem key={moduleNumber} className="p-0">
+                            <ListGroupItem
+                                key={moduleNumber}
+                                className="p-0 border-0"
+                            >
                                 <div
                                     role="button"
                                     onClick={() => {
@@ -122,12 +125,20 @@ class SideBar extends Component {
                                         }
                                     }}
                                     className={
-                                        "fs-6 m-0 p-2 rounded d-flex align-content-center align-items-center justify-content-between " +
-                                        (module?.content === undefined
-                                            ? ""
-                                            : isAllowed([moduleNumber, -1, -1])
+                                        "fs-6 mb-1 p-2 border border-2 rounded d-flex align-content-center align-items-center justify-content-between " +
+                                        // (module?.content === undefined
+                                        //     ? ""
+                                        //     : isAllowed([moduleNumber, -1, -1])
+                                        //     ? "bg-done"
+                                        //     : "bg-not-open")
+                                        // if next module is allowed then make it green
+                                        // else if this has content grey else nothing
+                                        ((isAllowed([moduleNumber + 1, -1, -1])||this.props.isComplete)
                                             ? "bg-done"
-                                            : "bg-not-open")
+                                            : module?.content &&
+                                              !isAllowed([moduleNumber, -1, -1])
+                                            ? "bg-not-open"
+                                            : "")
                                     }
                                 >
                                     <p>
@@ -157,7 +168,7 @@ class SideBar extends Component {
                                     }
                                 >
                                     {
-                                        <div key={moduleNumber}>
+                                        <div key={moduleNumber} className="mb-3">
                                             {module.headings?.map(
                                                 (heading, headingNumber) => (
                                                     <div
@@ -166,19 +177,50 @@ class SideBar extends Component {
                                                     >
                                                         <div
                                                             className={
-                                                                "border my-2 border-2 border-end-0 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
-                                                                (heading.content ===
-                                                                undefined
-                                                                    ? ""
-                                                                    : isAllowed(
+                                                                "border mb-1 border-2 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
+                                                                // (heading.content ===
+                                                                // undefined
+                                                                //     ? ""
+                                                                //     : isAllowed(
+                                                                //           [
+                                                                //               moduleNumber,
+                                                                //               headingNumber,
+                                                                //               -1,
+                                                                //           ]
+                                                                //       )
+                                                                //     ? "bg-done"
+                                                                //     : "bg-not-open")
+                                                                // if next heading is allowed green,else if this has content,gray,else none
+                                                                ((isAllowed([
+                                                                    moduleNumber,
+                                                                    headingNumber+1,
+                                                                    -1,
+                                                                ])||this.props.isComplete)
+                                                                    ? "bg-done"
+                                                                    : heading?.content &&
+                                                                      !isAllowed(
                                                                           [
                                                                               moduleNumber,
                                                                               headingNumber,
                                                                               -1,
                                                                           ]
                                                                       )
-                                                                    ? "bg-done"
-                                                                    : "bg-not-open")
+                                                                    ? "bg-not-open"
+                                                                    : "")
+                                                                //     (
+                                                                //     heading.content ===
+                                                                //         undefined
+                                                                //         ? ""
+                                                                //         : isAllowed(
+                                                                //               [
+                                                                //                   moduleNumber,
+                                                                //                   headingNumber,
+                                                                //                   -1,
+                                                                //               ]
+                                                                //           )
+                                                                //         ? "bg-done"
+                                                                //         : "bg-not-open"
+                                                                // )
                                                             }
                                                             role="button"
                                                             onClick={() => {
@@ -276,18 +318,34 @@ class SideBar extends Component {
                                                                         key={i}
                                                                         className={
                                                                             "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between " +
-                                                                            (subheading.content ===
-                                                                            undefined
-                                                                                ? ""
-                                                                                : isAllowed(
+                                                                            // (subheading.content ===
+                                                                            // undefined
+                                                                            //     ? ""
+                                                                            //     : isAllowed(
+                                                                            //           [
+                                                                            //               moduleNumber,
+                                                                            //               headingNumber,
+                                                                            //               i,
+                                                                            //           ]
+                                                                            //       )
+                                                                            //     ? "bg-done"
+                                                                            //     : "bg-not-open")
+                                                                            ((isAllowed([
+                                                                                moduleNumber ,
+                                                                                headingNumber,
+                                                                                i+1,
+                                                                            ])||this.props.isComplete)
+                                                                                ? "bg-done"
+                                                                                : subheading?.content &&
+                                                                                  !isAllowed(
                                                                                       [
                                                                                           moduleNumber,
                                                                                           headingNumber,
                                                                                           i,
                                                                                       ]
                                                                                   )
-                                                                                ? "bg-done"
-                                                                                : "bg-not-open")
+                                                                                ? "bg-not-open"
+                                                                                : "")
                                                                         }
                                                                         role="button"
                                                                         onClick={() => {
@@ -373,38 +431,42 @@ class ViewCourse2 extends Component {
             courseProgress: [0, 0, 0, 0, 0, false],
             navbarIsOpen: false,
             qnaIsOpen: false,
+            isComplete:false
         };
     }
     async componentDidMount() {
         window.scrollTo(0, 0);
         let { courseData, doGetCourseDetails, userCourses } = this.props;
         const { courseId } = this.props.params;
-        const courseProgress = userCourses.filter(
+        const courseInfo = userCourses.filter(
             (course) => course.courseId === courseId
-        )[0].courseProgress;
+        )[0];
+        const courseProgress=courseInfo.courseProgress;
         if (courseData === undefined || courseData.length === 0) {
             await doGetCourseDetails(courseId);
         }
-
         this.setState({
             openUnit: courseProgress,
             courseProgress: courseProgress,
+            isComplete:courseInfo.isComplete
         });
     }
-    async componentDidUpdate(prevProps, prevState) {
+    async componentDidUpdate(prevProps) {
         const { courseId } = this.props.params;
         let { userCourses } = this.props;
         const prevCourseProgress = prevProps.userCourses.filter(
             (course) => course.courseId === courseId
         )[0].courseProgress;
-        const courseProgress = userCourses.filter(
+        const courseInfo = userCourses.filter(
             (course) => course.courseId === courseId
-        )[0].courseProgress;
-        if (prevCourseProgress !== courseProgress) { 
-                this.setState({
-                    openUnit: courseProgress,
-                    courseProgress: courseProgress,
-                });
+        )[0];
+        const courseProgress=courseInfo.courseProgress;
+        if (prevCourseProgress !== courseProgress) {
+            this.setState({
+                openUnit: courseProgress,
+                courseProgress: courseProgress,
+                isComplete:courseInfo.isComplete
+            });
         }
     }
     render() {
@@ -456,6 +518,8 @@ class ViewCourse2 extends Component {
                                         });
                                     }}
                                     isCanvas={true}
+                            isComplete={this.state.isComplete}
+
                                 />
                             </OffcanvasBody>
                         </Offcanvas>
@@ -471,6 +535,7 @@ class ViewCourse2 extends Component {
                                 this.setState({ openUnit: newUnit });
                             }}
                             isCanvas={false}
+                            isComplete={this.state.isComplete}
                         />
                         <div className="my-5"></div>
                     </div>
@@ -495,7 +560,6 @@ const mapStatesToProps = (state) => ({
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,
     courseData: state.course.course,
-    // courseProgress: state.user.courses[0]?.courseProgress,
     userCourses: state.user.courses,
 });
 const mapDispatchToProps = {
