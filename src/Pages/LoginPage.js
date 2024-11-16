@@ -41,7 +41,7 @@ class LoginPage extends Component {
     }
 
     componentDidMount() {
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
 
         // the isLoggedIn is false,
         if (!this.props.isLoggedIn) {
@@ -70,7 +70,7 @@ class LoginPage extends Component {
                                 isAdmin === true
                                     ? "/admin"
                                     : isTrainer
-                                    ? "/trainer"
+                                    ? "/courses"
                                     : "/myCourses"
                             );
                             this.props.setInitialURL(null);
@@ -89,7 +89,7 @@ class LoginPage extends Component {
                 isAdmin === true
                     ? "/admin"
                     : isTrainer
-                    ? "/trainer"
+                    ? "/courses"
                     : "/myCourses"
             );
         }
@@ -123,7 +123,7 @@ class LoginPage extends Component {
                         isAdmin === true
                             ? "/admin"
                             : isTrainer
-                            ? "/trainer"
+                            ? "/courses"
                             : "/myCourses"
                     );
                     this.props.setInitialURL(null);

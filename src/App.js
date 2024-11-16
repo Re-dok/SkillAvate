@@ -20,6 +20,8 @@ import NotFound from "./Pages/NotFound";
 import MyCourses from "./Pages/MyCourses";
 import ExplorePage from "./Pages/ExplorePage";
 import ViewCourse from "./Pages/ViewCourse";
+import TrainerCourses from "./Pages/TrainerPages/TrainerCourses";
+import MyClients from "./Pages/TrainerPages/MyClients";
 // FIXME make urls from base like the one sir did
 class App extends Component {
     constructor(props) {
@@ -58,7 +60,6 @@ class App extends Component {
                             </AdminRoute>
                         }
                     />
-                    {/* TODO remove me before you merge this branch */}
                     <Route
                         path="/myCourses"
                         exact
@@ -66,6 +67,24 @@ class App extends Component {
                             <ClientRoute>
                                 <MyCourses />
                             </ClientRoute>
+                        }
+                    />
+                    <Route
+                        path="/courses"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <TrainerCourses />
+                            </TrainerRoute>
+                        }
+                    />
+                    <Route
+                        path="/myClients"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <MyClients />
+                            </TrainerRoute>
                         }
                     />
                     <Route
@@ -86,13 +105,14 @@ class App extends Component {
                             </ClientRoute>
                         }
                     />
+                    {/* TODO ask what differnt settings will the users,trainers and clients have, based of which you can create a new common private route or differnet settings for different roles */}
                     <Route
                         path="/settings"
                         exact
                         element={
-                            <ClientRoute>
-                                <>settings</>
-                            </ClientRoute>
+                            // <ClientRoute>
+                            <>settings</>
+                            // </ClientRoute>
                         }
                     />
                     <Route

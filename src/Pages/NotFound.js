@@ -18,7 +18,7 @@ class NotFound extends Component {
                 : isAdmin === true
                 ? "/admin"
                 : isTrainer
-                ? "/trainer"
+                ? "/courses"
                 : "/myCourses"
         );
     };
