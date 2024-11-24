@@ -1,4 +1,12 @@
-import { Badge, Button, Alert, Modal, ModalBody } from "reactstrap";
+import {
+    Badge,
+    Button,
+    Alert,
+    Modal,
+    ModalBody,
+    Input,
+    ButtonGroup,
+} from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import {
@@ -8,6 +16,8 @@ import {
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import bcrypt from "bcryptjs";
+import { array } from "i/lib/util";
+import { current } from "@reduxjs/toolkit";
 
 class QuestionCard extends Component {
     constructor(props) {
@@ -17,9 +27,62 @@ class QuestionCard extends Component {
             answerIsCurrect: true,
             currentQuestion: 1,
             selectedOptions: null,
+            answers: [],
         };
     }
-
+    getCorrectOption = async (hashedAns, options) => {
+        let correctOption = 0;
+        for (let i = 0; i < 4; i++) {
+            await bcrypt.compare(options[i], hashedAns).then((isCorrect) => {
+                if (isCorrect) {
+                    correctOption = i;
+                }
+            });
+        }
+        return correctOption;
+    };
+    async componentDidMount() {
+        let answers = [];
+        const numberOfQuestions = this.props.test.length || 0;
+        for (
+            let currentQuestion = 1;
+            currentQuestion < numberOfQuestions + 1;
+            currentQuestion++
+        ) {
+            const { options } =
+                this.props?.test[
+                    currentQuestion - 1 < this.props.test.length
+                        ? currentQuestion - 1
+                        : 0
+                ];
+            const hashedAns = this.props?.test[currentQuestion - 1].answer;
+            const ans = await this.getCorrectOption(hashedAns, options);
+            answers.push(ans);
+        }
+        this.setState({ answers: answers });
+    }
+    async componentDidUpdate(prevProps) {
+        if (prevProps.test[0].question !== this.props.test[0].question) {
+            let answers = [];
+            const numberOfQuestions = this.props.test.length || 0;
+            for (
+                let currentQuestion = 1;
+                currentQuestion < numberOfQuestions + 1;
+                currentQuestion++
+            ) {
+                const { options } =
+                    this.props?.test[
+                        currentQuestion - 1 < this.props.test.length
+                            ? currentQuestion - 1
+                            : 0
+                    ];
+                const hashedAns = this.props?.test[currentQuestion - 1].answer;
+                const ans = await this.getCorrectOption(hashedAns, options);
+                answers.push(ans);
+            }
+            this.setState({ answers: answers, currentQuestion: 1 });
+        }
+    }
     nextQuestion = () => {
         if (this.state.currentQuestion < this.props.test.length) {
             this.setState({
@@ -35,10 +98,14 @@ class QuestionCard extends Component {
             this.setState({ currentQuestion: this.state.currentQuestion - 1 });
         }
     };
-
     render() {
         if (this.props.test.length === 0) return <>Nothing</>;
 
+        const onChangeValue = (e) => {
+            let { value } = e.target;
+            console.log(value);
+            if (value.length === 1) value.slice(0, 1);
+        };
         const { currentQuestion } = this.state;
 
         const { question, options } =
@@ -48,6 +115,8 @@ class QuestionCard extends Component {
                     : 0
             ];
         const numberOfQuestions = this.props.test.length || 0;
+        const correctOption = this.state.answers[currentQuestion - 1];
+        // const correctOption = 3;
         return (
             <div className="border border-1 rounded rounded-3 bg-white">
                 <div className="border-bottom border-1 py-2 d-flex justify-content-between">
@@ -85,14 +154,16 @@ class QuestionCard extends Component {
                 </div>
                 {options.map((option, optionNumber) => (
                     <div
-                        className={"p-3 pb-0 d-flex border-bottom border-2"}
+                        className={
+                            "p-3 pb-0 d-flex border-bottom border-2 " +
+                            (correctOption === optionNumber ? "bg-done" : "")
+                        }
                         key={optionNumber}
                     >
                         <i
                             className={
                                 "bi me-2 fw-light " +
-                                (this.state.selectedOptions === optionNumber &&
-                                !this.props.isComplete
+                                (correctOption === optionNumber
                                     ? "bi-record-circle"
                                     : "bi-circle")
                             }
@@ -100,6 +171,46 @@ class QuestionCard extends Component {
                         <p className="fw-light">{option}</p>
                     </div>
                 ))}
+                <div
+                    className={
+                        "p-3 m-0 pb-4 row row-cols-1 row-cols-md-2 border-bottom border-2 align-items-end justify-content-md-between justify-content-center"
+                    }
+                >
+                    <div className="col row row-cols-1 m-0 p-0 justify-content-start align-items-center">
+                        <p
+                            className="col mb-1"
+                            style={{ width: "max-content" }}
+                        >
+                            Correct Option:
+                        </p>
+                        <ButtonGroup className="col gap-1">
+                            {Array.from({ length: 4 }, (_, i) => {
+                                return (
+                                    <Button
+                                        key={i}
+                                        outline={correctOption === i}
+                                        disabled={correctOption === i}
+                                        color={
+                                            correctOption === i
+                                                ? "success"
+                                                : "warning"
+                                        }
+                                    >
+                                        {i + 1}
+                                    </Button>
+                                );
+                            })}
+                        </ButtonGroup>
+                    </div>
+                    <div className="col row row-cols-3 mt-md-0 mt-3 gap-3 justify-content-end">
+                        <Button disabled color="success" className="col">
+                            Save
+                        </Button>
+                        <Button disabled color="warning" className="col">
+                            Discard
+                        </Button>
+                    </div>
+                </div>
                 <Alert
                     color={this.state.answerIsCurrect ? "success" : "danger"}
                     className="mx-2 my-2"
@@ -122,8 +233,8 @@ class QuestionCard extends Component {
     }
 }
 const mapDispatchToProps = {
-    doUpdateCourseProgress,
-    doMarkCourseAsComplete,
+    // doUpdateCourseProgress,
+    // doMarkCourseAsComplete,
 };
 const ConnectedQuestionCard = connect(
     null,
@@ -231,7 +342,7 @@ class ContentCard extends Component {
                             <div className="p-4">
                                 <i className="bi bi-camera-reels me-2"></i>
                                 Lecture Assignment
-                            </div> 
+                            </div>
                             <ReactPlayer
                                 url={videoLink || ""}
                                 width={"100%"}
