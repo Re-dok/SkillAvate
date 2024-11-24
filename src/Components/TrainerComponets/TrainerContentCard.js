@@ -16,8 +16,6 @@ import {
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import bcrypt from "bcryptjs";
-import { array } from "i/lib/util";
-import { current } from "@reduxjs/toolkit";
 
 class QuestionCard extends Component {
     constructor(props) {
@@ -168,12 +166,13 @@ class QuestionCard extends Component {
                                     : "bi-circle")
                             }
                         ></i>
+                        {/* <Input placeholder={option} className="opacity-0"/> */}
                         <p className="fw-light">{option}</p>
                     </div>
                 ))}
                 <div
                     className={
-                        "p-3 m-0 pb-4 row row-cols-1 row-cols-md-2 border-bottom border-2 align-items-end justify-content-md-between justify-content-center"
+                        "p-3 m-0 pb-4 row row-cols-1 row-cols-md-2 border-bottom border-2 justify-content-end"
                     }
                 >
                     <div className="col row row-cols-1 m-0 p-0 justify-content-start align-items-center">
@@ -201,14 +200,6 @@ class QuestionCard extends Component {
                                 );
                             })}
                         </ButtonGroup>
-                    </div>
-                    <div className="col row row-cols-3 mt-md-0 mt-3 gap-3 justify-content-end">
-                        <Button disabled color="success" className="col">
-                            Save
-                        </Button>
-                        <Button disabled color="warning" className="col">
-                            Discard
-                        </Button>
                     </div>
                 </div>
                 <Alert
@@ -246,6 +237,9 @@ class ContentCard extends Component {
         this.getNextUnit = this.getNextUnit.bind(this);
         this.state = {
             showModal: false,
+            newVideoLink: null,
+            newDocLink: null,
+            unsavedChanges: !false,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -302,6 +296,9 @@ class ContentCard extends Component {
     triggerModal() {
         this.setState({ showModal: true });
     }
+    componentDidUpdate() {
+        console.log(this.state);
+    }
     render() {
         if (this.props.modules === undefined || this.props.openUnit === null)
             return <>loading</>;
@@ -333,24 +330,68 @@ class ContentCard extends Component {
             const docLink = content.docLink;
             const videoLink = content.videoLink;
             const test = content.test;
+            const newVideoLink =
+                this.state.newVideoLink !== null
+                    ? this.state.newVideoLink
+                    : videoLink;
+            const newDocLink =
+                this.state.newDocLink !== null
+                    ? this.state.newDocLink
+                    : docLink;
+            const onChangeValue = (e) => {
+                let { name, value } = e.target;
+                this.setState({ newVideoLink: value });
+            };
+            const { unsavedChanges } = this.state;
             return (
                 <div className="mx-lg-5 px-lg-4">
-                    {heading && <div className="fw-bold mb-3">{heading}</div>}
-
-                    {videoLink && (
-                        <div className="rounded position-relative fw-light bg-white mb-4">
-                            <div className="p-4">
-                                <i className="bi bi-camera-reels me-2"></i>
-                                Lecture Assignment
-                            </div>
-                            <ReactPlayer
-                                url={videoLink || ""}
-                                width={"100%"}
-                                controls
-                            ></ReactPlayer>
+                    {heading && (
+                        <div className="fw-bold mb-3">
+                            Heading:
+                            <Input
+                                rows="1"
+                                required
+                                className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                                value={heading}
+                                onChange={onChangeValue}
+                            />
                         </div>
                     )}
-                    {/* TODO add the docLink condition later on when you have added it to the db */}
+
+                    <div className="rounded position-relative fw-light bg-white mb-4">
+                        <div className="p-4">
+                            <i className="bi bi-camera-reels me-2"></i>
+                            Lecture Assignment
+                        </div>
+                        <ReactPlayer
+                            url={videoLink || ""}
+                            width={"100%"}
+                            controls
+                        ></ReactPlayer>
+                        <div className="p-4 row row-cols-1">
+                            <strong className="col mb-2">
+                                Lecture Assignment Link :
+                            </strong>
+                            <Input
+                                className="col-6"
+                                value={newVideoLink}
+                                placeholder={newVideoLink}
+                                onChange={onChangeValue}
+                            />
+                            <div className="mt-2 p-0 d-flex justify-content-end">
+                                <Button
+                                    className="col col-md-2"
+                                    color="danger"
+                                    onClick={() => {
+                                        console.log("hi");
+                                        this.setState({ newVideoLink: "" });
+                                    }}
+                                >
+                                    <i class="bi bi-trash me-2"></i>Remove
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div>
                         <div
@@ -361,21 +402,67 @@ class ContentCard extends Component {
                             <i className="bi bi-journal-bookmark me-2"></i>
                             Reading Assignment
                         </div>
+                        <div className="rounded fw-light bg-white my-2 px-3 pb-2 pt-3">
+                            <strong className="col mb-2">
+                                Reading Assignment Link :
+                            </strong>
+                            <Input
+                                className="mt-1"
+                                value={newDocLink}
+                                placeholder={newDocLink}
+                                onChange={onChangeValue}
+                            />
+                            <div className="mt-2 d-flex justify-content-end">
+                                <Button
+                                    className="col col-md-2"
+                                    color="danger"
+                                    onClick={() => {
+                                        this.setState({ newVideoLink: "" });
+                                    }}
+                                >
+                                    <i class="bi bi-trash me-2"></i>Remove
+                                </Button>
+                            </div>
+                        </div>
                     </div>
 
-                    {writeUp && (
-                        <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
-                            {writeUp}
-                        </p>
-                    )}
-                    {test.length !== 0 && (
-                        <ConnectedQuestionCard
-                            test={test || []}
-                            getNextUnit={this.getNextUnit}
-                            triggerModal={() =>
-                                this.setState({ showModal: true })
-                            }
+                    <p className="rounded fw-light bg-white p-4 my-3 mb-4">
+                        <Input
+                            type="textarea"
+                            rows="15"
+                            className="mt-1 border-0 border-bottom border-3"
+                            value={writeUp}
+                            onChange={onChangeValue}
                         />
+                        <div className="mt-2 d-flex justify-content-end">
+                            <Button
+                                disabled={writeUp === ""}
+                                className="col col-md-2"
+                                color="danger"
+                                onClick={() => {
+                                    this.setState({ newVideoLink: "" });
+                                }}
+                            >
+                                <i class="bi bi-trash me-2"></i>Remove
+                            </Button>
+                        </div>
+                    </p>
+
+                    <ConnectedQuestionCard
+                        test={test || []}
+                        getNextUnit={this.getNextUnit}
+                        triggerModal={() => this.setState({ showModal: true })}
+                    />
+                    {unsavedChanges && (
+                        <div className=" m-5 bg-white rounded row gap-3 p-2">
+                            <Button disabled color="success" className="col">
+                                Save
+                            </Button>
+                            <Button disabled color="danger" className="col">
+                                <i class="bi bi-trash me-2" />
+                                Discard
+                            </Button>
+                        </div>
                     )}
                 </div>
             );
