@@ -114,7 +114,6 @@ class QuestionCard extends Component {
             ];
         const numberOfQuestions = this.props.test.length || 0;
         const correctOption = this.state.answers[currentQuestion - 1];
-        // const correctOption = 3;
         return (
             <div className="border border-1 rounded rounded-3 bg-white">
                 <div className="border-bottom border-1 py-2 d-flex justify-content-between">
@@ -147,27 +146,36 @@ class QuestionCard extends Component {
                     </div>
                 </div>
                 <div className="p-3 py-4 border-bottom border-2">
-                    <p className="fw-bold">Question {currentQuestion} </p>
-                    <p className="fw-light">{question}</p>
+                    <p className="fw-bold">
+                        <i classname="bi bi-pencil-fill me-2" />
+                        Edit Question {currentQuestion}{" "}
+                    </p>
+                    <Input
+                        value={question}
+                        onChange={onChangeValue}
+                        placeholder={question}
+                    />
                 </div>
                 {options.map((option, optionNumber) => (
                     <div
                         className={
-                            "p-3 pb-0 d-flex border-bottom border-2 " +
+                            "p-3 pb-2 d-flex border-bottom border-2 align-content-center align-items-center " +
                             (correctOption === optionNumber ? "bg-done" : "")
                         }
                         key={optionNumber}
                     >
-                        <i
+                        <i classname="bi bi-pencil-fill me-2" />
+                        <Input
+                            value={option}
+                            onChange={onChangeValue}
+                            placeholder={option}
                             className={
-                                "bi me-2 fw-light " +
+                                "opacity-100 m-0 my-1" +
                                 (correctOption === optionNumber
-                                    ? "bi-record-circle"
-                                    : "bi-circle")
+                                    ? " bg-done border-0"
+                                    : "")
                             }
-                        ></i>
-                        {/* <Input placeholder={option} className="opacity-0"/> */}
-                        <p className="fw-light">{option}</p>
+                        />
                     </div>
                 ))}
                 <div
@@ -347,7 +355,8 @@ class ContentCard extends Component {
                 <div className="mx-lg-5 px-lg-4">
                     {heading && (
                         <div className="fw-bold mb-3">
-                            Heading:
+                            <i classname="bi bi-pencil-fill me-2" />
+                            Edit Heading :
                             <Input
                                 rows="1"
                                 required
@@ -370,7 +379,8 @@ class ContentCard extends Component {
                         ></ReactPlayer>
                         <div className="p-4 row row-cols-1">
                             <strong className="col mb-2">
-                                Lecture Assignment Link :
+                                <i classname="bi bi-pencil-fill me-2" />
+                                Edit Lecture Link :
                             </strong>
                             <Input
                                 className="col-6"
@@ -387,7 +397,7 @@ class ContentCard extends Component {
                                         this.setState({ newVideoLink: "" });
                                     }}
                                 >
-                                    <i class="bi bi-trash me-2"></i>Remove
+                                    <i classname="bi bi-trash me-2"></i>Remove
                                 </Button>
                             </div>
                         </div>
@@ -404,7 +414,8 @@ class ContentCard extends Component {
                         </div>
                         <div className="rounded fw-light bg-white my-2 px-3 pb-2 pt-3">
                             <strong className="col mb-2">
-                                Reading Assignment Link :
+                                <i classname="bi bi-pencil-fill me-2" />
+                                Edit Reading Assignment Link :
                             </strong>
                             <Input
                                 className="mt-1"
@@ -420,13 +431,15 @@ class ContentCard extends Component {
                                         this.setState({ newVideoLink: "" });
                                     }}
                                 >
-                                    <i class="bi bi-trash me-2"></i>Remove
+                                    <i classname="bi bi-trash me-2"></i>Remove
                                 </Button>
                             </div>
                         </div>
                     </div>
 
                     <p className="rounded fw-light bg-white p-4 my-3 mb-4">
+                        <i classname="bi bi-pencil-fill me-2" />
+                        Edit Writeup
                         <Input
                             type="textarea"
                             rows="15"
@@ -443,7 +456,7 @@ class ContentCard extends Component {
                                     this.setState({ newVideoLink: "" });
                                 }}
                             >
-                                <i class="bi bi-trash me-2"></i>Remove
+                                <i classname="bi bi-trash me-2"></i>Remove
                             </Button>
                         </div>
                     </p>
@@ -459,7 +472,7 @@ class ContentCard extends Component {
                                 Save
                             </Button>
                             <Button disabled color="danger" className="col">
-                                <i class="bi bi-trash me-2" />
+                                <i classname="bi bi-trash me-2" />
                                 Discard
                             </Button>
                         </div>
