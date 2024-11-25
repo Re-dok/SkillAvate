@@ -17,6 +17,7 @@ import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import bcrypt from "bcryptjs";
 import isEqual from "lodash/isEqual";
+import { flatMap } from "lodash";
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
@@ -186,6 +187,7 @@ class ContentCard extends Component {
             newHeading: null,
             newTest: null,
             unsavedChanges: false,
+            flag:false
         };
     }
     openReadingAssignment = (docLink) => {
@@ -315,37 +317,43 @@ class ContentCard extends Component {
 
                     // Use deep comparison for objects (e.g., "test")
                     if (!isEqual(newValue, contentValue)) {
-                       
                         return false;
                     }
                 }
 
                 return true;
             }
+            const checkForChanges = () => {
+                const {
+                    newHeading,
+                    newWriteUp,
+                    newDocLink,
+                    newTest,
+                    newVideoLink,
+                } = this.state;
+                let hasChanges = !isContentMatching(content, {
+                    newWriteUp,
+                    newDocLink,
+                    newTest,
+                    newVideoLink,
+                });
+                if (newHeading) {
+                    hasChanges = newHeading !== heading;
+                }
+                this.setState({ unsavedChanges: hasChanges });
+            };
             const onChangeValue = (e) => {
                 let { name, value } = e.target;
-                // console.log(name);
-                this.setState({ [name]: value }, function () {
-                    const {
-                        newHeading,
-                        newWriteUp,
-                        newDocLink,
-                        newTest,
-                        newVideoLink,
-                    } = this.state;
-                    let hasChanges = !isContentMatching(content, {
-                        newWriteUp,
-                        newDocLink,
-                        newTest,
-                        newVideoLink,
-                    });
-                    if (newHeading) {
-                        hasChanges = newHeading !== heading;
-                    }
-                    this.setState({ unsavedChanges: hasChanges });
-                });
+                this.setState({ [name]: value }, checkForChanges);
             };
             const { unsavedChanges } = this.state;
+            const setNewTest = (newTest) =>
+                this.setState(
+                    {
+                        newTest: newTest,
+                    },
+                    checkForChanges
+                );
             const handleDiscardChanges = () => {
                 this.setState({
                     showModal: false,
@@ -355,38 +363,9 @@ class ContentCard extends Component {
                     newHeading: null,
                     newTest: null,
                     unsavedChanges: false,
+                    flag:!this.state.flag
                 });
             };
-            const setNewTest = (newTest) =>
-                this.setState(
-                    {
-                        newTest: newTest,
-                    },
-                    function () {
-                        // const hasChanges=isEqual(this.state.newTest,test);
-                        // if(hasChanges){
-                        //     this.setState({unsavedChanges:true})
-                        // }else{
-                        const {
-                            newHeading,
-                            newWriteUp,
-                            newDocLink,
-                            newTest,
-                            newVideoLink,
-                        } = this.state;
-                        let hasChanges = !isContentMatching(content, {
-                            newWriteUp,
-                            newDocLink,
-                            newTest,
-                            newVideoLink,
-                        });
-                        if (newHeading) {
-                            hasChanges = newHeading !== heading;
-                        }
-                        this.setState({ unsavedChanges: hasChanges });
-                        // }
-                    }
-                );
             return (
                 <div className="mx-lg-5 px-lg-4">
                     {heading && (
@@ -398,7 +377,7 @@ class ContentCard extends Component {
                                 required
                                 className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
                                 value={newHeading}
-                                placeholder={newHeading}
+                                placeholder="Heading required!"
                                 name="newHeading"
                                 onChange={onChangeValue}
                             />
@@ -418,7 +397,7 @@ class ContentCard extends Component {
                         <div className="p-4 row row-cols-1">
                             <strong className="col mb-2">
                                 <i classname="bi bi-pencil-fill me-2" />
-                                Edit Lecture Link :
+                                <strong>Edit Lecture Link :</strong>
                             </strong>
                             <Input
                                 className="col-6"
@@ -432,7 +411,10 @@ class ContentCard extends Component {
                                     className="col col-md-2"
                                     color="danger"
                                     onClick={() => {
-                                        this.setState({ newVideoLink: "" });
+                                        this.setState(
+                                            { newVideoLink: "" },
+                                            checkForChanges
+                                        );
                                     }}
                                 >
                                     <i classname="bi bi-trash me-2"></i>Remove
@@ -453,7 +435,7 @@ class ContentCard extends Component {
                         <div className="rounded fw-light bg-white my-2 px-3 pb-2 pt-3">
                             <strong className="col mb-2">
                                 <i classname="bi bi-pencil-fill me-2" />
-                                Edit Reading Assignment Link :
+                                <strong>Edit Reading Assignment Link :</strong>
                             </strong>
                             <Input
                                 className="mt-1"
@@ -467,7 +449,10 @@ class ContentCard extends Component {
                                     className="col col-md-2"
                                     color="danger"
                                     onClick={() => {
-                                        this.setState({ newVideoLink: "" });
+                                        this.setState(
+                                            { newDocLink: "" },
+                                            checkForChanges
+                                        );
                                     }}
                                 >
                                     <i classname="bi bi-trash me-2"></i>Remove
@@ -476,9 +461,9 @@ class ContentCard extends Component {
                         </div>
                     </div>
 
-                    <p className="rounded fw-light bg-white p-4 my-3 mb-4">
+                    <p className="rounded bg-white p-4 my-3 mb-4">
                         <i classname="bi bi-pencil-fill me-2" />
-                        Edit Writeup
+                        <strong>Edit Writeup</strong>
                         <Input
                             type="textarea"
                             rows="15"
@@ -494,7 +479,10 @@ class ContentCard extends Component {
                                 className="col col-md-2"
                                 color="danger"
                                 onClick={() => {
-                                    this.setState({ newVideoLink: "" });
+                                    this.setState(
+                                        { newWriteUp: "" },
+                                        checkForChanges
+                                    );
                                 }}
                             >
                                 <i classname="bi bi-trash me-2"></i>Remove
@@ -503,6 +491,8 @@ class ContentCard extends Component {
                     </p>
 
                     <QuestionCard
+                        key={this.state.flag}
+                        // FIXME add key to rerender on discard
                         test={newTest || []}
                         setNewTest={setNewTest}
                         getNextUnit={this.getNextUnit}
