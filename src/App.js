@@ -24,7 +24,9 @@ import TrainerCourses from "./Pages/TrainerPages/TrainerCourses";
 import MyClients from "./Pages/TrainerPages/MyClients";
 import EditCourse from "./Pages/TrainerPages/EditCourse";
 // FIXME make urls from base like the one sir did
-// all the grades irrespective of course id are being stored in the same array, will need to change this logic
+// all the grades irrespective of course id are being stored in the same array, will need to
+// change this logic
+// TODO make sure when ever a user is enrolled into a course, the corresponding fields in the courses db are filled,i,e, MUST HAVE courseId,courseProgress,isComplete intialized
 class App extends Component {
     constructor(props) {
         super(props);

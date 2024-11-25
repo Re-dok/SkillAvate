@@ -236,8 +236,7 @@ class QuestionCard extends Component {
                             }
                         ></i>
                         <p className="fw-bold d-inline">
-                            Question {currentQuestion}/{numberOfQuestions}{" "}
-                            {completedQuestions}
+                            Question {currentQuestion}/{numberOfQuestions}
                         </p>
                     </div>
                     {

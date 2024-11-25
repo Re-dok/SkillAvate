@@ -28,16 +28,17 @@ async function updateProgress(email, courseId, newProgress, prevProgress) {
                 return course;
             }
         });
+        let courseGradesExist = false;
         let updatedCourseGrades = userData.Grades.map((course) => {
+            // FIXME make it such that the grades corresponding to the course id are updated
             if (course.courseId === courseId) {
+                courseGradesExist = true;
                 const newUnit = [
                     prevProgress[0],
                     prevProgress[1],
                     prevProgress[2],
                 ].toString();
                 let unitExsists = false;
-                //TODO both wrong working, check other cases
-                // TODO check if wrong ans on course complete
                 course.courseGrades = course.courseGrades.map((grade) => {
                     if (grade.unit === newUnit) {
                         unitExsists = true;
@@ -62,6 +63,23 @@ async function updateProgress(email, courseId, newProgress, prevProgress) {
                 return course;
             }
         });
+        // if this is the first time a course is being graded, add the grades to it
+        if (!courseGradesExist) {
+            const newUnit = [
+                prevProgress[0],
+                prevProgress[1],
+                prevProgress[2],
+            ].toString();
+            let newCourseGrads = [];
+            newCourseGrads.push({
+                unit: newUnit,
+                unitGrade: prevProgress[3],
+            });
+            updatedCourseGrades.push({
+                courseId: courseId,
+                courseGrads: newCourseGrads,
+            });
+        }
         try {
             // Attempt to update Firestore with modified data
             await updateDoc(userRef, {

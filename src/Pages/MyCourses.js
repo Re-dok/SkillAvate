@@ -40,7 +40,12 @@ class CourseCard extends Component {
         )[0];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
-            let courseProgressPersent = 100 * this.props.courseProgress[0];
+            let courseProgressPersent;
+            if (this.props.courseProgress) {
+                courseProgressPersent = 100 * this.props.courseProgress[0];
+            } else {
+                courseProgressPersent = 0;
+            }
             if (modules.length) courseProgressPersent /= modules.length;
             if (this.props.isComplete) {
                 courseProgressPersent = 100;
@@ -324,6 +329,7 @@ class MyCourses extends Component {
     }
     render() {
         const openCompletedCourses = this.state.openCompletedCourses;
+        let ifIsEmpty = [true, true];
         return (
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 pt-3 px-5 px-md-0">
@@ -363,8 +369,14 @@ class MyCourses extends Component {
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
+                    {this.props.courses.length === 0 && <>Nothing Here!</>}
                     {this.props.courses.map((course, courseNumber) => {
                         if (course.isComplete !== openCompletedCourses) {
+                            if (course.isComplete === true) {
+                                ifIsEmpty[0] = false;
+                            } else {
+                                ifIsEmpty[1] = false;
+                            }
                             return (
                                 <ConectedCourseCard
                                     key={courseNumber}
@@ -373,7 +385,15 @@ class MyCourses extends Component {
                                     isComplete={course.isComplete}
                                 />
                             );
-                        } else return <>Nothing here!</>;
+                        }
+                        if (courseNumber + 1 === this.props.courses.length) {
+                            if (ifIsEmpty[0]) {
+                                return <>Nothing Here!</>;
+                            }
+                            if (ifIsEmpty[1]) {
+                                return <>Nothing Here!</>;
+                            }
+                        }
                     })}
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
