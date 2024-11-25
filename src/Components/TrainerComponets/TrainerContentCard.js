@@ -16,221 +16,156 @@ import {
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import bcrypt from "bcryptjs";
-
+import isEqual from "lodash/isEqual";
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            alertMessage: null,
-            answerIsCurrect: true,
-            currentQuestion: 1,
-            selectedOptions: null,
-            answers: [],
+            newTest: [],
+            intialLoading: true,
         };
     }
     getCorrectOption = async (hashedAns, options) => {
-        let correctOption = 0;
+        let answer = 0;
         for (let i = 0; i < 4; i++) {
             await bcrypt.compare(options[i], hashedAns).then((isCorrect) => {
                 if (isCorrect) {
-                    correctOption = i;
+                    answer = i;
                 }
             });
         }
-        return correctOption;
+        return answer;
     };
     async componentDidMount() {
-        let answers = [];
-        const numberOfQuestions = this.props.test.length || 0;
-        for (
-            let currentQuestion = 1;
-            currentQuestion < numberOfQuestions + 1;
-            currentQuestion++
-        ) {
-            const { options } =
-                this.props?.test[
-                    currentQuestion - 1 < this.props.test.length
-                        ? currentQuestion - 1
-                        : 0
-                ];
-            const hashedAns = this.props?.test[currentQuestion - 1].answer;
-            const ans = await this.getCorrectOption(hashedAns, options);
-            answers.push(ans);
-        }
-        this.setState({ answers: answers });
-    }
-    async componentDidUpdate(prevProps) {
-        if (prevProps.test[0].question !== this.props.test[0].question) {
-            let answers = [];
-            const numberOfQuestions = this.props.test.length || 0;
-            for (
-                let currentQuestion = 1;
-                currentQuestion < numberOfQuestions + 1;
-                currentQuestion++
-            ) {
-                const { options } =
-                    this.props?.test[
-                        currentQuestion - 1 < this.props.test.length
-                            ? currentQuestion - 1
-                            : 0
-                    ];
-                const hashedAns = this.props?.test[currentQuestion - 1].answer;
-                const ans = await this.getCorrectOption(hashedAns, options);
-                answers.push(ans);
-            }
-            this.setState({ answers: answers, currentQuestion: 1 });
-        }
-    }
-    nextQuestion = () => {
-        if (this.state.currentQuestion < this.props.test.length) {
-            this.setState({
-                currentQuestion: this.state.currentQuestion + 1,
-                selectedOptions: null,
-                alertMessage: null,
-                answerIsCurrect: true,
+        const newTest = [];
+        for (const questionData of this.props.test) {
+            const { question, options, answer } = questionData;
+            newTest.push({
+                question,
+                options: [...options],
+                answer: answer,
             });
         }
+        this.setState({ newTest, intialLoading: false });
+    }
+    // async componentDidUpdate(prevProps) {
+    //     const testChanged = !isEqual(prevProps.test, this.props.test);
+    //     if (testChanged) {
+    //         console.log("REGITERING");
+    //         const newTest = [];
+    //         for (const questionData of this.props.test) {
+    //             console.log(questionData);
+    //             const { question, options, answer: hashedAns } = questionData;
+    //             const answer = await this.getCorrectOption(
+    //                 hashedAns,
+    //                 options
+    //             );
+    //             newTest.push({
+    //                 question,
+    //                 options: [...options],
+    //                 answer,
+    //             });
+    //         }
+    //         this.setState({ newTest, intialLoading: false });
+    //     }
+    // }
+    handleInputChange = (e, questionIndex, optionIndex = null) => {
+        const { name, value } = e.target;
+        this.setState((prevState) => {
+            const updatedTest = [...prevState.newTest];
+            if (optionIndex !== null) {
+                // Update specific option
+                updatedTest[questionIndex].options[optionIndex] = value;
+            } else {
+                // Update the question
+                updatedTest[questionIndex][name] = value;
+            }
+            return { newTest: updatedTest };
+        });
+        this.props.setNewTest(this.state.newTest);
     };
-    prevQuestion = () => {
-        if (this.state.currentQuestion > 1) {
-            this.setState({ currentQuestion: this.state.currentQuestion - 1 });
-        }
+
+    handleCorrectOptionChange = (questionIndex, answer) => {
+        this.setState((prevState) => {
+            const updatedTest = [...prevState.newTest];
+            updatedTest[questionIndex].answer = answer;
+            return { newTest: updatedTest };
+        });
+        this.props.setNewTest(this.state.newTest);
     };
+
     render() {
-        if (this.props.test.length === 0) return <>Nothing</>;
+        const { newTest } = this.state;
 
-        const onChangeValue = (e) => {
-            let { value } = e.target;
-            console.log(value);
-            if (value.length === 1) value.slice(0, 1);
-        };
-        const { currentQuestion } = this.state;
+        if (newTest.length === 0) return <>Nothing</>;
 
-        const { question, options } =
-            this.props?.test[
-                currentQuestion - 1 < this.props.test.length
-                    ? currentQuestion - 1
-                    : 0
-            ];
-        const numberOfQuestions = this.props.test.length || 0;
-        const correctOption = this.state.answers[currentQuestion - 1];
         return (
-            <div className="border border-1 rounded rounded-3 bg-white">
-                <div className="border-bottom border-1 py-2 d-flex justify-content-between">
-                    <div className="d-inline">
-                        <i
-                            role="button"
-                            onClick={this.prevQuestion}
-                            className={
-                                "bi bi-chevron-left border-end border-2 p-2" +
-                                " " +
-                                (this.state.currentQuestion > 1
-                                    ? " "
-                                    : "bg-grey")
-                            }
-                        ></i>
-                        <i
-                            onClick={this.nextQuestion}
-                            role="button"
-                            className={
-                                "bi bi-chevron-right border-2 border-end p-2 me-3" +
-                                " " +
-                                (currentQuestion < numberOfQuestions
-                                    ? " "
-                                    : "bg-grey")
-                            }
-                        ></i>
-                        <p className="fw-bold d-inline">
-                            Question {currentQuestion}/{numberOfQuestions}{" "}
-                        </p>
-                    </div>
-                </div>
-                <div className="p-3 py-4 border-bottom border-2">
-                    <p className="fw-bold">
-                        <i classname="bi bi-pencil-fill me-2" />
-                        Edit Question {currentQuestion}{" "}
-                    </p>
-                    <Input
-                        value={question}
-                        onChange={onChangeValue}
-                        placeholder={question}
-                    />
-                </div>
-                {options.map((option, optionNumber) => (
+            <div>
+                {newTest.map((q, questionIndex) => (
                     <div
-                        className={
-                            "p-3 pb-2 d-flex border-bottom border-2 align-content-center align-items-center " +
-                            (correctOption === optionNumber ? "bg-done" : "")
-                        }
-                        key={optionNumber}
+                        key={questionIndex}
+                        className="border-bottom border-2 border-rounded rounded-5 bg-white p-4 mb-3"
                     >
-                        <i classname="bi bi-pencil-fill me-2" />
-                        <Input
-                            value={option}
-                            onChange={onChangeValue}
-                            placeholder={option}
-                            className={
-                                "opacity-100 m-0 my-1" +
-                                (correctOption === optionNumber
-                                    ? " bg-done border-0"
-                                    : "")
-                            }
-                        />
-                    </div>
-                ))}
-                <div
-                    className={
-                        "p-3 m-0 pb-4 row row-cols-1 row-cols-md-2 border-bottom border-2 justify-content-end"
-                    }
-                >
-                    <div className="col row row-cols-1 m-0 p-0 justify-content-start align-items-center">
-                        <p
-                            className="col mb-1"
-                            style={{ width: "max-content" }}
-                        >
-                            Correct Option:
-                        </p>
-                        <ButtonGroup className="col gap-1">
-                            {Array.from({ length: 4 }, (_, i) => {
-                                return (
+                        <strong>Question {questionIndex + 1}</strong>
+                        <div className="mb-3 mt-2">
+                            <Input
+                                name="question"
+                                value={q.question}
+                                onChange={(e) =>
+                                    this.handleInputChange(e, questionIndex)
+                                }
+                                placeholder="Edit Question"
+                            />
+                        </div>
+                        <strong>Options :</strong>
+                        {q.options.map((option, optionIndex) => (
+                            <div key={optionIndex} className="mt-2">
+                                <Input
+                                    value={option}
+                                    onChange={(e) =>
+                                        this.handleInputChange(
+                                            e,
+                                            questionIndex,
+                                            optionIndex
+                                        )
+                                    }
+                                    placeholder={`Option ${optionIndex + 1}`}
+                                />
+                            </div>
+                        ))}
+                        <div className="mt-3">
+                            <p className="mb-1">
+                                <strong>Correct Answer:</strong>
+                            </p>
+                            <ButtonGroup className="gap-1 mt-0 p-0">
+                                {q.options.map((_, i) => (
                                     <Button
                                         key={i}
-                                        outline={correctOption === i}
-                                        disabled={correctOption === i}
+                                        outline={q.answer === i}
                                         color={
-                                            correctOption === i
+                                            q.answer === i
                                                 ? "success"
                                                 : "warning"
+                                        }
+                                        onClick={() =>
+                                            this.handleCorrectOptionChange(
+                                                questionIndex,
+                                                i
+                                            )
                                         }
                                     >
                                         {i + 1}
                                     </Button>
-                                );
-                            })}
-                        </ButtonGroup>
+                                ))}
+                            </ButtonGroup>
+                        </div>
                     </div>
-                </div>
-                <Alert
-                    color={this.state.answerIsCurrect ? "success" : "danger"}
-                    className="mx-2 my-2"
-                    isOpen={this.state.alertMessage}
-                    toggle={() => {
-                        if (this.state.answerIsCurrect === true) {
-                            this.nextQuestion();
-                        }
-                        this.setState({
-                            alertMessage: null,
-                            answerIsCurrect: null,
-                            selectedOptions: null,
-                        });
-                    }}
-                >
-                    {this.state.alertMessage}
-                </Alert>
+                ))}
             </div>
         );
     }
 }
+
 const mapDispatchToProps = {
     // doUpdateCourseProgress,
     // doMarkCourseAsComplete,
@@ -247,7 +182,10 @@ class ContentCard extends Component {
             showModal: false,
             newVideoLink: null,
             newDocLink: null,
-            unsavedChanges: !false,
+            newWriteUp: null,
+            newHeading: null,
+            newTest: null,
+            unsavedChanges: false,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -304,9 +242,10 @@ class ContentCard extends Component {
     triggerModal() {
         this.setState({ showModal: true });
     }
-    componentDidUpdate() {
-        console.log(this.state);
-    }
+
+    // componentDidUpdate() {
+    //     console.log(this.state);
+    // }
     render() {
         if (this.props.modules === undefined || this.props.openUnit === null)
             return <>loading</>;
@@ -346,11 +285,108 @@ class ContentCard extends Component {
                 this.state.newDocLink !== null
                     ? this.state.newDocLink
                     : docLink;
+            const newWriteUp =
+                this.state.newWriteUp !== null
+                    ? this.state.newWriteUp
+                    : writeUp;
+            const newHeading =
+                this.state.newHeading !== null
+                    ? this.state.newHeading
+                    : heading;
+            const newTest =
+                this.state.newTest !== null ? this.state.newTest : test;
+            function isContentMatching(content, newContent) {
+                // Map newContent keys to corresponding content keys
+                const mapping = {
+                    newVideoLink: "videoLink",
+                    newWriteUp: "writeUp",
+                    newDocLink: "docLink",
+                    newTest: "test",
+                };
+                // Iterate through each key in newContent
+                for (const [newField, contentField] of Object.entries(
+                    mapping
+                )) {
+                    const newValue = newContent[newField];
+                    const contentValue = content[contentField];
+
+                    // If newValue is null, continue to the next field
+                    if (newValue === null) continue;
+
+                    // Use deep comparison for objects (e.g., "test")
+                    if (!isEqual(newValue, contentValue)) {
+                       
+                        return false;
+                    }
+                }
+
+                return true;
+            }
             const onChangeValue = (e) => {
                 let { name, value } = e.target;
-                this.setState({ newVideoLink: value });
+                // console.log(name);
+                this.setState({ [name]: value }, function () {
+                    const {
+                        newHeading,
+                        newWriteUp,
+                        newDocLink,
+                        newTest,
+                        newVideoLink,
+                    } = this.state;
+                    let hasChanges = !isContentMatching(content, {
+                        newWriteUp,
+                        newDocLink,
+                        newTest,
+                        newVideoLink,
+                    });
+                    if (newHeading) {
+                        hasChanges = newHeading !== heading;
+                    }
+                    this.setState({ unsavedChanges: hasChanges });
+                });
             };
             const { unsavedChanges } = this.state;
+            const handleDiscardChanges = () => {
+                this.setState({
+                    showModal: false,
+                    newVideoLink: null,
+                    newDocLink: null,
+                    newWriteUp: null,
+                    newHeading: null,
+                    newTest: null,
+                    unsavedChanges: false,
+                });
+            };
+            const setNewTest = (newTest) =>
+                this.setState(
+                    {
+                        newTest: newTest,
+                    },
+                    function () {
+                        // const hasChanges=isEqual(this.state.newTest,test);
+                        // if(hasChanges){
+                        //     this.setState({unsavedChanges:true})
+                        // }else{
+                        const {
+                            newHeading,
+                            newWriteUp,
+                            newDocLink,
+                            newTest,
+                            newVideoLink,
+                        } = this.state;
+                        let hasChanges = !isContentMatching(content, {
+                            newWriteUp,
+                            newDocLink,
+                            newTest,
+                            newVideoLink,
+                        });
+                        if (newHeading) {
+                            hasChanges = newHeading !== heading;
+                        }
+                        this.setState({ unsavedChanges: hasChanges });
+                        // }
+                    }
+                );
             return (
                 <div className="mx-lg-5 px-lg-4">
                     {heading && (
@@ -361,7 +397,9 @@ class ContentCard extends Component {
                                 rows="1"
                                 required
                                 className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
-                                value={heading}
+                                value={newHeading}
+                                placeholder={newHeading}
+                                name="newHeading"
                                 onChange={onChangeValue}
                             />
                         </div>
@@ -385,6 +423,7 @@ class ContentCard extends Component {
                             <Input
                                 className="col-6"
                                 value={newVideoLink}
+                                name="newVideoLink"
                                 placeholder={newVideoLink}
                                 onChange={onChangeValue}
                             />
@@ -393,7 +432,6 @@ class ContentCard extends Component {
                                     className="col col-md-2"
                                     color="danger"
                                     onClick={() => {
-                                        console.log("hi");
                                         this.setState({ newVideoLink: "" });
                                     }}
                                 >
@@ -420,6 +458,7 @@ class ContentCard extends Component {
                             <Input
                                 className="mt-1"
                                 value={newDocLink}
+                                name="newDocLink"
                                 placeholder={newDocLink}
                                 onChange={onChangeValue}
                             />
@@ -444,7 +483,9 @@ class ContentCard extends Component {
                             type="textarea"
                             rows="15"
                             className="mt-1 border-0 border-bottom border-3"
-                            value={writeUp}
+                            value={newWriteUp}
+                            name="newWriteUp"
+                            placeholder={newWriteUp}
                             onChange={onChangeValue}
                         />
                         <div className="mt-2 d-flex justify-content-end">
@@ -461,22 +502,32 @@ class ContentCard extends Component {
                         </div>
                     </p>
 
-                    <ConnectedQuestionCard
-                        test={test || []}
+                    <QuestionCard
+                        test={newTest || []}
+                        setNewTest={setNewTest}
                         getNextUnit={this.getNextUnit}
                         triggerModal={() => this.setState({ showModal: true })}
+                        onChangeValue={onChangeValue}
                     />
-                    {unsavedChanges && (
-                        <div className=" m-5 bg-white rounded row gap-3 p-2">
-                            <Button disabled color="success" className="col">
-                                Save
-                            </Button>
-                            <Button disabled color="danger" className="col">
-                                <i classname="bi bi-trash me-2" />
-                                Discard
-                            </Button>
-                        </div>
-                    )}
+
+                    <div className=" my-5 px-5 py-3 bg-white rounded row gap-3 p-2">
+                        <Button
+                            disabled={!unsavedChanges}
+                            color="success"
+                            className="col"
+                        >
+                            Save
+                        </Button>
+                        <Button
+                            disabled={!unsavedChanges}
+                            color="danger"
+                            className="col"
+                            onClick={handleDiscardChanges}
+                        >
+                            <i classname="bi bi-trash me-2" />
+                            Discard
+                        </Button>
+                    </div>
                 </div>
             );
         }
