@@ -18,6 +18,46 @@ const doGetCourseDetails = createAsyncThunk(
         }
     }
 );
+const doUpdateCourseUnit = createAsyncThunk(
+    "courses/updateCourseUnit",
+    async ({ newContent, headingName, moduleIndex }, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
+            }
+            const courseId = state.course?.course[0].courseId;
+            let newCourseData = structuredClone(state.course?.course[0]);
+            let done = false;
+            if (moduleIndex[2] !== -1) {
+                newCourseData.modules[moduleIndex[0]].headings[
+                    moduleIndex[1]
+                ].subheadings[moduleIndex[2]].content = newContent;
+                newCourseData.modules[moduleIndex[0]].headings[
+                    moduleIndex[1]
+                ].subheadings[moduleIndex[2]].subheadingName = headingName;
+                done = true;
+            } else if (!done && moduleIndex[1] !== -1) {
+                newCourseData.modules[moduleIndex[0]].headings[
+                    moduleIndex[1]
+                ].content = newContent;
+                newCourseData.modules[moduleIndex[0]].headings[
+                    moduleIndex[1]
+                ].headingName = headingName;
+                done = true;
+            } else if (!done) {
+                newCourseData.modules[moduleIndex[0]].content = newContent;
+                newCourseData.modules[moduleIndex[0]].moduleName = headingName;
+            }
+            console.log(newCourseData);
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -47,10 +87,22 @@ const courseSlice = createSlice({
             .addCase(doGetCourseDetails.rejected, (state, action) => {
                 state.courseLoading = false;
                 state.courseError = action.error.message;
+            })
+            .addCase(doUpdateCourseUnit.pending, (state) => {
+                state.courseLoading = true;
+            })
+            .addCase(doUpdateCourseUnit.rejected, (state, action) => {
+                state.courseLoading = false;
+                state.courseError = action.error.message;
+            })
+            .addCase(doUpdateCourseUnit.fulfilled, (state, action) => {
+                state.courseLoading = false;
+                state.courseSuccess = "Courses data updated";
+                // state.course = action.payload;
             });
     },
 });
 export default courseSlice.reducer;
 export const { resetCourseMessages, clearOtherUserCoursesInfo } =
     courseSlice.actions;
-export { doGetCourseDetails };
+export { doGetCourseDetails, doUpdateCourseUnit };

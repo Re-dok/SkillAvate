@@ -6,6 +6,7 @@ import {
     ModalBody,
     Input,
     ButtonGroup,
+    FormFeedback,
 } from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
@@ -18,6 +19,10 @@ import withRouter from ".././WithRouter";
 import bcrypt from "bcryptjs";
 import isEqual from "lodash/isEqual";
 import { flatMap } from "lodash";
+import {
+    doUpdateCourseUn,
+    doUpdateCourseUnit,
+} from "../../features/course/courseSlice";
 class QuestionCard extends Component {
     constructor(props) {
         super(props);
@@ -85,7 +90,25 @@ class QuestionCard extends Component {
         });
         this.props.setNewTest(this.state.newTest);
     };
-
+    handleOnBlur = (e, questionIndex, optionIndex = null) => {
+        const { name, value } = e.target;
+        this.setState((prevState) => {
+            const updatedTest = [...prevState.newTest];
+            if (optionIndex !== null) {
+                // Update specific option
+                updatedTest[questionIndex].options[optionIndex] = value
+                    ?.replace(/\s+/g, " ")
+                    .trim();
+            } else {
+                // Update the question
+                updatedTest[questionIndex][name] = value
+                    ?.replace(/\s+/g, " ")
+                    .trim();
+            }
+            return { newTest: updatedTest };
+        });
+        this.props.setNewTest(this.state.newTest);
+    };
     handleCorrectOptionChange = (questionIndex, answer) => {
         this.setState((prevState) => {
             const updatedTest = [...prevState.newTest];
@@ -94,7 +117,6 @@ class QuestionCard extends Component {
         });
         this.props.setNewTest(this.state.newTest);
     };
-
     render() {
         const { newTest } = this.state;
 
@@ -116,7 +138,14 @@ class QuestionCard extends Component {
                                     this.handleInputChange(e, questionIndex)
                                 }
                                 placeholder="Edit Question"
+                                invalid={q.question.length == 0}
+                                onBlur={(e) =>
+                                    this.handleOnBlur(e, questionIndex)
+                                }
                             />
+                            <FormFeedback invalid>
+                                Add a question or remove the card!
+                            </FormFeedback>
                         </div>
                         <strong>Options :</strong>
                         {q.options.map((option, optionIndex) => (
@@ -131,7 +160,18 @@ class QuestionCard extends Component {
                                         )
                                     }
                                     placeholder={`Option ${optionIndex + 1}`}
+                                    invalid={option.length == 0}
+                                    onBlur={(e) =>
+                                        this.handleOnBlur(
+                                            e,
+                                            questionIndex,
+                                            optionIndex
+                                        )
+                                    }
                                 />
+                                <FormFeedback invalid>
+                                    Option can not be empty!
+                                </FormFeedback>
                             </div>
                         ))}
                         <div className="mt-3">
@@ -167,14 +207,6 @@ class QuestionCard extends Component {
     }
 }
 
-const mapDispatchToProps = {
-    // doUpdateCourseProgress,
-    // doMarkCourseAsComplete,
-};
-const ConnectedQuestionCard = connect(
-    null,
-    mapDispatchToProps
-)(withRouter(QuestionCard));
 class ContentCard extends Component {
     constructor(props) {
         super(props);
@@ -187,7 +219,8 @@ class ContentCard extends Component {
             newHeading: null,
             newTest: null,
             unsavedChanges: false,
-            flag:false
+            flag: false,
+            headingIsInvalid: false,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -241,13 +274,15 @@ class ContentCard extends Component {
         }
         return [i, j, k, 0, 0, false];
     }
+    componentDidUpdate(prevProps) {
+        if (prevProps !== this.props) {
+            this.setState({ flag: !this.state.flag });
+            window.scrollTo(0, 0);
+        }
+    }
     triggerModal() {
         this.setState({ showModal: true });
     }
-
-    // componentDidUpdate() {
-    //     console.log(this.state);
-    // }
     render() {
         if (this.props.modules === undefined || this.props.openUnit === null)
             return <>loading</>;
@@ -298,24 +333,18 @@ class ContentCard extends Component {
             const newTest =
                 this.state.newTest !== null ? this.state.newTest : test;
             function isContentMatching(content, newContent) {
-                // Map newContent keys to corresponding content keys
                 const mapping = {
                     newVideoLink: "videoLink",
                     newWriteUp: "writeUp",
                     newDocLink: "docLink",
                     newTest: "test",
                 };
-                // Iterate through each key in newContent
                 for (const [newField, contentField] of Object.entries(
                     mapping
                 )) {
                     const newValue = newContent[newField];
                     const contentValue = content[contentField];
-
-                    // If newValue is null, continue to the next field
                     if (newValue === null) continue;
-
-                    // Use deep comparison for objects (e.g., "test")
                     if (!isEqual(newValue, contentValue)) {
                         return false;
                     }
@@ -340,11 +369,23 @@ class ContentCard extends Component {
                 if (newHeading) {
                     hasChanges = newHeading !== heading;
                 }
+                if (newHeading === "") {
+                    this.setState({ headingIsInvalid: true });
+                } else if (newHeading !== null) {
+                    this.setState({ headingIsInvalid: false });
+                }
                 this.setState({ unsavedChanges: hasChanges });
             };
             const onChangeValue = (e) => {
                 let { name, value } = e.target;
                 this.setState({ [name]: value }, checkForChanges);
+            };
+            const onBlurValue = (e) => {
+                let { name, value } = e.target;
+                // Trim leading and trailing whitespace on blur
+                this.setState({
+                    [name]: value?.replace(/\s+/g, " ").trim() || "",
+                });
             };
             const { unsavedChanges } = this.state;
             const setNewTest = (newTest) =>
@@ -363,9 +404,36 @@ class ContentCard extends Component {
                     newHeading: null,
                     newTest: null,
                     unsavedChanges: false,
-                    flag:!this.state.flag
+                    flag: !this.state.flag,
                 });
             };
+            const handleSubmit = () => {
+                const newContent = {
+                    videoLink: newVideoLink,
+                    docLink: newDocLink,
+                    writeUp: newWriteUp,
+                    test: newTest,
+                };
+                const headingName = newHeading;
+                // newHeading?.replace(/\s+/g, " ").trim() || "";
+                // // Trim each value
+                // for (const [key, value] of Object.entries(newContent)) {
+                //     if (key !== "test")
+                //         newContent[key] =
+                //             value?.replace(/\s+/g, " ").trim() || "";
+                // }
+                // if (headingName === "") {
+                //     this.setState({ headingIsInvalid: true });
+                //     window.scrollTo(0, 0);
+                //     return;
+                // }
+                this.props.doUpdateCourseUnit({
+                    newContent,
+                    headingName,
+                    moduleIndex: [i, j, k],
+                });
+            };
+
             return (
                 <div className="mx-lg-5 px-lg-4">
                     {heading && (
@@ -377,10 +445,15 @@ class ContentCard extends Component {
                                 required
                                 className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
                                 value={newHeading}
-                                placeholder="Heading required!"
+                                placeholder="Heading Here!"
                                 name="newHeading"
                                 onChange={onChangeValue}
+                                invalid={newHeading.length == 0}
+                                onBlur={onBlurValue}
                             />
+                            <FormFeedback invalid>
+                                Heading is Required!
+                            </FormFeedback>
                         </div>
                     )}
 
@@ -405,6 +478,7 @@ class ContentCard extends Component {
                                 name="newVideoLink"
                                 placeholder={newVideoLink}
                                 onChange={onChangeValue}
+                                onBlur={onBlurValue}
                             />
                             <div className="mt-2 p-0 d-flex justify-content-end">
                                 <Button
@@ -443,6 +517,7 @@ class ContentCard extends Component {
                                 name="newDocLink"
                                 placeholder={newDocLink}
                                 onChange={onChangeValue}
+                                onBlur={onBlurValue}
                             />
                             <div className="mt-2 d-flex justify-content-end">
                                 <Button
@@ -472,6 +547,7 @@ class ContentCard extends Component {
                             name="newWriteUp"
                             placeholder={newWriteUp}
                             onChange={onChangeValue}
+                            onBlur={onBlurValue}
                         />
                         <div className="mt-2 d-flex justify-content-end">
                             <Button
@@ -498,13 +574,14 @@ class ContentCard extends Component {
                         getNextUnit={this.getNextUnit}
                         triggerModal={() => this.setState({ showModal: true })}
                         onChangeValue={onChangeValue}
+                        onBlurValue={onBlurValue}
                     />
-
                     <div className=" my-5 px-5 py-3 bg-white rounded row gap-3 p-2">
                         <Button
                             disabled={!unsavedChanges}
                             color="success"
                             className="col"
+                            onClick={handleSubmit}
                         >
                             Save
                         </Button>
@@ -523,4 +600,13 @@ class ContentCard extends Component {
         }
     }
 }
-export default withRouter(ContentCard);
+const mapDispatchToProps = {
+    // doUpdateCourseProgress,
+    // doMarkCourseAsComplete,
+    doUpdateCourseUnit,
+};
+const ConnectedContentCard = connect(
+    null,
+    mapDispatchToProps
+)(withRouter(ContentCard));
+export default ConnectedContentCard;
