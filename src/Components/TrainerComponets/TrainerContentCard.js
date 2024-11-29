@@ -1,16 +1,22 @@
-import { Button, Input, ButtonGroup, FormFeedback } from "reactstrap";
+import {
+    Button,
+    Input,
+    ButtonGroup,
+    FormFeedback,
+    Modal,
+    ModalBody,
+} from "reactstrap";
 import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import { doUpdateCourseUnit } from "../../features/course/courseSlice";
-
+// FIXME add or remove moduleDisp
 class ContentCard extends Component {
     constructor(props) {
         super(props);
         this.getNextUnit = this.getNextUnit.bind(this);
         this.state = {
-            showModal: false,
             newVideoLink: null,
             newDocLink: null,
             newWriteUp: null,
@@ -18,6 +24,7 @@ class ContentCard extends Component {
             newTest: null,
             unsavedChanges: false,
             headingIsInvalid: false,
+            showModal: false,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -213,7 +220,8 @@ class ContentCard extends Component {
             };
             const handleSubmit = () => {
                 if (!isValidSubmission(newHeading, newTest)) {
-                    return alert("Make sure All required Fields Are filled!");
+                    this.setState({ showModal: true });
+                    return;
                 }
                 const newContent = {
                     videoLink: newVideoLink,
@@ -507,6 +515,15 @@ class ContentCard extends Component {
                             </Button>
                         </div>
                     </div>
+                    <Modal
+                        isOpen={this.state.showModal}
+                        toggle={() => this.setState({ showModal: false })}
+                    >
+                        <ModalBody className="pb-5 rounded p-4">
+                            Please ensure all necessary fields, such as the
+                            heading and at least one question, are filled in.
+                        </ModalBody>
+                    </Modal>
                 </div>
             );
         }

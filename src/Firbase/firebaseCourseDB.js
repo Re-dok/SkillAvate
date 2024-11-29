@@ -5,6 +5,8 @@ import {
     collection,
     addDoc,
     doc,
+    updateDoc,
+    getDoc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
@@ -26,20 +28,23 @@ async function updateCourseDetails(courseId, newCourse) {
         // Create a query to find the course by courseId
         const q = query(coursesRef, where("courseId", "==", courseId));
         const querySnapshot = await getDocs(q);
-
         if (querySnapshot.empty) {
             throw new Error("Course not found");
         }
+        const docSnapshot = querySnapshot.docs[0];
+        const courseDocRef = doc(db, "courses", docSnapshot.id);
 
-        // Assuming courseId is unique, update the first matching document
-        querySnapshot.forEach(async (docSnapshot) => {
-            const courseDocRef = doc(db, "courses", docSnapshot.id);
-            // await updateDoc(courseDocRef, newCourse); // Update the document with newCourse data
-            console.log(
-                `Course with courseId ${courseId} successfully updated.${courseDocRef}`
-            );
-        });
-        return true;
+        // Update the document with newCourse data
+        await updateDoc(courseDocRef, newCourse);
+
+        // Fetch the updated document
+        const updatedDoc = await getDoc(courseDocRef);
+
+        if (updatedDoc.exists()) {
+            return { ...updatedDoc.data() }; // Return updated data
+        } else {
+            throw new Error("No such document found after update.");
+        }
     } catch (error) {
         throw new Error("Error updating course details:", error);
     }
@@ -326,4 +331,4 @@ async function addCourse() {
     await addDoc(coursesRef, course);
     return "courese added!";
 }
-export { getCourseDetails, addCourse };
+export { getCourseDetails, addCourse, updateCourseDetails };

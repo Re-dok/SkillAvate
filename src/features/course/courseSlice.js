@@ -1,5 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { getCourseDetails } from "../../Firbase/firebaseCourseDB";
+import {
+    getCourseDetails,
+    updateCourseDetails,
+} from "../../Firbase/firebaseCourseDB";
 
 const initialState = {
     course: [],
@@ -52,7 +55,8 @@ const doUpdateCourseUnit = createAsyncThunk(
                 newCourseData.modules[moduleIndex[0]].content = newContent;
                 newCourseData.modules[moduleIndex[0]].moduleName = headingName;
             }
-            console.log(newCourseData);
+            const resp = await updateCourseDetails(courseId, newCourseData);
+            return resp;
         } catch (error) {
             throw new Error(error.message);
         }
@@ -97,8 +101,8 @@ const courseSlice = createSlice({
             })
             .addCase(doUpdateCourseUnit.fulfilled, (state, action) => {
                 state.courseLoading = false;
+                state.course[0] = action.payload;
                 state.courseSuccess = "Courses data updated";
-                // state.course = action.payload;
             });
     },
 });
