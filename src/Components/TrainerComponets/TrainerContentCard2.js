@@ -1,11 +1,11 @@
 import { Button, Input, ButtonGroup, FormFeedback } from "reactstrap";
 import React, { Component } from "react";
-import ReactPlayer from "react-player";
+// import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
+import bcrypt from "bcryptjs";
 import isEqual from "lodash/isEqual";
 import { doUpdateCourseUnit } from "../../features/course/courseSlice";
-
 class ContentCard extends Component {
     constructor(props) {
         super(props);
@@ -72,11 +72,13 @@ class ContentCard extends Component {
         }
         return [i, j, k, 0, 0, false];
     }
-    componentDidUpdate(prevProps) {
-        if (prevProps !== this.props) {
-            window.scrollTo(0, 0);
-        }
-    }
+    //     componentDidUpdate(prevProps) {
+    //         console.log(this.state);
+    //         if (prevProps !== this.props) {
+    //             this.setState({ flag: !this.state.flag });
+    //             window.scrollTo(0, 0);
+    //         }
+    //     }
     triggerModal() {
         this.setState({ showModal: true });
     }
@@ -260,154 +262,6 @@ class ContentCard extends Component {
 
             return (
                 <div className="mx-lg-5 px-lg-4">
-                    <div className=" mb-5 mt-3 my-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
-                        <Button
-                            // disabled={!unsavedChanges}
-                            color="success"
-                            className="col"
-                            onClick={handleSubmit}
-                        >
-                            Save
-                        </Button>
-                        <Button
-                            // disabled={!unsavedChanges}
-                            color="danger"
-                            className="col"
-                            onClick={handleDiscardChanges}
-                        >
-                            <i classname="bi bi-trash me-2" />
-                            Discard
-                        </Button>
-                    </div>
-                    {heading && (
-                        <div className="fw-bold mb-3">
-                            <i classname="bi bi-pencil-fill me-2" />
-                            Edit Heading :
-                            <Input
-                                rows="1"
-                                required
-                                className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
-                                value={newHeading}
-                                placeholder="Heading Here!"
-                                name="newHeading"
-                                onChange={onChangeValue}
-                                invalid={newHeading.length == 0}
-                                onBlur={onBlurValue}
-                            />
-                            <FormFeedback invalid>
-                                Heading is Required!
-                            </FormFeedback>
-                        </div>
-                    )}
-
-                    <div className="rounded position-relative fw-light bg-white mb-4">
-                        <div className="p-4">
-                            <i className="bi bi-camera-reels me-2"></i>
-                            Lecture Assignment
-                        </div>
-                        <ReactPlayer
-                            url={videoLink || ""}
-                            width={"100%"}
-                            controls
-                        ></ReactPlayer>
-                        <div className="p-4 row row-cols-1">
-                            <strong className="col mb-2">
-                                <i classname="bi bi-pencil-fill me-2" />
-                                <strong>Edit Lecture Link :</strong>
-                            </strong>
-                            <Input
-                                className="col-6"
-                                value={newVideoLink}
-                                name="newVideoLink"
-                                placeholder={newVideoLink}
-                                onChange={onChangeValue}
-                                onBlur={onBlurValue}
-                            />
-                            <div className="mt-2 p-0 d-flex justify-content-end">
-                                <Button
-                                    className="col col-md-2"
-                                    color="danger"
-                                    onClick={() => {
-                                        this.setState(
-                                            { newVideoLink: "" },
-                                            checkForChanges
-                                        );
-                                    }}
-                                >
-                                    <i classname="bi bi-trash me-2"></i>Remove
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div
-                            role="button"
-                            onClick={() => this.openReadingAssignment(docLink)}
-                            className="rounded rounded-pill col-lg-5 col-md-6 position-relative fw-light bg-white p-4"
-                        >
-                            <i className="bi bi-journal-bookmark me-2"></i>
-                            Reading Assignment
-                        </div>
-                        <div className="rounded fw-light bg-white my-2 px-3 pb-2 pt-3">
-                            <strong className="col mb-2">
-                                <i classname="bi bi-pencil-fill me-2" />
-                                <strong>Edit Reading Assignment Link :</strong>
-                            </strong>
-                            <Input
-                                className="mt-1"
-                                value={newDocLink}
-                                name="newDocLink"
-                                placeholder={newDocLink}
-                                onChange={onChangeValue}
-                                onBlur={onBlurValue}
-                            />
-                            <div className="mt-2 d-flex justify-content-end">
-                                <Button
-                                    className="col col-md-2"
-                                    color="danger"
-                                    onClick={() => {
-                                        this.setState(
-                                            { newDocLink: "" },
-                                            checkForChanges
-                                        );
-                                    }}
-                                >
-                                    <i classname="bi bi-trash me-2"></i>Remove
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <p className="rounded bg-white p-4 my-3 mb-4">
-                        <i classname="bi bi-pencil-fill me-2" />
-                        <strong>Edit Writeup</strong>
-                        <Input
-                            type="textarea"
-                            rows="15"
-                            className="mt-1 border-0 border-bottom border-3"
-                            value={newWriteUp}
-                            name="newWriteUp"
-                            placeholder={newWriteUp}
-                            onChange={onChangeValue}
-                            onBlur={onBlurValue}
-                        />
-                        <div className="mt-2 d-flex justify-content-end">
-                            <Button
-                                disabled={writeUp === ""}
-                                className="col col-md-2"
-                                color="danger"
-                                onClick={() => {
-                                    this.setState(
-                                        { newWriteUp: "" },
-                                        checkForChanges
-                                    );
-                                }}
-                            >
-                                <i classname="bi bi-trash me-2"></i>Remove
-                            </Button>
-                        </div>
-                    </p>
                     <div>
                         {newTest.map((q, questionIndex) => (
                             <div
