@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
-import isEqual from "lodash/isEqual";
 import { doUpdateCourseUnit } from "../../features/course/courseSlice";
 
 class ContentCard extends Component {
@@ -129,50 +128,20 @@ class ContentCard extends Component {
                     : heading;
             const newTest =
                 this.state.newTest !== null ? this.state.newTest : test;
-            function isContentMatching(content, newContent) {
-                const mapping = {
-                    newVideoLink: "videoLink",
-                    newWriteUp: "writeUp",
-                    newDocLink: "docLink",
-                    newTest: "test",
-                };
-                for (const [newField, contentField] of Object.entries(
-                    mapping
-                )) {
-                    const newValue = newContent[newField];
-                    const contentValue = content[contentField];
-                    if (newValue === null) continue;
-                    if (!isEqual(newValue, contentValue)) {
-                        return false;
+            function isValidSubmission(newHeading, newTest) {
+                if (newHeading) {
+                    for (let q of newTest) {
+                        if (q.question) {
+                            for (let option of q.options) {
+                                if (!option) return false;
+                            }
+                        } else {
+                            return false;
+                        }
                     }
-                }
-
+                } else return false;
                 return true;
             }
-            const checkForChanges = () => {
-                const {
-                    newHeading,
-                    newWriteUp,
-                    newDocLink,
-                    newTest,
-                    newVideoLink,
-                } = this.state;
-                let hasChanges = !isContentMatching(content, {
-                    newWriteUp,
-                    newDocLink,
-                    newTest,
-                    newVideoLink,
-                });
-                if (newHeading) {
-                    hasChanges = newHeading !== heading;
-                }
-                if (newHeading === "") {
-                    this.setState({ headingIsInvalid: true });
-                } else if (newHeading !== null) {
-                    this.setState({ headingIsInvalid: false });
-                }
-                this.setState({ unsavedChanges: hasChanges });
-            };
             const onChangeValue = (
                 e,
                 questionIndex = null,
@@ -203,7 +172,7 @@ class ContentCard extends Component {
                         return { newTest: updatedTest };
                     });
                 } else {
-                    this.setState({ [name]: value }, checkForChanges);
+                    this.setState({ [name]: value });
                 }
             };
             const onBlurValue = (e, questionIndex, optionIndex = null) => {
@@ -243,6 +212,9 @@ class ContentCard extends Component {
                 });
             };
             const handleSubmit = () => {
+                if (!isValidSubmission(newHeading, newTest)) {
+                    return alert("Make sure All required Fields Are filled!");
+                }
                 const newContent = {
                     videoLink: newVideoLink,
                     docLink: newDocLink,
@@ -257,10 +229,31 @@ class ContentCard extends Component {
                     moduleIndex: [i, j, k],
                 });
             };
-
+            const removeQuestion = (questionIndex) => {
+                this.setState((prevState) => {
+                    const updatedTest = prevState.newTest
+                        ? JSON.parse(JSON.stringify(prevState.newTest))
+                        : JSON.parse(JSON.stringify(newTest));
+                    updatedTest.splice(questionIndex, 1);
+                    return { newTest: updatedTest };
+                });
+            };
+            const addQuestion = () => {
+                this.setState((prevState) => {
+                    const updatedTest = prevState.newTest
+                        ? JSON.parse(JSON.stringify(prevState.newTest))
+                        : JSON.parse(JSON.stringify(newTest));
+                    updatedTest.push({
+                        question: "",
+                        options: ["", "", "", ""],
+                        answer: 0,
+                    });
+                    return { newTest: updatedTest };
+                });
+            };
             return (
                 <div className="mx-lg-5 px-lg-4">
-                    <div className=" mb-5 mt-3 my-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
+                    <div className=" mb-5 mt-3 mt-md-0 mb-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
                         <Button
                             // disabled={!unsavedChanges}
                             color="success"
@@ -279,26 +272,25 @@ class ContentCard extends Component {
                             Discard
                         </Button>
                     </div>
-                    {heading && (
-                        <div className="fw-bold mb-3">
-                            <i classname="bi bi-pencil-fill me-2" />
-                            Edit Heading :
-                            <Input
-                                rows="1"
-                                required
-                                className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
-                                value={newHeading}
-                                placeholder="Heading Here!"
-                                name="newHeading"
-                                onChange={onChangeValue}
-                                invalid={newHeading.length == 0}
-                                onBlur={onBlurValue}
-                            />
-                            <FormFeedback invalid>
-                                Heading is Required!
-                            </FormFeedback>
-                        </div>
-                    )}
+
+                    <div className="fw-bold mb-3">
+                        <i classname="bi bi-pencil-fill me-2" />
+                        Edit Heading :
+                        <Input
+                            rows="1"
+                            required
+                            className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                            value={newHeading}
+                            placeholder="Heading Here!"
+                            name="newHeading"
+                            onChange={onChangeValue}
+                            invalid={newHeading.length === 0}
+                            onBlur={onBlurValue}
+                        />
+                        <FormFeedback invalid>
+                            Heading is Required!
+                        </FormFeedback>
+                    </div>
 
                     <div className="rounded position-relative fw-light bg-white mb-4">
                         <div className="p-4">
@@ -310,7 +302,7 @@ class ContentCard extends Component {
                             width={"100%"}
                             controls
                         ></ReactPlayer>
-                        <div className="p-4 row row-cols-1">
+                        <div className="p-4 pb-2 row row-cols-1">
                             <strong className="col mb-2">
                                 <i classname="bi bi-pencil-fill me-2" />
                                 <strong>Edit Lecture Link :</strong>
@@ -323,15 +315,13 @@ class ContentCard extends Component {
                                 onChange={onChangeValue}
                                 onBlur={onBlurValue}
                             />
-                            <div className="mt-2 p-0 d-flex justify-content-end">
+                            <div className="my-4 p-0 d-flex justify-content-end">
                                 <Button
                                     className="col col-md-2"
                                     color="danger"
+                                    disabled={newVideoLink === ""}
                                     onClick={() => {
-                                        this.setState(
-                                            { newVideoLink: "" },
-                                            checkForChanges
-                                        );
+                                        this.setState({ newVideoLink: "" });
                                     }}
                                 >
                                     <i classname="bi bi-trash me-2"></i>Remove
@@ -362,15 +352,13 @@ class ContentCard extends Component {
                                 onChange={onChangeValue}
                                 onBlur={onBlurValue}
                             />
-                            <div className="mt-2 d-flex justify-content-end">
+                            <div className="my-4 d-flex justify-content-end">
                                 <Button
                                     className="col col-md-2"
                                     color="danger"
+                                    disabled={newDocLink === ""}
                                     onClick={() => {
-                                        this.setState(
-                                            { newDocLink: "" },
-                                            checkForChanges
-                                        );
+                                        this.setState({ newDocLink: "" });
                                     }}
                                 >
                                     <i classname="bi bi-trash me-2"></i>Remove
@@ -379,7 +367,7 @@ class ContentCard extends Component {
                         </div>
                     </div>
 
-                    <p className="rounded bg-white p-4 my-3 mb-4">
+                    <div className="rounded bg-white p-4 pb-2 my-3 mb-4">
                         <i classname="bi bi-pencil-fill me-2" />
                         <strong>Edit Writeup</strong>
                         <Input
@@ -392,22 +380,19 @@ class ContentCard extends Component {
                             onChange={onChangeValue}
                             onBlur={onBlurValue}
                         />
-                        <div className="mt-2 d-flex justify-content-end">
+                        <div className="my-4 d-flex justify-content-end">
                             <Button
-                                disabled={writeUp === ""}
+                                disabled={newWriteUp === ""}
                                 className="col col-md-2"
                                 color="danger"
                                 onClick={() => {
-                                    this.setState(
-                                        { newWriteUp: "" },
-                                        checkForChanges
-                                    );
+                                    this.setState({ newWriteUp: "" });
                                 }}
                             >
                                 <i classname="bi bi-trash me-2"></i>Remove
                             </Button>
                         </div>
-                    </p>
+                    </div>
                     <div>
                         {newTest.map((q, questionIndex) => (
                             <div
@@ -423,7 +408,7 @@ class ContentCard extends Component {
                                             onChangeValue(e, questionIndex)
                                         }
                                         placeholder="Edit Question"
-                                        invalid={q.question.length == 0}
+                                        invalid={q.question.length === 0}
                                         onBlur={(e) =>
                                             onBlurValue(e, questionIndex)
                                         }
@@ -448,7 +433,7 @@ class ContentCard extends Component {
                                             placeholder={`Option ${
                                                 optionIndex + 1
                                             }`}
-                                            invalid={option.length == 0}
+                                            invalid={option.length === 0}
                                             onBlur={(e) =>
                                                 onBlurValue(
                                                     e,
@@ -466,32 +451,61 @@ class ContentCard extends Component {
                                     <p className="mb-1">
                                         <strong>Correct Answer:</strong>
                                     </p>
-                                    <ButtonGroup className="gap-1 mt-0 p-0">
-                                        {q.options.map((_, i) => (
-                                            <Button
-                                                key={i}
-                                                outline={q.answer === i}
-                                                color={
-                                                    q.answer === i
-                                                        ? "success"
-                                                        : "warning"
-                                                }
-                                                name="answer"
-                                                onClick={(e) =>
-                                                    onChangeValue(
-                                                        e,
-                                                        questionIndex,
-                                                        i
-                                                    )
-                                                }
-                                            >
-                                                {i + 1}
-                                            </Button>
-                                        ))}
-                                    </ButtonGroup>
+                                    <div className="d-flex justify-content-between">
+                                        <ButtonGroup className="gap-1 mt-0 p-0">
+                                            {q.options.map((_, i) => (
+                                                <Button
+                                                    key={i}
+                                                    outline={q.answer === i}
+                                                    color={
+                                                        q.answer === i
+                                                            ? "success"
+                                                            : "warning"
+                                                    }
+                                                    name="answer"
+                                                    onClick={(e) =>
+                                                        onChangeValue(
+                                                            e,
+                                                            questionIndex,
+                                                            i
+                                                        )
+                                                    }
+                                                >
+                                                    {i + 1}
+                                                </Button>
+                                            ))}
+                                        </ButtonGroup>
+                                        {newTest.length > 1 && (
+                                            <div>
+                                                <Button
+                                                    color="danger"
+                                                    onClick={() => {
+                                                        removeQuestion(
+                                                            questionIndex
+                                                        );
+                                                    }}
+                                                >
+                                                    <i classname="bi bi-trash me-2"></i>
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
+                        <div className="my-4 d-flex justify-content-center">
+                            <Button
+                                disabled={newWriteUp === ""}
+                                color="success"
+                                onClick={() => {
+                                    addQuestion();
+                                }}
+                            >
+                                <i classname="bi bi-trash me-2"></i>Add New
+                                Question
+                            </Button>
+                        </div>
                     </div>
                 </div>
             );
