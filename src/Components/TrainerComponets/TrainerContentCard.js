@@ -17,6 +17,7 @@ class ContentCard extends Component {
         super(props);
         this.getNextUnit = this.getNextUnit.bind(this);
         this.state = {
+            newModuleDiscp: null,
             newVideoLink: null,
             newDocLink: null,
             newWriteUp: null,
@@ -98,11 +99,13 @@ class ContentCard extends Component {
             const j = this.props.openUnit[1];
             // sybHeading number
             const k = this.props.openUnit[2];
-            const { content, heading } = (() => {
-                let content, heading;
+            const { content, heading, moduleDiscp } = (() => {
+                let content, heading, moduleDiscp;
+                moduleDiscp = false;
                 if (modules[i].content) {
                     content = modules[i].content;
                     heading = modules[i].moduleName;
+                    moduleDiscp = modules[i].moduleDiscp;
                 } else if (modules[i].headings[j].content) {
                     content = modules[i].headings[j].content;
                     heading = modules[i].headings[j].headingName;
@@ -111,7 +114,7 @@ class ContentCard extends Component {
                     heading =
                         modules[i].headings[j].subheadings[k].subheadingName;
                 }
-                return { content, heading };
+                return { content, heading, moduleDiscp };
             })();
             const writeUp = content.writeUp;
             const docLink = content.docLink;
@@ -133,10 +136,17 @@ class ContentCard extends Component {
                 this.state.newHeading !== null
                     ? this.state.newHeading
                     : heading;
+            const newModuleDiscp =
+                this.state.newModuleDiscp !== null
+                    ? this.state.newModuleDiscp
+                    : moduleDiscp;
             const newTest =
                 this.state.newTest !== null ? this.state.newTest : test;
-            function isValidSubmission(newHeading, newTest) {
+            function isValidSubmission(newHeading, newModuleDiscp, newTest) {
                 if (newHeading) {
+                    if (newModuleDiscp !== false) {
+                        if (!newModuleDiscp) return;
+                    }
                     for (let q of newTest) {
                         if (q.question) {
                             for (let option of q.options) {
@@ -216,10 +226,11 @@ class ContentCard extends Component {
                     newHeading: null,
                     newTest: null,
                     unsavedChanges: false,
+                    newModuleDiscp: null,
                 });
             };
             const handleSubmit = () => {
-                if (!isValidSubmission(newHeading, newTest)) {
+                if (!isValidSubmission(newHeading, newModuleDiscp, newTest)) {
                     this.setState({ showModal: true });
                     return;
                 }
@@ -230,10 +241,11 @@ class ContentCard extends Component {
                     test: newTest,
                 };
                 const headingName = newHeading;
-
+                const moduleDiscp = newModuleDiscp;
                 this.props.doUpdateCourseUnit({
                     newContent,
                     headingName,
+                    moduleDiscp,
                     moduleIndex: [i, j, k],
                 });
             };
@@ -299,7 +311,26 @@ class ContentCard extends Component {
                             Heading is Required!
                         </FormFeedback>
                     </div>
-
+                    {newModuleDiscp !== false && (
+                        <div className="fw-bold mb-3">
+                            <i classname="bi bi-pencil-fill me-2" />
+                            Edit Module Discription :
+                            <Input
+                                rows="4"
+                                required
+                                className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                                value={newModuleDiscp}
+                                placeholder="Heading Here!"
+                                name="newModuleDiscp"
+                                onChange={onChangeValue}
+                                invalid={newModuleDiscp.length === 0}
+                                onBlur={onBlurValue}
+                            />
+                            <FormFeedback invalid>
+                                Discription is Required!
+                            </FormFeedback>
+                        </div>
+                    )}
                     <div className="rounded position-relative fw-light bg-white mb-4">
                         <div className="p-4">
                             <i className="bi bi-camera-reels me-2"></i>
