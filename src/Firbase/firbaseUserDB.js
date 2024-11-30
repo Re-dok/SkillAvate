@@ -8,6 +8,7 @@ import {
     updateDoc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import MyClients from "../Pages/TrainerPages/MyClients";
 const usersRef = collection(db, "users");
 
 const addUserToDB = async ({ email, isTrainer }) => {
@@ -127,13 +128,26 @@ async function getUserData(email) {
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        return {
-            isTrainer: userData.isTrainer,
-            isAdmin: userData.isAdmin,
-            isPersistant: userData.isPersistant,
-            email: email,
-            courses: userData.courses,
-        };
+        const {isTrainer,isAdmin}=userData;
+        if(!isTrainer&&!isAdmin){
+            return {
+                isTrainer: userData.isTrainer,
+                isAdmin: userData.isAdmin,
+                isPersistant: userData.isPersistant,
+                email: email,
+                courses: userData.courses,
+            };
+        }
+        else if(isTrainer){
+            return{
+                isTrainer: userData.isTrainer,
+                isAdmin: userData.isAdmin,
+                isPersistant: userData.isPersistant,
+                email: email,
+                courses: userData.courses,
+                myClients:userData.myClients
+            }
+        }
     } else {
         throw new Error("User not found");
     }

@@ -11,7 +11,6 @@ import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import { doUpdateCourseUnit } from "../../features/course/courseSlice";
-// FIXME add or remove moduleDisp
 class ContentCard extends Component {
     constructor(props) {
         super(props);

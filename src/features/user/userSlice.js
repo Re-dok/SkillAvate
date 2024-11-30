@@ -10,6 +10,7 @@ import {
     markCourseAsComplete,
     updateProgress,
 } from "../../Firbase/firbaseUserDB";
+import MyClients from "../../Pages/TrainerPages/MyClients";
 const initialState = {
     loading: false,
     error: "",
@@ -26,6 +27,9 @@ const initialState = {
 
     courses: null,
     courseGrades: null,
+
+    myClients: null,
+
     isLoggedIn: false,
     initialURL: null,
 };
@@ -209,6 +213,8 @@ const userSlice = createSlice({
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
                 state.success = "data fetch Successfull!";
                 state.isLoggedIn = true;
+                if (!action.payload.isAdmin && action.payload.isTrainer)
+                    state.myClients = action.payload.myClients;
             })
             .addCase(doGetUserData.rejected, (state, action) => {
                 state.loading = false;
