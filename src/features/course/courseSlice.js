@@ -23,7 +23,10 @@ const doGetCourseDetails = createAsyncThunk(
 );
 const doUpdateCourseUnit = createAsyncThunk(
     "courses/updateCourseUnit",
-    async ({ newContent, headingName, moduleDiscp,moduleIndex }, { getState }) => {
+    async (
+        { newContent, headingName, moduleDiscp, moduleIndex },
+        { getState }
+    ) => {
         try {
             const state = getState();
             const { isAdmin, isTrainer } = state.user;
@@ -54,7 +57,7 @@ const doUpdateCourseUnit = createAsyncThunk(
             } else if (!done) {
                 newCourseData.modules[moduleIndex[0]].content = newContent;
                 newCourseData.modules[moduleIndex[0]].moduleName = headingName;
-                newCourseData.modules[moduleIndex[0]].moduleDiscp =moduleDiscp ;
+                newCourseData.modules[moduleIndex[0]].moduleDiscp = moduleDiscp;
             }
             // console.log(newCourseData);
             const resp = await updateCourseDetails(courseId, newCourseData);
@@ -74,6 +77,10 @@ const courseSlice = createSlice({
         },
         clearOtherUserCoursesInfo: (state, action) => {
             const currentcourseId = action.payload;
+            if (currentcourseId === null) {
+                state.course = [];
+                return;
+            }
             state.course = state.course.filter(
                 (c) => c.courseId === currentcourseId
             );

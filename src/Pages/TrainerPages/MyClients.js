@@ -2,6 +2,10 @@ import React, { Component } from "react";
 import { Button, Table } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
+import {
+    clearOtherUserCoursesInfo,
+    doGetCourseDetails,
+} from "../../features/course/courseSlice";
 // TODO finish this page
 const mapStateToprops = (state) => {
     return {
@@ -9,25 +13,62 @@ const mapStateToprops = (state) => {
         error: state.user.error,
         success: state.user.success,
         myClients: state.user.myClients,
+        myCourses: state.user.courses,
+        courseData: state.course.course,
     };
 };
+const mapDispatchToProps = {
+    doGetCourseDetails,
+    clearOtherUserCoursesInfo,
+};
 class MyClients extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            myCourseDetails: [],
+        };
+    }
+    async componentDidMount() {
+        const myCourses = [...this.props.myCourses];
+        // console.log(myCourses);
+        myCourses.map(async (course) => {
+            console.log(course);
+            // FIXME change this to ! later
+            if (course.isPublished) {
+                return;
+            }
+            await this.props.doGetCourseDetails(course.courseId);
+            this.setState((prevState) => {
+                let newMycourseDetails = [...prevState.myCourseDetails];
+                newMycourseDetails.push({
+                    courseId: course.courseId,
+                    courseName: this?.props.courseData[0]?.courseName,
+                });
+                console.log(newMycourseDetails);
+                return { myCourseDetails: newMycourseDetails };
+            }, await this.props.clearOtherUserCoursesInfo);
+        });
+    }
+    componentDidUpdate() {
+        console.log(this.state.myCourseDetails);
+    }
     render() {
         const myClients = this.props.myClients;
-        console.log(this.props.courses);
         return (
             <div className="px-2 px-md-5 mx-2 mx-md-5 mt-5">
-                <Table striped>
+                <Table striped responsive>
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Client Email</th>
+                            <th>Course Name</th>
                             <th>Courses Id</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {myClients.map((client, i) => (
-                            <tr>
+                            <tr className="align-content-center justify-content-center align-items-center">
                                 <th
                                     scope="row "
                                     className="align-content-center"
@@ -35,18 +76,56 @@ class MyClients extends Component {
                                     {i + 1}
                                 </th>
                                 <td className="align-content-center">
-                                    {client.clientEmail}
+                                    <div className="">
+                                        {client.clientEmail}{" "}
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        color="success"
+                                        className="mt-2"
+                                    >
+                                        <i class="bi bi-plus-circle-dotted me-2"></i>
+                                        Add Course
+                                    </Button>
                                 </td>
-                                <td className="px-3">
+                                <td className="align-content-center">
+                                    {this.state.myCourseDetails.map(
+                                        (course) => (
+                                            <>
+                                                <div className="py-2 d-flex justify-content-between align-items-center">
+                                                    <p className="mb-0 me-3">
+                                                        {course.courseName}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )
+                                    )}
+                                </td>
+                                <td className="align-content-center">
                                     {client.courses.map((course) => (
                                         <>
-                                            <div className="border-bottom border-2 py-2 d-flex justify-content-between align-items-center">
+                                            <div className="py-2 d-flex justify-content-between align-items-center">
                                                 <p className="mb-0 me-3">
                                                     {course}
+                                                    df4a4c7c-a786-449c-bb57-5e741c32f737
                                                 </p>
+                                            </div>
+                                        </>
+                                    ))}
+                                </td>
+                                <td className="align-content-center">
+                                    {client.courses.map((course) => (
+                                        <>
+                                            <div className=" py-2 d-flex justify-content-between align-items-center">
                                                 <Button
                                                     size="sm"
                                                     color="danger"
+                                                    onClick={() =>
+                                                        alert(
+                                                            client.clientEmail,
+                                                            course
+                                                        )
+                                                    }
                                                 >
                                                     <i class="bi bi-dash-circle-dotted me-2"></i>
                                                     Remove Course
@@ -54,12 +133,6 @@ class MyClients extends Component {
                                             </div>
                                         </>
                                     ))}
-                                    <div className="justify-content-end d-flex py-2">
-                                        <Button size="sm" color="success">
-                                            <i class="bi bi-plus-circle-dotted me-2"></i>
-                                            Add Course
-                                        </Button>
-                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -69,4 +142,7 @@ class MyClients extends Component {
         );
     }
 }
-export default connect(mapStateToprops, null)(withRouter(MyClients));
+export default connect(
+    mapStateToprops,
+    mapDispatchToProps
+)(withRouter(MyClients));
