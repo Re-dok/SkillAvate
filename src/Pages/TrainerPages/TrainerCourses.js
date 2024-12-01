@@ -5,7 +5,7 @@ import {
 } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import { Button, CloseButton, Collapse, Nav } from "reactstrap";
-import { addCourse } from "../../Firbase/firebaseCourseDB";
+import { addCourse, getMyCourses } from "../../Firbase/firebaseCourseDB";
 import withRouter from "../../Components/WithRouter";
 
 class CourseCard extends Component {
@@ -191,9 +191,7 @@ class CourseCard extends Component {
                             {this.state.modules[this.state.openDetatils]
                                 ?.headings && (
                                 <>
-                                    <p
-                                        className="d-inline-block mb-0"
-                                    >
+                                    <p className="d-inline-block mb-0">
                                         Module Overview {"  "}
                                         <i className="bi bi-chevron-down"></i>
                                     </p>
@@ -269,7 +267,7 @@ const ConectedCourseCard = connect(
 )(withRouter(CourseCard));
 const mapStateToPropsForMyCourses = (state) => {
     return {
-        courses: state.user.courses,
+        userEmail: state.user.userCredentials.email,
     };
 };
 class TrainerCourses extends Component {
@@ -277,6 +275,7 @@ class TrainerCourses extends Component {
         super(props);
         this.state = {
             openPublishedCourse: false,
+            courses: [],
         };
     }
     // Make a button and the corresponding page to make an 'add course' page
@@ -289,8 +288,10 @@ class TrainerCourses extends Component {
             alert(err.message);
         }
     };
-    componentDidMount() {
+    async componentDidMount() {
         window.scrollTo(0, 0);
+        const courses = await getMyCourses(this.props.userEmail);
+        this.setState({ courses: courses.coursesData });
     }
     render() {
         const openPublishedCourse = this.state.openPublishedCourse;
@@ -333,7 +334,7 @@ class TrainerCourses extends Component {
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.map((course, courseNumber) => {
+                    {this.state.courses.map((course, courseNumber) => {
                         if (course.isPublished === openPublishedCourse) {
                             return (
                                 <ConectedCourseCard

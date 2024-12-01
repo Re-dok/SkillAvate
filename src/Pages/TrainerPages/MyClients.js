@@ -1,11 +1,13 @@
 import React, { Component } from "react";
-import { Button, Table } from "reactstrap";
+import { Button, Table, Modal, ModalBody, ModalHeader } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
 import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
 } from "../../features/course/courseSlice";
+import { getMyCourses } from "../../Firbase/firebaseCourseDB";
+
 // TODO finish this page
 const mapStateToprops = (state) => {
     return {
@@ -15,6 +17,7 @@ const mapStateToprops = (state) => {
         myClients: state.user.myClients,
         myCourses: state.user.courses,
         courseData: state.course.course,
+        userEmail: state.user.userCredentials.email,
     };
 };
 const mapDispatchToProps = {
@@ -26,33 +29,37 @@ class MyClients extends Component {
         super(props);
         this.state = {
             myCourseDetails: [],
+            showModal: false,
+            modalResp: null,
+            modalMessage: "",
+            // courses: [],
         };
     }
     async componentDidMount() {
-        const myCourses = [...this.props.myCourses];
-        // console.log(myCourses);
-        myCourses.map(async (course) => {
-            console.log(course);
-            // FIXME change this to ! later
+        console.log(this.props.userEmail);
+        const resp = await getMyCourses(this.props.userEmail);
+        const courses = resp.coursesData.map((course) => {
             if (course.isPublished) {
-                return;
+                return course;
             }
-            await this.props.doGetCourseDetails(course.courseId);
-            this.setState((prevState) => {
-                let newMycourseDetails = [...prevState.myCourseDetails];
-                newMycourseDetails.push({
-                    courseId: course.courseId,
-                    courseName: this?.props.courseData[0]?.courseName,
-                });
-                console.log(newMycourseDetails);
-                return { myCourseDetails: newMycourseDetails };
-            }, await this.props.clearOtherUserCoursesInfo);
         });
+        this.setState({ myCourseDetails: courses });
     }
     componentDidUpdate() {
-        console.log(this.state.myCourseDetails);
+        // console.log(this.state.courses);
     }
     render() {
+        const handleRemoveCourse = (e, course, clientEmail) => {
+            this.setState({
+                modalMessage:
+                    "Are you sure you want to remove course " +
+                    course +
+                    " from the client " +
+                    clientEmail,
+                showModal: true,
+            });
+        };
+        // const ;
         const myClients = this.props.myClients;
         return (
             <div className="px-2 px-md-5 mx-2 mx-md-5 mt-5">
@@ -107,7 +114,6 @@ class MyClients extends Component {
                                             <div className="py-2 d-flex justify-content-between align-items-center">
                                                 <p className="mb-0 me-3">
                                                     {course}
-                                                    df4a4c7c-a786-449c-bb57-5e741c32f737
                                                 </p>
                                             </div>
                                         </>
@@ -120,10 +126,11 @@ class MyClients extends Component {
                                                 <Button
                                                     size="sm"
                                                     color="danger"
-                                                    onClick={() =>
-                                                        alert(
-                                                            client.clientEmail,
-                                                            course
+                                                    onClick={(e) =>
+                                                        handleRemoveCourse(
+                                                            e,
+                                                            course,
+                                                            client.clientEmail
                                                         )
                                                     }
                                                 >
@@ -138,6 +145,47 @@ class MyClients extends Component {
                         ))}
                     </tbody>
                 </Table>
+                <Modal isOpen={this.state.showModal}>
+                    <ModalHeader className="d-flex justify-content-center mb-0 pb-0">
+                        <i class="bi bi-exclamation-circle fw-bolder fs-1 text-danger"></i>
+                    </ModalHeader>
+                    <ModalBody className="pb-5 p-4 p-4 row gap-3">
+                        <div className="col-12 fw-bold">
+                            {this.state.modalMessage}
+                        </div>
+                        <div className="col gap-3 mx-auto d-flex align-content-center justify-content-center align-items-center">
+                            <Button
+                                className="rounded-3 py-2 fw-bold"
+                                size="sm"
+                                color="danger"
+                                onClick={() => {
+                                    this.setState(
+                                        {
+                                            showModal: false,
+                                            modalMessage: "",
+                                        },
+                                        alert("add remove logic")
+                                    );
+                                }}
+                            >
+                                Remove
+                            </Button>
+                            <Button
+                                className="rounded-3 py-2 fw-bold"
+                                size="sm"
+                                color="warning"
+                                onClick={() => {
+                                    this.setState({
+                                        showModal: false,
+                                        modalMessage: "",
+                                    });
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </ModalBody>
+                </Modal>
             </div>
         );
     }

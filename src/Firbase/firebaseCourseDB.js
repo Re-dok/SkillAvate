@@ -23,6 +23,24 @@ async function getCourseDetails(courseId) {
         throw new Error("Course not found");
     }
 }
+async function getMyCourses(createrEmail) {
+    try{
+
+        const q = query(coursesRef, where("createrEmail", "==", createrEmail));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            const coursesData = querySnapshot.docs.map((doc)=>doc.data());
+            return {
+                coursesData,
+            };
+        } else {
+            return [];
+        }
+    }catch(err){
+        return [];
+        // throw new Error("lol")
+    }
+}
 async function updateCourseDetails(courseId, newCourse) {
     try {
         // Create a query to find the course by courseId
@@ -331,4 +349,4 @@ async function addCourse() {
     await addDoc(coursesRef, course);
     return "courese added!";
 }
-export { getCourseDetails, addCourse, updateCourseDetails };
+export { getCourseDetails, addCourse, updateCourseDetails,getMyCourses };

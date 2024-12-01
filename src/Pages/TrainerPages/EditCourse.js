@@ -302,6 +302,15 @@ class EditCourse extends Component {
             await doGetCourseDetails(courseId);
             courseData = this.props.courseData;
         }
+        // if the course doesnt exist or the course isnt yours to edit, you cant open it
+        if (
+            courseData === undefined ||
+            courseData.length === 0 ||
+            courseData[0]?.createrEmail !== this.props.userEmail
+        ) {
+            this.props.navigate("/notFound");
+            return;
+        }
         const modules = courseData[0].modules;
         let firstUnitCoorditantes = () => {
             return modules[0].content
@@ -403,7 +412,7 @@ const mapStatesToProps = (state) => ({
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,
     courseData: state.course.course,
-    userCourses: state.user.courses,
+    userEmail: state.user.userCredentials.email,
 });
 const mapDispatchToProps = {
     doGetCourseDetails,
