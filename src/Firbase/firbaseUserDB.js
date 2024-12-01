@@ -8,8 +8,6 @@ import {
     updateDoc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
-import MyClients from "../Pages/TrainerPages/MyClients";
-import { first } from "lodash";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
@@ -209,8 +207,8 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
             } catch (error) {
                 throw new Error(error.message);
             }
+            return updatedClients;
         }
-        return true;
     } else {
         throw new Error("Users not found");
     }

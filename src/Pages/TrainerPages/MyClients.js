@@ -3,20 +3,10 @@ import { Button, Table, Modal, ModalHeader } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
 import { getMyCourses } from "../../Firbase/firebaseCourseDB";
-import { addCourseToUser } from "../../Firbase/firbaseUserDB";
+import { doAddCourseToUser } from "../../features/user/userSlice";
 
 // TODO finish this page
-const mapStateToprops = (state) => {
-    return {
-        isLoading: state.user.loading,
-        error: state.user.error,
-        success: state.user.success,
-        myClients: state.user.myClients,
-        myCourses: state.user.courses,
-        courseData: state.course.course,
-        userEmail: state.user.userCredentials.email,
-    };
-};
+
 class MyClients extends Component {
     constructor(props) {
         super(props);
@@ -52,9 +42,10 @@ class MyClients extends Component {
             });
         };
         const handleAddCourse = async () => {
+            alert("hi");
+            this.setState({ isLoading: true });
             const { currentClient, currentCourse, myCourseDetails } =
                 this.state;
-            const trainerEmail = this.props.userEmail;
             const modules = myCourseDetails.filter(
                 (course) => course.courseId == currentCourse
             )[0].modules;
@@ -66,14 +57,12 @@ class MyClients extends Component {
                     : [0, 0, 0];
             };
             const courseProgress = firstUnitCoorditantes();
-
-            await addCourseToUser(
+            const resp = await this.props.doAddCourseToUser({
                 currentClient,
                 currentCourse,
                 courseProgress,
-                trainerEmail
-            );
-            return;
+            });
+            if (resp) this.setState({ isLoading: false });
         };
         const myClients = this.props.myClients;
         const {
@@ -213,6 +202,7 @@ class MyClients extends Component {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                
                                     {myCourseDetails.map((course, i) => (
                                         <tr
                                             role="button"
@@ -292,8 +282,21 @@ class MyClients extends Component {
         );
     }
 }
+const mapStateToprops = (state) => {
+    return {
+        isLoading: state.user.loading,
+        error: state.user.error,
+        success: state.user.success,
+        myClients: state.user.myClients,
+        myCourses: state.user.courses,
+        courseData: state.course.course,
+        userEmail: state.user.userCredentials.email,
+    };
+};
+const mapDispatchToProps = {
+    doAddCourseToUser,
+};
 export default connect(
     mapStateToprops,
-    // mapDispatchToProps
-    null
+    mapDispatchToProps
 )(withRouter(MyClients));
