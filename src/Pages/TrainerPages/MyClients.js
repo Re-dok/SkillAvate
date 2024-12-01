@@ -1,12 +1,9 @@
 import React, { Component } from "react";
-import { Button, Table, Modal, ModalBody, ModalHeader } from "reactstrap";
+import { Button, Table, Modal, ModalHeader } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
-import {
-    clearOtherUserCoursesInfo,
-    doGetCourseDetails,
-} from "../../features/course/courseSlice";
 import { getMyCourses } from "../../Firbase/firebaseCourseDB";
+import { addCourseToUser } from "../../Firbase/firbaseUserDB";
 
 // TODO finish this page
 const mapStateToprops = (state) => {
@@ -20,10 +17,6 @@ const mapStateToprops = (state) => {
         userEmail: state.user.userCredentials.email,
     };
 };
-const mapDispatchToProps = {
-    doGetCourseDetails,
-    clearOtherUserCoursesInfo,
-};
 class MyClients extends Component {
     constructor(props) {
         super(props);
@@ -32,11 +25,13 @@ class MyClients extends Component {
             showModal: false,
             modalResp: null,
             modalMessage: "",
-            // courses: [],
+            isAdd: true,
+            currentClient: null,
+            currentCourse: null,
+            isLoading: false,
         };
     }
     async componentDidMount() {
-        console.log(this.props.userEmail);
         const resp = await getMyCourses(this.props.userEmail);
         const courses = resp.coursesData.map((course) => {
             if (course.isPublished) {
@@ -44,9 +39,6 @@ class MyClients extends Component {
             }
         });
         this.setState({ myCourseDetails: courses });
-    }
-    componentDidUpdate() {
-        // console.log(this.state.courses);
     }
     render() {
         const handleRemoveCourse = (e, course, clientEmail) => {
@@ -59,8 +51,38 @@ class MyClients extends Component {
                 showModal: true,
             });
         };
-        // const ;
+        const handleAddCourse = async () => {
+            const { currentClient, currentCourse, myCourseDetails } =
+                this.state;
+            const trainerEmail = this.props.userEmail;
+            const modules = myCourseDetails.filter(
+                (course) => course.courseId == currentCourse
+            )[0].modules;
+            let firstUnitCoorditantes = () => {
+                return modules[0].content
+                    ? [0, -1, -1]
+                    : modules.headings[0].content
+                    ? [0, 0, -1]
+                    : [0, 0, 0];
+            };
+            const courseProgress = firstUnitCoorditantes();
+
+            await addCourseToUser(
+                currentClient,
+                currentCourse,
+                courseProgress,
+                trainerEmail
+            );
+            return;
+        };
         const myClients = this.props.myClients;
+        const {
+            isAdd,
+            showModal,
+            modalMessage,
+            currentCourse,
+            myCourseDetails,
+        } = this.state;
         return (
             <div className="px-2 px-md-5 mx-2 mx-md-5 mt-5">
                 <Table striped responsive>
@@ -75,7 +97,10 @@ class MyClients extends Component {
                     </thead>
                     <tbody>
                         {myClients.map((client, i) => (
-                            <tr className="align-content-center justify-content-center align-items-center">
+                            <tr
+                                key={i}
+                                className="align-content-center justify-content-center align-items-center"
+                            >
                                 <th
                                     scope="row "
                                     className="align-content-center"
@@ -89,52 +114,76 @@ class MyClients extends Component {
                                     <Button
                                         size="sm"
                                         color="success"
+                                        onClick={(e) => {
+                                            this.setState({
+                                                modalMessage:
+                                                    "Please select the course you'd like to add, for your client: " +
+                                                    client.clientEmail,
+                                                showModal: true,
+                                                isAdd: true,
+                                                currentClient:
+                                                    client.clientEmail,
+                                            });
+                                        }}
                                         className="mt-2"
                                     >
-                                        <i class="bi bi-plus-circle-dotted me-2"></i>
+                                        <i className="bi bi-plus-circle-dotted me-2"></i>
                                         Add Course
                                     </Button>
                                 </td>
                                 <td className="align-content-center">
-                                    {this.state.myCourseDetails.map(
-                                        (course) => (
-                                            <>
-                                                <div className="py-2 d-flex justify-content-between align-items-center">
-                                                    <p className="mb-0 me-3">
-                                                        {course.courseName}
-                                                    </p>
-                                                </div>
-                                            </>
-                                        )
-                                    )}
-                                </td>
-                                <td className="align-content-center">
-                                    {client.courses.map((course) => (
+                                    {client.courses.map((courseId) => (
                                         <>
-                                            <div className="py-2 d-flex justify-content-between align-items-center">
+                                            <div
+                                                key={courseId + "1"}
+                                                className="py-2 d-flex justify-content-between align-items-center"
+                                            >
                                                 <p className="mb-0 me-3">
-                                                    {course}
+                                                    {
+                                                        myCourseDetails.filter(
+                                                            (course) =>
+                                                                course?.courseId ===
+                                                                courseId
+                                                        )[0]?.courseName
+                                                    }
                                                 </p>
                                             </div>
                                         </>
                                     ))}
                                 </td>
                                 <td className="align-content-center">
-                                    {client.courses.map((course) => (
+                                    {client.courses.map((courseId) => (
                                         <>
-                                            <div className=" py-2 d-flex justify-content-between align-items-center">
+                                            <div
+                                                key={courseId + "2"}
+                                                className="py-2 d-flex justify-content-between align-items-center"
+                                            >
+                                                <p className="mb-0 me-3">
+                                                    {courseId}
+                                                </p>
+                                            </div>
+                                        </>
+                                    ))}
+                                </td>
+                                <td className="align-content-center">
+                                    {client.courses.map((courseId) => (
+                                        <>
+                                            <div
+                                                key={courseId + "3"}
+                                                className=" py-2 d-flex justify-content-between align-items-center"
+                                            >
                                                 <Button
                                                     size="sm"
                                                     color="danger"
                                                     onClick={(e) =>
                                                         handleRemoveCourse(
                                                             e,
-                                                            course,
+                                                            courseId,
                                                             client.clientEmail
                                                         )
                                                     }
                                                 >
-                                                    <i class="bi bi-dash-circle-dotted me-2"></i>
+                                                    <i className="bi bi-dash-circle-dotted me-2"></i>
                                                     Remove Course
                                                 </Button>
                                             </div>
@@ -145,30 +194,79 @@ class MyClients extends Component {
                         ))}
                     </tbody>
                 </Table>
-                <Modal isOpen={this.state.showModal}>
-                    <ModalHeader className="d-flex justify-content-center mb-0 pb-0">
-                        <i class="bi bi-exclamation-circle fw-bolder fs-1 text-danger"></i>
-                    </ModalHeader>
-                    <ModalBody className="pb-5 p-4 p-4 row gap-3">
-                        <div className="col-12 fw-bold">
-                            {this.state.modalMessage}
+                <Modal isOpen={showModal}>
+                    {!isAdd ? (
+                        <ModalHeader className="d-flex justify-content-center mb-0 pb-0">
+                            <i className="bi bi-exclamation-circle fw-bolder fs-1 text-danger"></i>
+                        </ModalHeader>
+                    ) : null}
+                    <div className="pb-5 p-4 p-4 row gap-3">
+                        <div className="col-12 fw-bold">{modalMessage}</div>
+                        <div className="col-12 col gap-3 mx-auto d-flex paragram-text align-content-center justify-content-center align-items-center">
+                            <Table responsive hover>
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>Course Name</th>
+                                        <th>Courses Id</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {myCourseDetails.map((course, i) => (
+                                        <tr
+                                            role="button"
+                                            onClick={() => {
+                                                this.setState({
+                                                    currentCourse:
+                                                        course.courseId,
+                                                });
+                                            }}
+                                        >
+                                            <td
+                                                className={
+                                                    currentCourse ===
+                                                    course.courseId
+                                                        ? "bg-info text-light"
+                                                        : ""
+                                                }
+                                            >
+                                                {i + 1}
+                                            </td>
+                                            <td
+                                                className={
+                                                    currentCourse ===
+                                                    course.courseId
+                                                        ? "bg-info text-light"
+                                                        : ""
+                                                }
+                                            >
+                                                {course.courseName}
+                                            </td>
+                                            <td
+                                                className={
+                                                    currentCourse ===
+                                                    course.courseId
+                                                        ? "bg-info text-light"
+                                                        : ""
+                                                }
+                                            >
+                                                {course.courseId}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
                         </div>
                         <div className="col gap-3 mx-auto d-flex align-content-center justify-content-center align-items-center">
                             <Button
                                 className="rounded-3 py-2 fw-bold"
                                 size="sm"
-                                color="danger"
-                                onClick={() => {
-                                    this.setState(
-                                        {
-                                            showModal: false,
-                                            modalMessage: "",
-                                        },
-                                        alert("add remove logic")
-                                    );
-                                }}
+                                color={isAdd ? "success" : "danger"}
+                                onClick={() => handleAddCourse()}
+                                disabled={isAdd && currentCourse === null}
                             >
-                                Remove
+                                {isAdd ? "ADD" : "Remove"}
                             </Button>
                             <Button
                                 className="rounded-3 py-2 fw-bold"
@@ -177,14 +275,18 @@ class MyClients extends Component {
                                 onClick={() => {
                                     this.setState({
                                         showModal: false,
+                                        modalResp: null,
                                         modalMessage: "",
+                                        currentClient: null,
+                                        isAdd: true,
+                                        currentCourse: null,
                                     });
                                 }}
                             >
                                 Cancel
                             </Button>
                         </div>
-                    </ModalBody>
+                    </div>
                 </Modal>
             </div>
         );
@@ -192,5 +294,6 @@ class MyClients extends Component {
 }
 export default connect(
     mapStateToprops,
-    mapDispatchToProps
+    // mapDispatchToProps
+    null
 )(withRouter(MyClients));

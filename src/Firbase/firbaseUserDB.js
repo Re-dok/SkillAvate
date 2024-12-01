@@ -9,8 +9,9 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import MyClients from "../Pages/TrainerPages/MyClients";
+import { first } from "lodash";
 const usersRef = collection(db, "users");
-
+// FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
     await addDoc(usersRef, { email, isTrainer });
 };
@@ -103,10 +104,8 @@ async function markCourseAsComplete(email, courseId) {
         const userData = userDoc.data();
         let updatedCourses = userData.courses.map((course) => {
             if (course.courseId === courseId) {
-                console.log({ ...course, isComplete: true });
                 return { ...course, isComplete: true };
             } else {
-                console.log("hi");
                 return course;
             }
         });
@@ -128,8 +127,8 @@ async function getUserData(email) {
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        const {isTrainer,isAdmin}=userData;
-        if(!isTrainer&&!isAdmin){
+        const { isTrainer, isAdmin } = userData;
+        if (!isTrainer && !isAdmin) {
             return {
                 isTrainer: userData.isTrainer,
                 isAdmin: userData.isAdmin,
@@ -137,20 +136,89 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
             };
-        }
-        else if(isTrainer){
-            return{
+        } else if (isTrainer) {
+            return {
                 isTrainer: userData.isTrainer,
                 isAdmin: userData.isAdmin,
                 isPersistant: userData.isPersistant,
                 email: email,
                 courses: userData.courses,
-                myClients:userData.myClients
-            }
+                myClients: userData.myClients,
+            };
         }
     } else {
         throw new Error("User not found");
     }
 }
-
-export { getUserData, addUserToDB, updateProgress, markCourseAsComplete };
+async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
+    const q = query(usersRef, where("email", "in", [email, trainerEmail]));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[1]
+            : querySnapshot.docs[0];
+        const trainerDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[0]
+            : querySnapshot.docs[1];
+        const userData = userDoc.data();
+        const trainerData = trainerDoc.data();
+        if (
+            userData.courses.filter((course) => course.courseId === courseId)
+                .length === 0
+        ) {
+            const userRef = userDoc.ref;
+            let courseProgress = [...firstUnit];
+            const updatedCourses = userData.courses;
+            const updatedGrades = userData.Grades;
+            courseProgress.push(...[0, 0, false]);
+            updatedCourses.push({
+                courseId: courseId,
+                courseProgress: courseProgress,
+                isComplete: false,
+            });
+            updatedGrades.push({
+                courseId: courseId,
+                courseGrades: [],
+            });
+            try {
+                await updateDoc(userRef, {
+                    courses: updatedCourses,
+                    Grades: updatedGrades,
+                });
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        }
+        if (
+            trainerData.myClients.filter(
+                (client) =>
+                    client.clientEmail === email &&
+                    client.courses.filter((course) => course === courseId)
+                        .length === 0
+            ).length === 1
+        ) {
+            const trainerRef = trainerDoc.ref;
+            let updatedClients = trainerData.myClients.map((client) => {
+                if (client.clientEmail === email) {
+                    client.courses.push(courseId);
+                }
+                return client;
+            });
+            try {
+                await updateDoc(trainerRef, { myClients: updatedClients });
+            } catch (error) {
+                throw new Error(error.message);
+            }
+        }
+        return true;
+    } else {
+        throw new Error("Users not found");
+    }
+}
+export {
+    getUserData,
+    addUserToDB,
+    updateProgress,
+    markCourseAsComplete,
+    addCourseToUser,
+};
