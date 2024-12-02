@@ -6,8 +6,10 @@ import {
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
 import {
+    addCourseToUser,
     getUserData,
     markCourseAsComplete,
+    removeCourseFromUser,
     updateProgress,
 } from "../../Firbase/firbaseUserDB";
 const initialState = {
@@ -26,6 +28,9 @@ const initialState = {
 
     courses: null,
     courseGrades: null,
+
+    myClients: null,
+
     isLoggedIn: false,
     initialURL: null,
 };
@@ -69,7 +74,6 @@ const doMarkCourseAsComplete = createAsyncThunk(
         try {
             const state = getState();
             const { email } = state.user.userCredentials;
-            console.log(courseId);
             const resp = await markCourseAsComplete(email, courseId);
             return resp;
         } catch (error) {
@@ -117,6 +121,41 @@ const doGetUserData = createAsyncThunk(
             let email = getState().user.userCredentials.email;
             if (!email) email = Email;
             const resp = await getUserData(email);
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
+const doAddCourseToUser = createAsyncThunk(
+    "user/addCourseToUser",
+    async ({ currentClient, currentCourse, courseProgress }, { getState }) => {
+        try {
+            const state = getState();
+            const trainerEmail = state.user.userCredentials.email;
+            const resp = await addCourseToUser(
+                currentClient,
+                currentCourse,
+                courseProgress,
+                trainerEmail
+            );
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
+const doRemoveCourseFromUser = createAsyncThunk(
+    "user/removeCourseFromUser",
+    async ({ currentClient, currentCourse }, { getState }) => {
+        try {
+            const state = getState();
+            const trainerEmail = state.user.userCredentials.email;
+            const resp = await removeCourseFromUser(
+                currentClient,
+                currentCourse,
+                trainerEmail
+            );
             return resp;
         } catch (err) {
             throw new Error(err.message);
@@ -209,6 +248,8 @@ const userSlice = createSlice({
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
                 state.success = "data fetch Successfull!";
                 state.isLoggedIn = true;
+                if (!action.payload.isAdmin && action.payload.isTrainer)
+                    state.myClients = action.payload.myClients;
             })
             .addCase(doGetUserData.rejected, (state, action) => {
                 state.loading = false;
@@ -234,12 +275,9 @@ const userSlice = createSlice({
                 const courseIndex = state.courses.findIndex(
                     (course) => course.courseId === action.meta.arg.courseId
                 );
-
                 if (courseIndex !== -1) {
-                    // Update courseProgress for the correct course
                     state.courses[courseIndex].courseProgress = action.payload;
                 }
-                // console.log(action.payload);
             })
             .addCase(doUpdateCourseProgress.rejected, (state, action) => {
                 state.error = action.error.message;
@@ -255,6 +293,30 @@ const userSlice = createSlice({
             .addCase(doMarkCourseAsComplete.fulfilled, (state, action) => {
                 state.loading = false;
                 state.courses = action.payload;
+            })
+            .addCase(doAddCourseToUser.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doAddCourseToUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doAddCourseToUser.fulfilled, (state, action) => {
+                state.loading = false;
+                if(action.payload)
+                state.myClients = action.payload;
+            })
+            .addCase(doRemoveCourseFromUser.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doRemoveCourseFromUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doRemoveCourseFromUser.fulfilled, (state, action) => {
+                state.loading = false;
+                if(action.payload)
+                state.myClients = action.payload;
             });
     },
 });
@@ -266,6 +328,7 @@ export const {
     togglePersistent,
     setInitialURL,
     resetMessages,
+    updatedMyClients,
 } = userSlice.actions;
 export {
     doSignUp,
@@ -275,4 +338,6 @@ export {
     doSignOut,
     doUpdateCourseProgress,
     doMarkCourseAsComplete,
+    doAddCourseToUser,
+    doRemoveCourseFromUser
 };

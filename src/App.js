@@ -20,7 +20,14 @@ import NotFound from "./Pages/NotFound";
 import MyCourses from "./Pages/MyCourses";
 import ExplorePage from "./Pages/ExplorePage";
 import ViewCourse from "./Pages/ViewCourse";
+import TrainerCourses from "./Pages/TrainerPages/TrainerCourses";
+import MyClients from "./Pages/TrainerPages/MyClients";
+import EditCourse from "./Pages/TrainerPages/EditCourse";
 // FIXME make urls from base like the one sir did
+// all the grades irrespective of course id are being stored in the same array, will need to
+// change this logic
+// DONE make sure when ever a user is enrolled into a course, the corresponding fields in the courses db are filled,i,e, MUST HAVE courseId,courseProgress,isComplete intialized
+// TODO the ansers are stored as numbers in unpublished courses, once published the anser string is encoded and then stored.
 class App extends Component {
     constructor(props) {
         super(props);
@@ -58,7 +65,6 @@ class App extends Component {
                             </AdminRoute>
                         }
                     />
-                    {/* TODO remove me before you merge this branch */}
                     <Route
                         path="/myCourses"
                         exact
@@ -66,6 +72,24 @@ class App extends Component {
                             <ClientRoute>
                                 <MyCourses />
                             </ClientRoute>
+                        }
+                    />
+                    <Route
+                        path="/courses"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <TrainerCourses />
+                            </TrainerRoute>
+                        }
+                    />
+                    <Route
+                        path="/myClients"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <MyClients />
+                            </TrainerRoute>
                         }
                     />
                     <Route
@@ -78,6 +102,15 @@ class App extends Component {
                         }
                     />
                     <Route
+                        path="/editCourse/:courseId"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <EditCourse />
+                            </TrainerRoute>
+                        }
+                    />
+                    <Route
                         path="/explore"
                         exact
                         element={
@@ -86,13 +119,14 @@ class App extends Component {
                             </ClientRoute>
                         }
                     />
+                    {/* TODO ask what differnt settings will the users,trainers and clients have, based of which you can create a new common private route or differnet settings for different roles */}
                     <Route
                         path="/settings"
                         exact
                         element={
-                            <ClientRoute>
-                                <>settings</>
-                            </ClientRoute>
+                            // <ClientRoute>
+                            <>settings</>
+                            // </ClientRoute>
                         }
                     />
                     <Route

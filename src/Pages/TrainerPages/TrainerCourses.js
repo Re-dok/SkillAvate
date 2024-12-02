@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
-} from "../features/course/courseSlice";
+} from "../../features/course/courseSlice";
 import { connect } from "react-redux";
-import { Button, CloseButton, Collapse, Progress, Nav } from "reactstrap";
-import { addCourse } from "../Firbase/firebaseCourseDB";
-import withRouter from "../Components/WithRouter";
+import { Button, CloseButton, Collapse, Nav } from "reactstrap";
+import { addCourse, getMyCourses } from "../../Firbase/firebaseCourseDB";
+import withRouter from "../../Components/WithRouter";
 
 class CourseCard extends Component {
     // props = courseId,courseProgress
@@ -15,14 +15,14 @@ class CourseCard extends Component {
         this.state = {
             courseName: null,
             courseDiscp: null,
-            progress: 0,
+
             modules: [],
             // view module details
             openDetatils: -1,
             // view modules
             openModules: false,
             // course overview
-            openHeadings: false,
+
             test: true,
         };
     }
@@ -34,26 +34,15 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        // courseData = this.props.coursesData[this.props.coursesData.length - 1];
         courseData = this.props.coursesData.filter(
             (course) => course.courseId === currentCourseId
         )[0];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
-            let courseProgressPersent;
-            if (this.props.courseProgress) {
-                courseProgressPersent = 100 * this.props.courseProgress[0];
-            } else {
-                courseProgressPersent = 0;
-            }
-            if (modules.length) courseProgressPersent /= modules.length;
-            if (this.props.isComplete) {
-                courseProgressPersent = 100;
-            }
             this.setState({
                 courseName: courseName,
                 modules: modules,
-                progress: courseProgressPersent,
+
                 courseDiscp: courseDiscp,
             });
         }
@@ -75,7 +64,7 @@ class CourseCard extends Component {
                                 size="sm"
                                 onClick={() => {
                                     this.props.navigate(
-                                        `/viewCourse/${this.props.courseId}`
+                                        `/editCourse/${this.props.courseId}`
                                     );
                                     this.props.clearOtherUserCoursesInfo(
                                         this.props.courseId
@@ -83,23 +72,11 @@ class CourseCard extends Component {
                                 }}
                             >
                                 <i className="bi bi-play-circle-fill me-1"></i>{" "}
-                                {this.props.isComplete
+                                {this.props.isPublished
                                     ? "View Course"
-                                    : "Continue Learning"}
+                                    : "Continue Editing"}
                             </Button>
-                            <div className="my-3 mt-4 fw-light">
-                                {this.state.progress}% complete
-                                <Progress
-                                    value={this.state.progress}
-                                    barClassName="bg-primary-o"
-                                    className="mt-1"
-                                    style={{
-                                        height: "7px",
-                                        width: "50%",
-                                        color: "red !important",
-                                    }}
-                                />
-                            </div>
+
                             <div>
                                 <p
                                     role="button"
@@ -214,70 +191,55 @@ class CourseCard extends Component {
                             {this.state.modules[this.state.openDetatils]
                                 ?.headings && (
                                 <>
-                                    <p
-                                        role="button"
-                                        onClick={() =>
-                                            this.setState({
-                                                openHeadings:
-                                                    !this.state.openHeadings,
-                                            })
-                                        }
-                                        className="d-inline-block mb-0"
-                                    >
+                                    <p className="d-inline-block mb-0">
                                         Module Overview {"  "}
-                                        {this.state.openHeadings ? (
-                                            <i className="bi bi-chevron-up"></i>
-                                        ) : (
-                                            <i className="bi bi-chevron-down"></i>
-                                        )}
+                                        <i className="bi bi-chevron-down"></i>
                                     </p>
 
-                                    <Collapse isOpen={this.state.openHeadings}>
-                                        {this.state.modules.map(
-                                            (module, moduleNumber) =>
-                                                moduleNumber ===
-                                                    this.state.openDetatils && (
-                                                    <div key={moduleNumber}>
-                                                        {module.headings.map(
-                                                            (heading, i) => (
-                                                                <div
-                                                                    className="m-0 p-0 ps-2"
-                                                                    key={i}
-                                                                >
-                                                                    <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
-                                                                        <i class="bi bi-dot"></i>{" "}
-                                                                        {
-                                                                            heading.headingName
-                                                                        }
-                                                                    </p>
-                                                                    {heading?.subheadings && (
-                                                                        <div className="d-inline-flex justify-content-start flex-column">
-                                                                            {heading?.subheadings?.map(
-                                                                                (
-                                                                                    subheading,
-                                                                                    i
-                                                                                ) => (
-                                                                                    <div
-                                                                                        className="border rounded-pill mb-2 ms-5 border-2 px-3 py-2 overflow-hidden d-inline-block"
-                                                                                        key={
-                                                                                            i
-                                                                                        }
-                                                                                    >
-                                                                                        {
-                                                                                            subheading.subheadingName
-                                                                                        }
-                                                                                    </div>
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                )
-                                        )}
-                                    </Collapse>
+                                    {this.state.modules.map(
+                                        (module, moduleNumber) =>
+                                            moduleNumber ===
+                                                this.state.openDetatils && (
+                                                <div key={moduleNumber}>
+                                                    {module.headings.map(
+                                                        (heading, i) => (
+                                                            <div
+                                                                className="m-0 p-0 ps-2"
+                                                                key={i}
+                                                            >
+                                                                <p className="my-2 mb-0 p-2 ps-3 overflow-hidden">
+                                                                    <i class="bi bi-dot"></i>{" "}
+                                                                    {
+                                                                        heading.headingName
+                                                                    }
+                                                                </p>
+                                                                {heading?.subheadings && (
+                                                                    <div className="d-inline-flex justify-content-start flex-column">
+                                                                        {heading?.subheadings?.map(
+                                                                            (
+                                                                                subheading,
+                                                                                i
+                                                                            ) => (
+                                                                                <div
+                                                                                    className="border rounded-pill mb-2 ms-5 border-2 px-3 py-2 overflow-hidden d-inline-block"
+                                                                                    key={
+                                                                                        i
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        subheading.subheadingName
+                                                                                    }
+                                                                                </div>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                            )
+                                    )}
                                 </>
                             )}
                         </div>
@@ -305,16 +267,18 @@ const ConectedCourseCard = connect(
 )(withRouter(CourseCard));
 const mapStateToPropsForMyCourses = (state) => {
     return {
-        courses: state.user.courses,
+        userEmail: state.user.userCredentials.email,
     };
 };
-class MyCourses extends Component {
+class TrainerCourses extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            openCompletedCourses: true,
+            openPublishedCourse: false,
+            courses: [],
         };
     }
+    // Make a button and the corresponding page to make an 'add course' page
     // TODO remove me later once the admin pages add Course is done
     addCourse = () => {
         try {
@@ -324,12 +288,13 @@ class MyCourses extends Component {
             alert(err.message);
         }
     };
-    componentDidMount() {
+    async componentDidMount() {
         window.scrollTo(0, 0);
+        const courses = await getMyCourses(this.props.userEmail);
+        this.setState({ courses: courses.coursesData });
     }
     render() {
-        const openCompletedCourses = this.state.openCompletedCourses;
-        let ifIsEmpty = [true, true];
+        const openPublishedCourse = this.state.openPublishedCourse;
         return (
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 pt-3 px-5 px-md-0">
@@ -338,62 +303,47 @@ class MyCourses extends Component {
                             role="button"
                             className={
                                 "nav-text me-3 " +
-                                (openCompletedCourses
+                                (!openPublishedCourse
                                     ? "border-bottom border-5 border-primary-color"
                                     : "")
                             }
                             onClick={() =>
                                 this.setState({
-                                    openCompletedCourses: true,
+                                    openPublishedCourse: false,
                                 })
                             }
                         >
-                            Ongoing
+                            Unannouced
                         </div>
                         <div
                             role="button"
                             onClick={() =>
                                 this.setState({
-                                    openCompletedCourses: false,
+                                    openPublishedCourse: true,
                                 })
                             }
                             className={
                                 "nav-text " +
-                                (!openCompletedCourses
+                                (openPublishedCourse
                                     ? "border-bottom border-5 border-primary-color"
                                     : "")
                             }
                         >
-                            Completed
+                            Published
                         </div>
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.length === 0 && <>Nothing Here!</>}
-                    {this.props.courses.map((course, courseNumber) => {
-                        if (course.isComplete !== openCompletedCourses) {
-                            if (course.isComplete === true) {
-                                ifIsEmpty[0] = false;
-                            } else {
-                                ifIsEmpty[1] = false;
-                            }
+                    {this.state.courses.map((course, courseNumber) => {
+                        if (course.isPublished === openPublishedCourse) {
                             return (
                                 <ConectedCourseCard
                                     key={courseNumber}
                                     courseId={course.courseId}
-                                    courseProgress={course.courseProgress}
-                                    isComplete={course.isComplete}
+                                    isPublished={course.isPublished}
                                 />
                             );
-                        }
-                        if (courseNumber + 1 === this.props.courses.length) {
-                            if (ifIsEmpty[0]) {
-                                return <>Nothing Here!</>;
-                            }
-                            if (ifIsEmpty[1]) {
-                                return <>Nothing Here!</>;
-                            }
-                        }
+                        } else return <>Nothing here!</>;
                     })}
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
@@ -401,4 +351,4 @@ class MyCourses extends Component {
         );
     }
 }
-export default connect(mapStateToPropsForMyCourses, null)(MyCourses);
+export default connect(mapStateToPropsForMyCourses, null)(TrainerCourses);
