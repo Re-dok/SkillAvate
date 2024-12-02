@@ -7,7 +7,6 @@ import { connect } from "react-redux";
 import { Button, CloseButton, Collapse, Nav } from "reactstrap";
 import { addCourse, getMyCourses } from "../../Firbase/firebaseCourseDB";
 import withRouter from "../../Components/WithRouter";
-
 class CourseCard extends Component {
     // props = courseId,courseProgress
     constructor(props) {
@@ -275,10 +274,12 @@ class TrainerCourses extends Component {
         super(props);
         this.state = {
             openPublishedCourse: false,
+            publishedCoursesArePresent: false,
+            unPublishedCoursesArePresent: false,
             courses: [],
         };
     }
-    // Make a button and the corresponding page to make an 'add course' page
+    //TODO Make a button and the corresponding page to make an 'add course' page
     // TODO remove me later once the admin pages add Course is done
     addCourse = () => {
         try {
@@ -294,7 +295,17 @@ class TrainerCourses extends Component {
         this.setState({ courses: courses.coursesData });
     }
     render() {
-        const openPublishedCourse = this.state.openPublishedCourse;
+        const {
+            openPublishedCourse,
+            publishedCoursesArePresent,
+            unPublishedCoursesArePresent,
+        } = this.state;
+        const notePresence = (ofPublished) => {
+            if (ofPublished && !publishedCoursesArePresent)
+                this.setState({ publishedCoursesArePresent: true });
+            if (!ofPublished && !unPublishedCoursesArePresent)
+                this.setState({ unPublishedCoursesArePresent: true });
+        };
         return (
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 pt-3 px-5 px-md-0">
@@ -336,6 +347,7 @@ class TrainerCourses extends Component {
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
                     {this.state.courses.map((course, courseNumber) => {
                         if (course.isPublished === openPublishedCourse) {
+                            notePresence(openPublishedCourse);
                             return (
                                 <ConectedCourseCard
                                     key={courseNumber}
@@ -343,8 +355,16 @@ class TrainerCourses extends Component {
                                     isPublished={course.isPublished}
                                 />
                             );
-                        } else return <>Nothing here!</>;
+                        }
                     })}
+                    {openPublishedCourse &&
+                        !this.state.publishedCoursesArePresent && (
+                            <>Nothing here!</>
+                        )}
+                    {!openPublishedCourse &&
+                        !this.state.unPublishedCoursesArePresent && (
+                            <>Nothing here!</>
+                        )}
                     {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
             </div>
