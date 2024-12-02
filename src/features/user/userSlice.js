@@ -74,7 +74,6 @@ const doMarkCourseAsComplete = createAsyncThunk(
         try {
             const state = getState();
             const { email } = state.user.userCredentials;
-            console.log(courseId);
             const resp = await markCourseAsComplete(email, courseId);
             return resp;
         } catch (error) {

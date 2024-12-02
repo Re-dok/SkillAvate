@@ -31,7 +31,7 @@ async function updateProgress(email, courseId, newProgress, prevProgress) {
         });
         let courseGradesExist = false;
         let updatedCourseGrades = userData.Grades.map((course) => {
-            // FIXME make it such that the grades corresponding to the course id are updated
+            // DONE make it such that the grades corresponding to the course id are updated
             if (course.courseId === courseId) {
                 courseGradesExist = true;
                 const newUnit = [

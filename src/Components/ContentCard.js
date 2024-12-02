@@ -95,7 +95,6 @@ class QuestionCard extends Component {
     handleSubmit = async () => {
         const { test } = this.props;
         const { currentQuestion } = this.state;
-        console.log(test);
         const hashedAns = test[currentQuestion - 1].answer;
         const isCorrect = await bcrypt.compare(
             test[currentQuestion - 1].options[this.state.selectedOptions],
