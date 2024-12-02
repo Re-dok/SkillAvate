@@ -11,7 +11,7 @@ import { doGetCourseDetails } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../../Components/WithRouter";
 import TrainerContentCard from "../../Components/TrainerComponets/TrainerContentCard";
-
+import TrainerCourseInfoCard from "../../Components/TrainerComponets/TrainerCourseInfoCard";
 class SideBar extends Component {
     constructor(props) {
         super(props);
@@ -66,6 +66,21 @@ class SideBar extends Component {
                     <div className="px-2 mb-3 fs-6 fw-bold">
                         {courseData?.courseName}
                     </div>
+                    <div
+                        role="button"
+                        className="fs-6 mb-3 p-2 border border-2 rounded d-flex align-content-center align-items-center justify-content-between"
+                        onClick={() => {
+                            this.props.setOpenUnit([-1, -1, -1], 1);
+                            this.setState({
+                                openModule: -1,
+                                openHeading: -1,
+                                currentSubheading: -1,
+                            });
+                        }}
+                    >
+                        Course Details
+                        <i className="bi bi-chevron-right ms-3"></i>
+                    </div>
                     <ListGroup>
                         {courseData?.modules?.map((module, moduleNumber) => (
                             <ListGroupItem
@@ -107,7 +122,11 @@ class SideBar extends Component {
                                         }
                                     }}
                                     className={
-                                        "fs-6 mb-1 p-2 border border-2 rounded d-flex align-content-center align-items-center justify-content-between"
+                                        "fs-6 mb-1 p-2 border border-2 rounded d-flex align-content-center align-items-center justify-content-between " +
+                                        (this.props.openUnit[0] ===
+                                            moduleNumber && module.content
+                                            ? "bg-secondary text-light"
+                                            : "")
                                     }
                                 >
                                     <p>
@@ -141,7 +160,16 @@ class SideBar extends Component {
                                                     >
                                                         <div
                                                             className={
-                                                                "border mb-1 border-2 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center"
+                                                                "border mb-1 border-2 div-2 p-3 overflow-hidden d-flex justify-content-between align-items-center align-content-center " +
+                                                                (this.props
+                                                                    .openUnit[0] ===
+                                                                    moduleNumber &&
+                                                                this.props
+                                                                    .openUnit[1] ===
+                                                                    headingNumber &&
+                                                                heading.content
+                                                                    ? "bg-secondary text-light"
+                                                                    : "")
                                                             }
                                                             role="button"
                                                             onClick={() => {
@@ -222,7 +250,13 @@ class SideBar extends Component {
                                                                     <div
                                                                         key={i}
                                                                         className={
-                                                                            "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between "
+                                                                            "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-between " +
+                                                                            (this
+                                                                                .props
+                                                                                .openUnit[2] ===
+                                                                            i
+                                                                                ? "bg-secondary text-light"
+                                                                                : "")
                                                                         }
                                                                         role="button"
                                                                         onClick={() => {
@@ -292,6 +326,10 @@ class EditCourse extends Component {
             courseProgress: [0, 0, 0, 0, 0, false],
             navbarIsOpen: false,
             qnaIsOpen: false,
+            // based on the type different components are renderd
+            // 0 for content edit
+            // 1 for basic info edit
+            unitType: 0,
         };
     }
     async componentDidMount() {
@@ -326,6 +364,7 @@ class EditCourse extends Component {
     render() {
         if (this.props.isLoading) return <>Loading...</>;
         else {
+            const { unitType } = this.state;
             return (
                 <div className="row m-0">
                     {/* Button for sidebar on mobile */}
@@ -362,8 +401,11 @@ class EditCourse extends Component {
                                     openUnit={this.state.openUnit}
                                     // courseProgress={this.state.courseProgress}
                                     courseData={this.props.courseData[0]}
-                                    setOpenUnit={(newUnit) => {
-                                        this.setState({ openUnit: newUnit });
+                                    setOpenUnit={(newUnit, unitType = 0) => {
+                                        this.setState({
+                                            openUnit: newUnit,
+                                            unitType: unitType,
+                                        });
                                     }}
                                     toggleSideBar={() => {
                                         this.setState({
@@ -384,8 +426,11 @@ class EditCourse extends Component {
                             openUnit={this.state.openUnit}
                             //     courseProgress={this.state.courseProgress}
                             courseData={this.props.courseData[0]}
-                            setOpenUnit={(newUnit) => {
-                                this.setState({ openUnit: newUnit });
+                            setOpenUnit={(newUnit, unitType = 0) => {
+                                this.setState({
+                                    openUnit: newUnit,
+                                    unitType: unitType,
+                                });
                             }}
                             isCanvas={false}
                             //     isComplete={this.state.isComplete}
@@ -393,14 +438,40 @@ class EditCourse extends Component {
                         <div className="my-5"></div>
                     </div>
                     {/* main content*/}
-                    <div className="col-lg-9 col bg-grey py-5 px-lg-5">
-                        <TrainerContentCard
-                            modules={this.props.courseData[0]?.modules}
-                            openUnit={this.state.openUnit || null}
-                            courseName={this.props.courseData[0]?.courseName}
-                            createrName={this.props.courseData[0]?.createrName}
-                        />
-                    </div>
+                    {unitType === 0 && (
+                        <div className="col-lg-9 col bg-grey py-5 px-lg-5">
+                            <TrainerContentCard
+                                modules={this.props.courseData[0]?.modules}
+                                openUnit={this.state.openUnit || null}
+                                courseName={
+                                    this.props.courseData[0]?.courseName
+                                }
+                                createrName={
+                                    this.props.courseData[0]?.createrName
+                                }
+                            />
+                        </div>
+                    )}
+                    {unitType === 1 && (
+                        <div className="col-lg-9 col bg-grey py-5 px-lg-5">
+                            <TrainerCourseInfoCard
+                                courseName={this.props.courseData[0].courseName}
+                                courseId={this.props.courseData[0].courseId}
+                                createrName={
+                                    this.props.courseData[0].createrName
+                                }
+                                createrEmail={
+                                    this.props.courseData[0].createrEmail
+                                }
+                                isPublished={
+                                    this.props.courseData[0].isPublished
+                                }
+                                courseDiscp={
+                                    this.props.courseData[0].courseDiscp
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
             );
         }
