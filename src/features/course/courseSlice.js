@@ -67,6 +67,28 @@ const doUpdateCourseUnit = createAsyncThunk(
         }
     }
 );
+const doUpdateCourseInfo = createAsyncThunk(
+    "courses/updateCourseBasicInfo",
+    async ({ courseName, courseDiscp }, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
+            }
+            const courseId = state.course?.course[0].courseId;
+            let newCourseData = structuredClone(state.course?.course[0]);
+            newCourseData.courseName = courseName;
+            newCourseData.courseDiscp = courseDiscp;
+            const resp = await updateCourseDetails(courseId, newCourseData);
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -110,7 +132,15 @@ const courseSlice = createSlice({
             })
             .addCase(doUpdateCourseUnit.fulfilled, (state, action) => {
                 state.courseLoading = false;
-                state.course[0] = action.payload;
+                if (action.payload) state.course[0] = action.payload;
+                state.courseSuccess = "Courses data updated";
+            })
+            .addCase(doUpdateCourseInfo.pending, (state) => {})
+            .addCase(doUpdateCourseInfo.rejected, (state, action) => {
+                state.courseError = action.error.message;
+            })
+            .addCase(doUpdateCourseInfo.fulfilled, (state, action) => {
+                if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Courses data updated";
             });
     },
@@ -118,4 +148,4 @@ const courseSlice = createSlice({
 export default courseSlice.reducer;
 export const { resetCourseMessages, clearOtherUserCoursesInfo } =
     courseSlice.actions;
-export { doGetCourseDetails, doUpdateCourseUnit };
+export { doGetCourseDetails, doUpdateCourseUnit, doUpdateCourseInfo };

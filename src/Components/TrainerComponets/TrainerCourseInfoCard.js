@@ -1,6 +1,8 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import { Button, Input, FormFeedback, Modal, ModalBody } from "reactstrap";
-export default class TrainerCourseInfoCard extends Component {
+import { doUpdateCourseInfo } from "../../features/course/courseSlice";
+class TrainerCourseInfoCard extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -8,6 +10,8 @@ export default class TrainerCourseInfoCard extends Component {
             newCourseName: null,
             showModal: false,
             hasUnsavedChanges: false,
+            isLoading: false,
+            modalMsg: null,
         };
     }
     render() {
@@ -38,31 +42,32 @@ export default class TrainerCourseInfoCard extends Component {
                 [name]: value?.replace(/\s+/g, " ").trim() || "",
             });
         };
-        const handleSubmit = () => {
-            alert("add this feature");
+        const handleSubmit = async () => {
             if (!isValidSubmission(newCourseName, newCourseDiscp)) {
                 this.setState({ showModal: true });
                 return;
             }
-            // const newContent = {
-            //     videoLink: newVideoLink,
-            //     docLink: newDocLink,
-            //     writeUp: newWriteUp,
-            //     test: newTest,
-            // };
-            // const headingName = newHeading;
-            // const moduleDiscp = newModuleDiscp;
-            // this.props.doUpdateCourseUnit({
-            //     newContent,
-            //     headingName,
-            //     moduleDiscp,
-            //     moduleIndex: [i, j, k],
-            // });
+            this.setState({ isLoading: true });
+            const resp = await this.props.doUpdateCourseInfo({
+                courseName: newCourseName,
+                courseDiscp: newCourseDiscp,
+            });
+            this.setState({ isLoading: false });
+            console.log(resp);
+            if (resp.error)
+                this.setState({
+                    showModal: true,
+                    modalMsg:
+                        "Somthing went wrong while updating the details!Please try again!",
+                });
+            else {
+                this.setState({ hasUnsavedChanges: false });
+            }
         };
 
         const { courseDiscp, courseName, courseId, createrEmail, createrName } =
             this.props;
-        const { hasUnsavedChanges } = this.state;
+        const { hasUnsavedChanges, isLoading, modalMsg } = this.state;
         const newCourseName =
             this.state.newCourseName !== null
                 ? this.state.newCourseName
@@ -76,15 +81,15 @@ export default class TrainerCourseInfoCard extends Component {
                 <div className="fw-bold fs-3 mb-3">Course Details</div>
                 <div className=" mb-5 mt-3 mt-md-0 mb-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
                     <Button
-                        disabled={!hasUnsavedChanges}
+                        disabled={!isLoading && !hasUnsavedChanges}
                         color="success"
                         className="col"
                         onClick={handleSubmit}
                     >
-                        Save
+                        {isLoading ? "Saving..." : "Save"}
                     </Button>
                     <Button
-                        disabled={!hasUnsavedChanges}
+                        disabled={!isLoading && !hasUnsavedChanges}
                         color="danger"
                         className="col"
                         onClick={handleDiscardChanges}
@@ -142,7 +147,9 @@ export default class TrainerCourseInfoCard extends Component {
                 >
                     <ModalBody className="pb-3 rounded p-4 justify-content-center">
                         <p className="d-flex justify-content-center mb-2">
-                            Please ensure all necessary fields are filled in.
+                            {modalMsg === null
+                                ? "Please ensure all necessary fields are filled in."
+                                : modalMsg}
                         </p>
                         <div className="col gap-3 mx-auto d-flex justify-content-center">
                             <Button
@@ -150,7 +157,10 @@ export default class TrainerCourseInfoCard extends Component {
                                 size="sm"
                                 color="warning"
                                 onClick={() =>
-                                    this.setState({ showModal: false })
+                                    this.setState({
+                                        showModal: false,
+                                        modalMsg: null,
+                                    })
                                 }
                             >
                                 Close
@@ -162,3 +172,7 @@ export default class TrainerCourseInfoCard extends Component {
         );
     }
 }
+const mapDispatchToProps = {
+    doUpdateCourseInfo,
+};
+export default connect(null, mapDispatchToProps)(TrainerCourseInfoCard);

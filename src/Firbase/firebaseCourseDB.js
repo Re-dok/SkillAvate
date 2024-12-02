@@ -24,19 +24,18 @@ async function getCourseDetails(courseId) {
     }
 }
 async function getMyCourses(createrEmail) {
-    try{
-
+    try {
         const q = query(coursesRef, where("createrEmail", "==", createrEmail));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
-            const coursesData = querySnapshot.docs.map((doc)=>doc.data());
+            const coursesData = querySnapshot.docs.map((doc) => doc.data());
             return {
                 coursesData,
             };
         } else {
             return [];
         }
-    }catch(err){
+    } catch (err) {
         return [];
         // throw new Error("lol")
     }
@@ -51,20 +50,12 @@ async function updateCourseDetails(courseId, newCourse) {
         }
         const docSnapshot = querySnapshot.docs[0];
         const courseDocRef = doc(db, "courses", docSnapshot.id);
-
         // Update the document with newCourse data
         await updateDoc(courseDocRef, newCourse);
 
-        // Fetch the updated document
-        const updatedDoc = await getDoc(courseDocRef);
-
-        if (updatedDoc.exists()) {
-            return { ...updatedDoc.data() }; // Return updated data
-        } else {
-            throw new Error("No such document found after update.");
-        }
+        return newCourse;
     } catch (error) {
-        throw new Error("Error updating course details:", error);
+        throw new Error("Error updating basic course Info:", error);
     }
 }
 async function addCourse() {
@@ -349,4 +340,4 @@ async function addCourse() {
     await addDoc(coursesRef, course);
     return "courese added!";
 }
-export { getCourseDetails, addCourse, updateCourseDetails,getMyCourses };
+export { getCourseDetails, addCourse, updateCourseDetails, getMyCourses };
