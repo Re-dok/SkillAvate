@@ -58,7 +58,7 @@ class SideBar extends Component {
     }
 
     render() {
-        const { courseData } = this.props;
+        const { courseData, unitType } = this.props;
         if (!this.props.courseData) return <>Loading</>;
         else {
             return (
@@ -68,7 +68,10 @@ class SideBar extends Component {
                     </div>
                     <div
                         role="button"
-                        className="fs-6 mb-3 p-2 border border-2 rounded d-flex align-content-center align-items-center justify-content-between"
+                        className={
+                            "fs-6 mb-3 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-between" +
+                            (unitType === 1 ? " bg-secondary text-white" : "")
+                        }
                         onClick={() => {
                             this.props.setOpenUnit([-1, -1, -1], 1);
                             this.setState({
@@ -76,6 +79,7 @@ class SideBar extends Component {
                                 openHeading: -1,
                                 currentSubheading: -1,
                             });
+                            if (this.props.isCanvas) this.props.toggleSideBar();
                         }}
                     >
                         Course Details
@@ -322,14 +326,14 @@ class EditCourse extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            openUnit: [0, 0, 0],
+            openUnit: [-1, -1, -1],
             courseProgress: [0, 0, 0, 0, 0, false],
             navbarIsOpen: false,
             qnaIsOpen: false,
             // based on the type different components are renderd
             // 0 for content edit
             // 1 for basic info edit
-            unitType: 0,
+            unitType: 1,
         };
     }
     async componentDidMount() {
@@ -357,9 +361,9 @@ class EditCourse extends Component {
                 return [0, 0, 0];
             }
         };
-        this.setState({
-            openUnit: firstUnitCoorditantes(),
-        });
+        // this.setState({
+        //     openUnit: firstUnitCoorditantes(),
+        // });
     }
     render() {
         if (this.props.isLoading) return <>Loading...</>;
@@ -413,6 +417,7 @@ class EditCourse extends Component {
                                                 !this.state.navbarIsOpen,
                                         });
                                     }}
+                                    unitType={this.state.unitType}
                                     isCanvas={true}
                                     // isComplete={this.state.isComplete}
                                 />
@@ -432,6 +437,7 @@ class EditCourse extends Component {
                                     unitType: unitType,
                                 });
                             }}
+                            unitType={this.state.unitType}
                             isCanvas={false}
                             //     isComplete={this.state.isComplete}
                         />
@@ -453,21 +459,20 @@ class EditCourse extends Component {
                         </div>
                     )}
                     {unitType === 1 && (
-                        <div className="col-lg-9 col bg-grey py-5 px-lg-5">
+                        <div className="col-lg-9 col px-lg-5">
                             <TrainerCourseInfoCard
-                                courseName={this.props.courseData[0].courseName}
-                                courseId={this.props.courseData[0].courseId}
+                                courseName={
+                                    this.props.courseData[0]?.courseName
+                                }
+                                courseId={this.props.courseData[0]?.courseId}
                                 createrName={
-                                    this.props.courseData[0].createrName
+                                    this.props.courseData[0]?.createrName
                                 }
                                 createrEmail={
-                                    this.props.courseData[0].createrEmail
-                                }
-                                isPublished={
-                                    this.props.courseData[0].isPublished
+                                    this.props.courseData[0]?.createrEmail
                                 }
                                 courseDiscp={
-                                    this.props.courseData[0].courseDiscp
+                                    this.props.courseData[0]?.courseDiscp
                                 }
                             />
                         </div>

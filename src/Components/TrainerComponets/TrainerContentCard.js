@@ -287,13 +287,13 @@ class ContentCard extends Component {
                             className="col"
                             onClick={handleDiscardChanges}
                         >
-                            <i classname="bi bi-trash me-2" />
+                            <i className="bi bi-trash me-2" />
                             Discard
                         </Button>
                     </div>
 
                     <div className="fw-bold mb-3">
-                        <i classname="bi bi-pencil-fill me-2" />
+                        <i className="bi bi-pencil-fill me-2"></i>
                         Edit Heading :
                         <Input
                             rows="1"
@@ -312,7 +312,7 @@ class ContentCard extends Component {
                     </div>
                     {newModuleDiscp !== false && (
                         <div className="fw-bold mb-3">
-                            <i classname="bi bi-pencil-fill me-2" />
+                            <i className="bi bi-pencil-fill me-2"></i>
                             Edit Module Discription :
                             <Input
                                 rows="4"
@@ -342,7 +342,7 @@ class ContentCard extends Component {
                         ></ReactPlayer>
                         <div className="p-4 pb-2 row row-cols-1">
                             <strong className="col mb-2">
-                                <i classname="bi bi-pencil-fill me-2" />
+                                <i className="bi bi-pencil-fill me-2" />
                                 <strong>Edit Lecture Link :</strong>
                             </strong>
                             <Input
@@ -362,7 +362,7 @@ class ContentCard extends Component {
                                         this.setState({ newVideoLink: "" });
                                     }}
                                 >
-                                    <i classname="bi bi-trash me-2"></i>Remove
+                                    <i className="bi bi-trash me-2"></i>Remove
                                 </Button>
                             </div>
                         </div>
@@ -379,7 +379,7 @@ class ContentCard extends Component {
                         </div>
                         <div className="rounded fw-light bg-white my-2 px-3 pb-2 pt-3">
                             <strong className="col mb-2">
-                                <i classname="bi bi-pencil-fill me-2" />
+                                <i className="bi bi-pencil-fill me-2" />
                                 <strong>Edit Reading Assignment Link :</strong>
                             </strong>
                             <Input
@@ -399,14 +399,14 @@ class ContentCard extends Component {
                                         this.setState({ newDocLink: "" });
                                     }}
                                 >
-                                    <i classname="bi bi-trash me-2"></i>Remove
+                                    <i className="bi bi-trash me-2"></i>Remove
                                 </Button>
                             </div>
                         </div>
                     </div>
 
                     <div className="rounded bg-white p-4 pb-2 my-3 mb-4">
-                        <i classname="bi bi-pencil-fill me-2" />
+                        <i className="bi bi-pencil-fill me-2" />
                         <strong>Edit Writeup</strong>
                         <Input
                             type="textarea"
@@ -427,7 +427,7 @@ class ContentCard extends Component {
                                     this.setState({ newWriteUp: "" });
                                 }}
                             >
-                                <i classname="bi bi-trash me-2"></i>Remove
+                                <i className="bi bi-trash me-2"></i>Remove
                             </Button>
                         </div>
                     </div>
@@ -523,7 +523,7 @@ class ContentCard extends Component {
                                                         );
                                                     }}
                                                 >
-                                                    <i classname="bi bi-trash me-2"></i>
+                                                    <i className="bi bi-trash me-2"></i>
                                                     Remove
                                                 </Button>
                                             </div>
@@ -540,8 +540,7 @@ class ContentCard extends Component {
                                     addQuestion();
                                 }}
                             >
-                                <i classname="bi bi-trash me-2"></i>Add New
-                                Question
+                                Add New Question
                             </Button>
                         </div>
                     </div>
