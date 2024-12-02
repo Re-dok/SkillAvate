@@ -3,7 +3,10 @@ import { Button, Table, Modal, ModalHeader } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
 import { getMyCourses } from "../../Firbase/firebaseCourseDB";
-import { doAddCourseToUser } from "../../features/user/userSlice";
+import {
+    doAddCourseToUser,
+    doRemoveCourseFromUser,
+} from "../../features/user/userSlice";
 
 // TODO finish this page
 
@@ -13,7 +16,7 @@ class MyClients extends Component {
         this.state = {
             myCourseDetails: [],
             showModal: false,
-            modalResp: null,
+            modalResp: false,
             modalMessage: "",
             isAdd: true,
             currentClient: null,
@@ -26,28 +29,38 @@ class MyClients extends Component {
         const courses = resp.coursesData.map((course) => {
             if (course.isPublished) {
                 return course;
-            }
+            } else return;
         });
         this.setState({ myCourseDetails: courses });
     }
     render() {
-        const handleRemoveCourse = (e, course, clientEmail) => {
-            this.setState({
-                modalMessage:
-                    "Are you sure you want to remove course " +
-                    course +
-                    " from the client " +
-                    clientEmail,
-                showModal: true,
+        const handleRemoveCourse = async () => {
+            this.setState({ isLoading: true });
+            const { currentClient, currentCourse } = this.state;
+            const resp = await this.props.doRemoveCourseFromUser({
+                currentClient,
+                currentCourse,
             });
+
+            if (!resp.error)
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Course Removed Successfully!",
+                });
+            else
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Somthing went wrong, please try again!",
+                });
         };
         const handleAddCourse = async () => {
-            alert("hi");
             this.setState({ isLoading: true });
             const { currentClient, currentCourse, myCourseDetails } =
                 this.state;
             const modules = myCourseDetails.filter(
-                (course) => course.courseId == currentCourse
+                (course) => course.courseId === currentCourse
             )[0].modules;
             let firstUnitCoorditantes = () => {
                 return modules[0].content
@@ -62,7 +75,18 @@ class MyClients extends Component {
                 currentCourse,
                 courseProgress,
             });
-            if (resp) this.setState({ isLoading: false });
+            if (!resp.error)
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Course Added Successfully!",
+                });
+            else
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Somthing went wrong, please try again!",
+                });
         };
         const myClients = this.props.myClients;
         const {
@@ -71,6 +95,8 @@ class MyClients extends Component {
             modalMessage,
             currentCourse,
             myCourseDetails,
+            isLoading,
+            modalResp,
         } = this.state;
         return (
             <div className="px-2 px-md-5 mx-2 mx-md-5 mt-5">
@@ -103,7 +129,7 @@ class MyClients extends Component {
                                     <Button
                                         size="sm"
                                         color="success"
-                                        onClick={(e) => {
+                                        onClick={() => {
                                             this.setState({
                                                 modalMessage:
                                                     "Please select the course you'd like to add, for your client: " +
@@ -164,13 +190,21 @@ class MyClients extends Component {
                                                 <Button
                                                     size="sm"
                                                     color="danger"
-                                                    onClick={(e) =>
-                                                        handleRemoveCourse(
-                                                            e,
-                                                            courseId,
-                                                            client.clientEmail
-                                                        )
-                                                    }
+                                                    onClick={() => {
+                                                        this.setState({
+                                                            modalMessage:
+                                                                "Are you sure you want to remove course " +
+                                                                courseId +
+                                                                " from the client " +
+                                                                client.clientEmail,
+                                                            showModal: true,
+                                                            isAdd: false,
+                                                            currentClient:
+                                                                client.clientEmail,
+                                                            currentCourse:
+                                                                courseId,
+                                                        });
+                                                    }}
                                                 >
                                                     <i className="bi bi-dash-circle-dotted me-2"></i>
                                                     Remove Course
@@ -190,82 +224,99 @@ class MyClients extends Component {
                         </ModalHeader>
                     ) : null}
                     <div className="pb-5 p-4 p-4 row gap-3">
-                        <div className="col-12 fw-bold">{modalMessage}</div>
-                        <div className="col-12 col gap-3 mx-auto d-flex paragram-text align-content-center justify-content-center align-items-center">
-                            <Table responsive hover>
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>Course Name</th>
-                                        <th>Courses Id</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                
-                                    {myCourseDetails.map((course, i) => (
-                                        <tr
-                                            role="button"
-                                            onClick={() => {
-                                                this.setState({
-                                                    currentCourse:
-                                                        course.courseId,
-                                                });
-                                            }}
-                                        >
-                                            <td
-                                                className={
-                                                    currentCourse ===
-                                                    course.courseId
-                                                        ? "bg-info text-light"
-                                                        : ""
-                                                }
-                                            >
-                                                {i + 1}
-                                            </td>
-                                            <td
-                                                className={
-                                                    currentCourse ===
-                                                    course.courseId
-                                                        ? "bg-info text-light"
-                                                        : ""
-                                                }
-                                            >
-                                                {course.courseName}
-                                            </td>
-                                            <td
-                                                className={
-                                                    currentCourse ===
-                                                    course.courseId
-                                                        ? "bg-info text-light"
-                                                        : ""
-                                                }
-                                            >
-                                                {course.courseId}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                        <div className="col-12 fw-bold d-flex justify-content-center">
+                            {modalMessage}
                         </div>
-                        <div className="col gap-3 mx-auto d-flex align-content-center justify-content-center align-items-center">
-                            <Button
-                                className="rounded-3 py-2 fw-bold"
-                                size="sm"
-                                color={isAdd ? "success" : "danger"}
-                                onClick={() => handleAddCourse()}
-                                disabled={isAdd && currentCourse === null}
-                            >
-                                {isAdd ? "ADD" : "Remove"}
-                            </Button>
+                        <div className="col-12 col gap-3 mx-auto d-flex paragram-text align-content-center justify-content-center align-items-center">
+                            {isAdd && !modalResp && (
+                                <Table responsive hover>
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Course Name</th>
+                                            <th>Courses Id</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {myCourseDetails.map((course, i) => (
+                                            <tr
+                                                role="button"
+                                                onClick={() => {
+                                                    this.setState({
+                                                        currentCourse:
+                                                            course.courseId,
+                                                    });
+                                                }}
+                                            >
+                                                <td
+                                                    className={
+                                                        currentCourse ===
+                                                        course.courseId
+                                                            ? "bg-info text-light"
+                                                            : ""
+                                                    }
+                                                >
+                                                    {i + 1}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        currentCourse ===
+                                                        course.courseId
+                                                            ? "bg-info text-light"
+                                                            : ""
+                                                    }
+                                                >
+                                                    {course.courseName}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        currentCourse ===
+                                                        course.courseId
+                                                            ? "bg-info text-light"
+                                                            : ""
+                                                    }
+                                                >
+                                                    {course.courseId}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            )}
+                        </div>
+                        <div className="col gap-3 mx-auto d-flex justify-content-center">
+                            {!modalResp && (
+                                <Button
+                                    className="rounded-3 py-2 fw-bold"
+                                    size="sm"
+                                    color={isAdd ? "success" : "danger"}
+                                    onClick={() =>
+                                        isAdd
+                                            ? handleAddCourse()
+                                            : handleRemoveCourse()
+                                    }
+                                    disabled={
+                                        (isAdd && currentCourse === null) ||
+                                        isLoading
+                                    }
+                                >
+                                    {isLoading
+                                        ? "Loading..."
+                                        : isAdd
+                                        ? "ADD"
+                                        : "Remove"}
+                                </Button>
+                            )}
                             <Button
                                 className="rounded-3 py-2 fw-bold"
                                 size="sm"
                                 color="warning"
+                                disabled={isLoading}
                                 onClick={() => {
                                     this.setState({
                                         showModal: false,
-                                        modalResp: null,
+                                        modalResp: false,
                                         modalMessage: "",
                                         currentClient: null,
                                         isAdd: true,
@@ -273,7 +324,7 @@ class MyClients extends Component {
                                     });
                                 }}
                             >
-                                Cancel
+                                {modalResp ? "Close" : " Cancel"}
                             </Button>
                         </div>
                     </div>
@@ -295,6 +346,7 @@ const mapStateToprops = (state) => {
 };
 const mapDispatchToProps = {
     doAddCourseToUser,
+    doRemoveCourseFromUser,
 };
 export default connect(
     mapStateToprops,

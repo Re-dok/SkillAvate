@@ -9,6 +9,7 @@ import {
     addCourseToUser,
     getUserData,
     markCourseAsComplete,
+    removeCourseFromUser,
     updateProgress,
 } from "../../Firbase/firbaseUserDB";
 const initialState = {
@@ -137,6 +138,23 @@ const doAddCourseToUser = createAsyncThunk(
                 currentClient,
                 currentCourse,
                 courseProgress,
+                trainerEmail
+            );
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
+const doRemoveCourseFromUser = createAsyncThunk(
+    "user/removeCourseFromUser",
+    async ({ currentClient, currentCourse }, { getState }) => {
+        try {
+            const state = getState();
+            const trainerEmail = state.user.userCredentials.email;
+            const resp = await removeCourseFromUser(
+                currentClient,
+                currentCourse,
                 trainerEmail
             );
             return resp;
@@ -286,6 +304,19 @@ const userSlice = createSlice({
             })
             .addCase(doAddCourseToUser.fulfilled, (state, action) => {
                 state.loading = false;
+                if(action.payload)
+                state.myClients = action.payload;
+            })
+            .addCase(doRemoveCourseFromUser.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doRemoveCourseFromUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doRemoveCourseFromUser.fulfilled, (state, action) => {
+                state.loading = false;
+                if(action.payload)
                 state.myClients = action.payload;
             });
     },
@@ -309,4 +340,5 @@ export {
     doUpdateCourseProgress,
     doMarkCourseAsComplete,
     doAddCourseToUser,
+    doRemoveCourseFromUser
 };

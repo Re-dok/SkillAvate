@@ -6,8 +6,10 @@ import {
     where,
     getDocs,
     updateDoc,
+    writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { update } from "lodash";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
@@ -149,6 +151,7 @@ async function getUserData(email) {
     }
 }
 async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
+    // throw new Error("test 2");
     const q = query(usersRef, where("email", "in", [email, trainerEmail]));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
@@ -161,6 +164,7 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
         const userData = userDoc.data();
         const trainerData = trainerDoc.data();
         if (
+            // we make sure the client isnt already enrolled according to his records
             userData.courses.filter((course) => course.courseId === courseId)
                 .length === 0
         ) {
@@ -188,6 +192,8 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
             }
         }
         if (
+            // FIXME make sure this logic is correct
+            // we make sure that the client isnt already enrolled
             trainerData.myClients.filter(
                 (client) =>
                     client.clientEmail === email &&
@@ -210,7 +216,51 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
             return updatedClients;
         }
     } else {
-        throw new Error("Users not found");
+        throw new Error("Users not found!");
+    }
+}
+async function removeCourseFromUser(email, courseId, trainerEmail) {
+    const q = query(usersRef, where("email", "in", [email, trainerEmail]));
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[1]
+            : querySnapshot.docs[0];
+        const trainerDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[0]
+            : querySnapshot.docs[1];
+        const userRef = userDoc.ref;
+        const trainerRef = trainerDoc.ref;
+        const userData = userDoc.data();
+        const trainerData = trainerDoc.data();
+        const updatedClients = trainerData.myClients.map((client) => {
+            if (client.clientEmail === email) {
+                client.courses = client.courses.filter(
+                    (course) => course !== courseId
+                );
+            }
+            return client;
+        });
+        const updatedCourses = userData.courses.filter(
+            (course) => course.courseId !== courseId
+        );
+        const updatedGrades = userData.Grades.filter(
+            (course) => course.courseId !== courseId
+        );
+        try {
+            const batch = writeBatch(db);
+            batch.update(userRef, {
+                courses: updatedCourses,
+                Grades: updatedGrades,
+            });
+            batch.update(trainerRef, { myClients: updatedClients });
+            await batch.commit();
+        } catch (error) {
+            throw new Error(error.message);
+        }
+        return updatedClients;
+    } else {
+        throw new Error("Users not found!");
     }
 }
 export {
@@ -219,4 +269,5 @@ export {
     updateProgress,
     markCourseAsComplete,
     addCourseToUser,
+    removeCourseFromUser,
 };
