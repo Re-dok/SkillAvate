@@ -9,7 +9,6 @@ import {
     writeBatch,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
-import { update } from "lodash";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
@@ -151,7 +150,6 @@ async function getUserData(email) {
     }
 }
 async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
-    // throw new Error("test 2");
     const q = query(usersRef, where("email", "in", [email, trainerEmail]));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
@@ -166,7 +164,14 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
         if (
             // we make sure the client isnt already enrolled according to his records
             userData.courses.filter((course) => course.courseId === courseId)
-                .length === 0
+                .length === 0 &&
+            // we make sure that the client isnt already enrolled
+            trainerData.myClients.filter(
+                (client) =>
+                    client.clientEmail === email &&
+                    client.courses.filter((course) => course === courseId)
+                        .length === 0
+            ).length === 1
         ) {
             const userRef = userDoc.ref;
             let courseProgress = [...firstUnit];
@@ -182,25 +187,6 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
                 courseId: courseId,
                 courseGrades: [],
             });
-            try {
-                await updateDoc(userRef, {
-                    courses: updatedCourses,
-                    Grades: updatedGrades,
-                });
-            } catch (error) {
-                throw new Error(error.message);
-            }
-        }
-        if (
-            // FIXME make sure this logic is correct
-            // we make sure that the client isnt already enrolled
-            trainerData.myClients.filter(
-                (client) =>
-                    client.clientEmail === email &&
-                    client.courses.filter((course) => course === courseId)
-                        .length === 0
-            ).length === 1
-        ) {
             const trainerRef = trainerDoc.ref;
             let updatedClients = trainerData.myClients.map((client) => {
                 if (client.clientEmail === email) {
@@ -209,7 +195,13 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
                 return client;
             });
             try {
-                await updateDoc(trainerRef, { myClients: updatedClients });
+                const batch = writeBatch(db);
+                batch.update(userRef, {
+                    courses: updatedCourses,
+                    Grades: updatedGrades,
+                });
+                batch.update(trainerRef, { myClients: updatedClients });
+                await batch.commit();
             } catch (error) {
                 throw new Error(error.message);
             }

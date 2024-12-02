@@ -313,11 +313,11 @@ class EditCourse extends Component {
         }
         const modules = courseData[0].modules;
         let firstUnitCoorditantes = () => {
-            return modules[0].content
-                ? [0, -1, -1]
-                : modules.headings[0].content
-                ? [0, 0, -1]
-                : [0, 0, 0];
+            if (modules[0]?.content) return [0, -1, -1];
+            else {
+                if (modules[0]?.headings[0]?.content) return [0, 0, -1];
+                return [0, 0, 0];
+            }
         };
         this.setState({
             openUnit: firstUnitCoorditantes(),
