@@ -16,7 +16,7 @@ class NotFound extends Component {
             !isLoggedIn
                 ? "/"
                 : isAdmin === true
-                ? "/admin"
+                ? "/courses"
                 : isTrainer
                 ? "/courses"
                 : "/myCourses"

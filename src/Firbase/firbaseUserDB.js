@@ -145,7 +145,6 @@ async function getUserData(email) {
                 myClients: userData.myClients,
             };
         } else if (isAdmin) {
-            console.log(userData);
             return {
                 isTrainer: userData.isTrainer,
                 isAdmin: userData.isAdmin,

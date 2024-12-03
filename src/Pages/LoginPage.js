@@ -68,7 +68,7 @@ class LoginPage extends Component {
                         ) {
                             this.props.navigate(
                                 isAdmin === true
-                                    ? "/admin"
+                                    ? "/courses"
                                     : isTrainer
                                     ? "/courses"
                                     : "/myCourses"
@@ -87,7 +87,7 @@ class LoginPage extends Component {
             const { isAdmin, isTrainer } = this.props;
             this.props.navigate(
                 isAdmin === true
-                    ? "/admin"
+                    ? "/courses"
                     : isTrainer
                     ? "/courses"
                     : "/myCourses"
@@ -121,7 +121,7 @@ class LoginPage extends Component {
                 ) {
                     navigate(
                         isAdmin === true
-                            ? "/admin"
+                            ? "/courses"
                             : isTrainer
                             ? "/courses"
                             : "/myCourses"
