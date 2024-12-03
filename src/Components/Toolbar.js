@@ -43,67 +43,84 @@ class Toolbar extends Component {
                     </NavbarBrand>
 
                     <div className="d-sm-flex d-none gap-3 gap-sm-5">
+                        {isTrainer === false && isAdmin === false && (
+                            <>
+                                <NavLink
+                                    className="text-decoration-none nav-text gap-2 d-flex"
+                                    to="/myCourses"
+                                >
+                                    {this.props.router.location.pathname ===
+                                    "/myCourses" ? (
+                                        <i className="bi bi-house-fill text-info"></i>
+                                    ) : (
+                                        <i className="bi bi-house"></i>
+                                    )}
+                                    My Courses
+                                </NavLink>
+                                <NavLink
+                                    to="/explore"
+                                    className="text-decoration-none nav-text d-flex gap-2"
+                                >
+                                    {this.props.router.location.pathname ===
+                                    "/explore" ? (
+                                        <i className="bi bi-binoculars-fill text-info"></i>
+                                    ) : (
+                                        <i className="bi bi-binoculars"></i>
+                                    )}
+                                    Explore
+                                </NavLink>
+                            </>
+                        )}
                         {
                             // this.props
-                            isTrainer == false && isAdmin == false && (
+                            isTrainer === false && isAdmin === true && (
                                 <>
                                     <NavLink
                                         className="text-decoration-none nav-text gap-2 d-flex"
-                                        to="/myCourses"
+                                        to="/dashboard"
                                     >
                                         {this.props.router.location.pathname ===
-                                        "/myCourses" ? (
-                                            <i className="bi bi-house-fill text-info"></i>
+                                        "/dashboard" ? (
+                                            <i className="bi bi-easel-fill text-info"></i>
                                         ) : (
-                                            <i className="bi bi-house"></i>
+                                            <i className="bi bi-easel"></i>
                                         )}
-                                        My Courses
-                                    </NavLink>
-                                    <NavLink
-                                        to="/explore"
-                                        className="text-decoration-none nav-text d-flex gap-2"
-                                    >
-                                        {this.props.router.location.pathname ===
-                                        "/explore" ? (
-                                            <i className="bi bi-binoculars-fill text-info"></i>
-                                        ) : (
-                                            <i className="bi bi-binoculars"></i>
-                                        )}
-                                        Explore
+                                        Dashboard
                                     </NavLink>
                                 </>
                             )
                         }
                         {
                             // this.props
-                            isTrainer == true && isAdmin == false && (
-                                <>
-                                    <NavLink
-                                        className="text-decoration-none nav-text gap-2 d-flex"
-                                        to="/courses"
-                                    >
-                                        {this.props.router.location.pathname ===
-                                        "/courses" ? (
-                                            <i className="bi bi-house-fill text-info"></i>
-                                        ) : (
-                                            <i className="bi bi-house"></i>
-                                        )}
-                                        My Courses
-                                    </NavLink>
-                                    <NavLink
-                                        to="/myClients"
-                                        className="text-decoration-none nav-text d-flex gap-2"
-                                    >
-                                        {this.props.router.location.pathname ===
-                                        "/myClients" ? (
-                                            <i className="bi bi-people-fill text-info"></i>
-                                        ) : (
-                                            <i className="bi bi-people"></i>
-                                        )}
-                                        My Clients
-                                    </NavLink>
-                                </>
-                            )
+                            (isTrainer === true ||
+                                isAdmin === true )&& (
+                                    <>
+                                        <NavLink
+                                            className="text-decoration-none nav-text gap-2 d-flex"
+                                            to="/courses"
+                                        >
+                                            {this.props.router.location
+                                                .pathname === "/courses" ? (
+                                                <i className="bi bi-house-fill text-info"></i>
+                                            ) : (
+                                                <i className="bi bi-house"></i>
+                                            )}
+                                            My Courses
+                                        </NavLink>
+                                        <NavLink
+                                            to={"/myClients"}
+                                            className="text-decoration-none nav-text d-flex gap-2"
+                                        >
+                                            {this.props.router.location
+                                                .pathname === "/myClients" ? (
+                                                <i className="bi bi-people-fill text-info"></i>
+                                            ) : (
+                                                <i className="bi bi-people"></i>
+                                            )}
+                                            My Clients
+                                        </NavLink>
+                                    </>
+                                )
                         }
                         <Dropdown
                             isOpen={this.state.drawIsOpen}
@@ -207,7 +224,7 @@ class Toolbar extends Component {
                                     </p>
                                 </DropdownItem>
                                 <DropdownItem divider />
-                                {isTrainer == false && isAdmin == false && (
+                                {isTrainer === false && isAdmin === false && (
                                     <>
                                         <DropdownItem>
                                             <NavLink
@@ -240,39 +257,63 @@ class Toolbar extends Component {
                                         </DropdownItem>
                                     </>
                                 )}
-                                {isTrainer == true && isAdmin == false && (
-                                    <>
-                                        <DropdownItem>
-                                            <NavLink
-                                                className="text-decoration-none nav-text gap-2 d-flex"
-                                                to="/courses"
-                                            >
-                                                {this.props.router.location
-                                                    .pathname === "/courses" ? (
-                                                    <i className="bi bi-house-fill text-info"></i>
-                                                ) : (
-                                                    <i className="bi bi-house"></i>
-                                                )}
-                                                My Courses
-                                            </NavLink>
-                                        </DropdownItem>
-                                        <DropdownItem>
-                                            <NavLink
-                                                to="/myClients"
-                                                className="text-decoration-none nav-text d-flex gap-2"
-                                            >
-                                                {this.props.router.location
-                                                    .pathname ===
-                                                "/myClients" ? (
-                                                    <i className="bi bi-people-fill text-info"></i>
-                                                ) : (
-                                                    <i className="bi bi-people"></i>
-                                                )}
-                                                My Clients
-                                            </NavLink>
-                                        </DropdownItem>
-                                    </>
-                                )}
+                                {
+                                    // this.props
+                                    isTrainer === false && isAdmin === true && (
+                                        <>
+                                            <DropdownItem>
+                                                <NavLink
+                                                    className="text-decoration-none nav-text gap-2 d-flex"
+                                                    to="/dashboard"
+                                                >
+                                                    {this.props.router.location
+                                                        .pathname ===
+                                                    "/dashboard" ? (
+                                                        <i className="bi bi-easel-fill text-info"></i>
+                                                    ) : (
+                                                        <i className="bi bi-easel"></i>
+                                                    )}
+                                                    Dashboard
+                                                </NavLink>
+                                            </DropdownItem>
+                                        </>
+                                    )
+                                }
+                                {(isTrainer === true ||
+                                    isAdmin === true )&& (
+                                        <>
+                                            <DropdownItem>
+                                                <NavLink
+                                                    className="text-decoration-none nav-text gap-2 d-flex"
+                                                    to="/courses"
+                                                >
+                                                    {this.props.router.location
+                                                        .pathname ===
+                                                    "/courses" ? (
+                                                        <i className="bi bi-house-fill text-info"></i>
+                                                    ) : (
+                                                        <i className="bi bi-house"></i>
+                                                    )}
+                                                    My Courses
+                                                </NavLink>
+                                            </DropdownItem>
+                                            <DropdownItem>
+                                                <NavLink
+                                                    to={"/myClients"}
+                                                    className="text-decoration-none nav-text d-flex gap-2"
+                                                >
+                                                    {this.props.router.location
+                                                        .pathname ===
+                                                    "/myClients" ? (
+                                                        <i className="bi bi-people-fill text-info"></i>
+                                                    ) : (
+                                                        <i className="bi bi-people"></i>
+                                                    )}
+                                                    My Clients
+                                                </NavLink>
+                                            </DropdownItem>
+                                        </>
+                                    )}
                                 <DropdownItem>
                                     <NavLink
                                         to="/settings"

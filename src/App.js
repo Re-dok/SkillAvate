@@ -57,11 +57,11 @@ class App extends Component {
                 <Routes>
                     <Route path="/" exact element={<LoginPage />} />
                     <Route
-                        path="/admin"
+                        path="/dashboard"
                         exact
                         element={
                             <AdminRoute>
-                                <>Admin</>
+                                <>dashboard</>
                             </AdminRoute>
                         }
                     />

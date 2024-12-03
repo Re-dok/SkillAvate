@@ -144,6 +144,17 @@ async function getUserData(email) {
                 courses: userData.courses,
                 myClients: userData.myClients,
             };
+        } else if (isAdmin) {
+            console.log(userData);
+            return {
+                isTrainer: userData.isTrainer,
+                isAdmin: userData.isAdmin,
+                isPersistant: userData.isPersistant,
+                email: email,
+                courses: userData.courses,
+                myClients: userData.myClients,
+                // TODO change the myClients thing
+            };
         }
     } else {
         throw new Error("User not found");

@@ -248,7 +248,8 @@ const userSlice = createSlice({
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
                 state.success = "data fetch Successfull!";
                 state.isLoggedIn = true;
-                if (!action.payload.isAdmin && action.payload.isTrainer)
+                // FIXME make it such that everones in my clients
+                if (action.payload.isAdmin || action.payload.isTrainer)
                     state.myClients = action.payload.myClients;
             })
             .addCase(doGetUserData.rejected, (state, action) => {

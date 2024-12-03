@@ -22,7 +22,7 @@ export const TrainerRoute = ({ children }) => {
     const isAdmin = useSelector((state) => state.user.isAdmin);
     const isLoggedIn = useSelector((state) => state.user.isLoggedIn);
 
-    if (isLoggedIn && isAdmin !== true && isTrainer === true) return children;
+    if (isLoggedIn && (isAdmin === true || isTrainer === true)) return children;
     else if (isLoggedIn) return <Navigate to={"/notFound"} />;
     else return <Navigate to={"/"} />;
 };
