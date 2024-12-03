@@ -236,10 +236,11 @@ class MyClients extends Component {
                             {modalMessage}
                         </div>
                         <div className="col-12 col gap-3 mx-auto d-flex paragram-text align-content-center justify-content-center align-items-center">
-                            {isAdd && !modalResp && (
-                                currentClient &&
-                                    avaiableCoursesForEnroll().length !== 0 ? (
-                                        <>
+                            {isAdd &&
+                                !modalResp &&
+                                (currentClient &&
+                                avaiableCoursesForEnroll().length !== 0 ? (
+                                    <>
                                         <Table responsive hover size="lg">
                                             <thead>
                                                 <tr>
@@ -260,7 +261,7 @@ class MyClients extends Component {
                                                                         course.courseId,
                                                                 });
                                                             }}
-                                                            key={i+"5"}
+                                                            key={i + "5"}
                                                         >
                                                             <td
                                                                 className={
@@ -300,12 +301,11 @@ class MyClients extends Component {
                                                     )
                                                 )}
                                             </tbody>
-                                            </Table>
-                                        </>
-                                    ) : (
-                                        <>No Courses Left UnEnrolled</>
-                                    )
-                            )}
+                                        </Table>
+                                    </>
+                                ) : (
+                                    <>No Courses Left UnEnrolled</>
+                                ))}
                         </div>
                         <div className="col gap-3 mx-auto d-flex justify-content-center">
                             {!modalResp && (

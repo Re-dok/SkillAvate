@@ -3,6 +3,7 @@ import {
     getCourseDetails,
     updateCourseDetails,
 } from "../../Firbase/firebaseCourseDB";
+import { throttle } from "lodash";
 
 const initialState = {
     course: [],
@@ -59,7 +60,6 @@ const doUpdateCourseUnit = createAsyncThunk(
                 newCourseData.modules[moduleIndex[0]].moduleName = headingName;
                 newCourseData.modules[moduleIndex[0]].moduleDiscp = moduleDiscp;
             }
-            // console.log(newCourseData);
             const resp = await updateCourseDetails(courseId, newCourseData);
             return resp;
         } catch (error) {
@@ -82,6 +82,32 @@ const doUpdateCourseInfo = createAsyncThunk(
             let newCourseData = structuredClone(state.course?.course[0]);
             newCourseData.courseName = courseName;
             newCourseData.courseDiscp = courseDiscp;
+            const resp = await updateCourseDetails(courseId, newCourseData);
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
+const doUpdateHeadingName = createAsyncThunk(
+    "courses/doUpdateHeadingName",
+    async ({ newName, moduleNumber, headingNumber }, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
+            }
+            const courseId = state.course?.course[0].courseId;
+            let newCourseData = structuredClone(state.course?.course[0]);
+            if (headingNumber === null)
+                newCourseData.modules[moduleNumber].moduleName = newName;
+            else
+                newCourseData.modules[moduleNumber].headings[
+                    headingNumber
+                ].headingName = newName;
             const resp = await updateCourseDetails(courseId, newCourseData);
             return resp;
         } catch (err) {
@@ -135,11 +161,19 @@ const courseSlice = createSlice({
                 if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Courses data updated";
             })
-            .addCase(doUpdateCourseInfo.pending, (state) => {})
+            .addCase(doUpdateCourseInfo.pending, () => {})
             .addCase(doUpdateCourseInfo.rejected, (state, action) => {
                 state.courseError = action.error.message;
             })
             .addCase(doUpdateCourseInfo.fulfilled, (state, action) => {
+                if (action.payload) state.course[0] = action.payload;
+                state.courseSuccess = "Courses data updated";
+            })
+            .addCase(doUpdateHeadingName.pending, () => {})
+            .addCase(doUpdateHeadingName.rejected, (state, action) => {
+                state.courseError = action.error.message;
+            })
+            .addCase(doUpdateHeadingName.fulfilled, (state, action) => {
                 if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Courses data updated";
             });
@@ -148,4 +182,9 @@ const courseSlice = createSlice({
 export default courseSlice.reducer;
 export const { resetCourseMessages, clearOtherUserCoursesInfo } =
     courseSlice.actions;
-export { doGetCourseDetails, doUpdateCourseUnit, doUpdateCourseInfo };
+export {
+    doGetCourseDetails,
+    doUpdateCourseUnit,
+    doUpdateCourseInfo,
+    doUpdateHeadingName,
+};
