@@ -534,7 +534,7 @@ class ContentCard extends Component {
                         ))}
                         <div className="my-4 d-flex justify-content-center">
                             <Button
-                                disabled={newWriteUp === ""}
+                                // disabled={ === ""}
                                 color="success"
                                 onClick={() => {
                                     addQuestion();

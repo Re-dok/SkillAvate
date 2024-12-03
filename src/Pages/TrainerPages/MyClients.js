@@ -110,6 +110,7 @@ class MyClients extends Component {
                         <tr>
                             <th>#</th>
                             <th>Client Email</th>
+                            <th></th>
                             <th>Course Name</th>
                             <th>Courses Id</th>
                             <th></th>
@@ -128,9 +129,9 @@ class MyClients extends Component {
                                     {i + 1}
                                 </th>
                                 <td className="align-content-center">
-                                    <div className="">
-                                        {client.clientEmail}{" "}
-                                    </div>
+                                    {client.clientEmail}{" "}
+                                </td>
+                                <td className="align-content-center">
                                     <Button
                                         size="sm"
                                         color="success"
@@ -145,7 +146,6 @@ class MyClients extends Component {
                                                     client.clientEmail,
                                             });
                                         }}
-                                        className="mt-2"
                                     >
                                         <i className="bi bi-plus-circle-dotted me-2"></i>
                                         Add Course
