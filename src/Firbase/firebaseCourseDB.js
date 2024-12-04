@@ -33,7 +33,7 @@ async function getMyCourses(createrEmail) {
                 coursesData,
             };
         } else {
-            return [];
+            return { coursesData: [] };
         }
     } catch (err) {
         return [];

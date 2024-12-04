@@ -7,12 +7,36 @@ import {
     getDocs,
     updateDoc,
     writeBatch,
+    doc
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
-    await addDoc(usersRef, { email, isTrainer });
+    if (isTrainer) {
+        const batch = writeBatch(db);
+        // Add a new trainer document to the users collection
+        const newTrainerRef = doc(usersRef);
+        batch.set(newTrainerRef, { email, isTrainer, myClients: [] });
+        // Query to find the admin user 
+        const q = query(usersRef, where("isAdmin", "==", true));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const trainerDoc = querySnapshot.docs[0]; // Assuming there's only one admin
+            const trainerRef = trainerDoc.ref;
+            // Update trainers field for the admin
+            let updatedTrainers = trainerDoc.data().trainers || [];
+            updatedTrainers.push({ trainerEmail: email, courses: [] });
+            batch.update(trainerRef, { trainers: updatedTrainers });
+        } else {
+            throw new Error("No admin found");
+        }
+        // Commit the batch
+        await batch.commit();
+    } else {
+        await addDoc(usersRef, { email, isTrainer, courses: [], Grades: [] });
+    }
 };
 async function updateProgress(email, courseId, newProgress, prevProgress) {
     const q = query(usersRef, where("email", "==", email));
