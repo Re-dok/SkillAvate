@@ -35,7 +35,26 @@ const addUserToDB = async ({ email, isTrainer }) => {
         // Commit the batch
         await batch.commit();
     } else {
-        await addDoc(usersRef, { email, isTrainer, courses: [], Grades: [] });
+        const batch = writeBatch(db);
+        // Add a new user document to the users collection
+        const newUserRef = doc(usersRef);
+        batch.set(newUserRef, { email, isTrainer,courses:[],Grades:[] });
+        // Query to find the admin user 
+        const q = query(usersRef, where("isAdmin", "==", true));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0]; // Assuming there's only one admin
+            const userRef = userDoc.ref;
+            // Update users field for the admin
+            let updatedUsers = userDoc.data().myClients || [];
+            updatedUsers.push({ clientEmail: email, courses: [] });
+            batch.update(userRef, { myClients: updatedUsers });
+        } else {
+            throw new Error("No admin found");
+        }
+        await batch.commit();
+        // await addDoc(usersRef, { email, isTrainer, courses: [], Grades: [] });
     }
 };
 async function updateProgress(email, courseId, newProgress, prevProgress) {
