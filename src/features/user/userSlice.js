@@ -6,6 +6,7 @@ import {
     doUserPasswordReset,
 } from "../../Firbase/firbaseAuth";
 import {
+    addClientToTrainer,
     addCourseToUser,
     getUserData,
     markCourseAsComplete,
@@ -30,7 +31,7 @@ const initialState = {
     courseGrades: null,
 
     myClients: null,
-    trainers:null,
+    trainers: null,
 
     isLoggedIn: false,
     initialURL: null,
@@ -163,6 +164,18 @@ const doRemoveCourseFromUser = createAsyncThunk(
         }
     }
 );
+const doAdddClientToTrainer = createAsyncThunk(
+    "user/addClientToUser",
+    async ({ currentTrainer, currentClient }, { getState }) => {
+        try {
+            const state = getState();
+            if (!state.user.isAdmin) throw new Error("Unautherised!");
+            return await addClientToTrainer({ currentTrainer, currentClient });
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
 const userSlice = createSlice({
     name: "user",
     initialState,
@@ -253,7 +266,7 @@ const userSlice = createSlice({
                 if (action.payload.isAdmin || action.payload.isTrainer)
                     state.myClients = action.payload.myClients;
                 if (action.payload.isAdmin)
-                    state.trainers=action.payload.trainers;
+                    state.trainers = action.payload.trainers;
             })
             .addCase(doGetUserData.rejected, (state, action) => {
                 state.loading = false;
@@ -307,8 +320,7 @@ const userSlice = createSlice({
             })
             .addCase(doAddCourseToUser.fulfilled, (state, action) => {
                 state.loading = false;
-                if(action.payload)
-                state.myClients = action.payload;
+                if (action.payload) state.myClients = action.payload;
             })
             .addCase(doRemoveCourseFromUser.pending, (state) => {
                 state.loading = true;
@@ -319,8 +331,21 @@ const userSlice = createSlice({
             })
             .addCase(doRemoveCourseFromUser.fulfilled, (state, action) => {
                 state.loading = false;
-                if(action.payload)
-                state.myClients = action.payload;
+                if (action.payload) state.myClients = action.payload;
+            })
+            .addCase(doAdddClientToTrainer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doAdddClientToTrainer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doAdddClientToTrainer.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    state.myClients = action.payload.myClients;
+                    state.trainers = action.payload.trainers;
+                }
             });
     },
 });
@@ -343,5 +368,6 @@ export {
     doUpdateCourseProgress,
     doMarkCourseAsComplete,
     doAddCourseToUser,
-    doRemoveCourseFromUser
+    doRemoveCourseFromUser,
+    doAdddClientToTrainer,
 };

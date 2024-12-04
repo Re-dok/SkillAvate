@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { getMyCourses } from "../../Firbase/firebaseCourseDB";
 import {
     doAddCourseToUser,
+    doAdddClientToTrainer,
     doRemoveCourseFromUser,
 } from "../../features/user/userSlice";
 
@@ -85,12 +86,28 @@ class MyClients extends Component {
                     modalMessage: "Somthing went wrong, please try again!",
                 });
         };
-        const handleAddClient = () => {
-            this.setState({isLoading:true})
-            alert("add client");
+        const handleAddClient = async () => {
+            this.setState({ isLoading: true });
+            const resp = await this.props.doAdddClientToTrainer({
+                currentTrainer: currentClient,
+                currentClient: currentCourse,
+            });
+            if (!resp.error)
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Client added Successfully!",
+                });
+            else
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Somthing went wrong, please try again!",
+                });
+            // alert("add client");
         };
         const handleRemoveClient = () => {
-            this.setState({isLoading:true})
+            this.setState({ isLoading: true });
             alert("reomve client");
         };
         const myClients = this.props.myClients;
@@ -591,6 +608,7 @@ const mapStateToprops = (state) => {
 const mapDispatchToProps = {
     doAddCourseToUser,
     doRemoveCourseFromUser,
+    doAdddClientToTrainer,
 };
 export default connect(
     mapStateToprops,

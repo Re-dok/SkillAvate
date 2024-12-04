@@ -47,7 +47,11 @@ const addUserToDB = async ({ email, isTrainer }) => {
             const userRef = userDoc.ref;
             // Update users field for the admin
             let updatedUsers = userDoc.data().myClients || [];
-            updatedUsers.push({ clientEmail: email, courses: [],unAssgined:true });
+            updatedUsers.push({
+                clientEmail: email,
+                courses: [],
+                unAssgined: true,
+            });
             batch.update(userRef, { myClients: updatedUsers });
         } else {
             throw new Error("No admin found");
@@ -194,7 +198,7 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
                 myClients: userData.myClients,
-                trainers:userData.trainers
+                trainers: userData.trainers,
             };
         }
     } else {
@@ -315,6 +319,44 @@ async function removeCourseFromUser(email, courseId, trainerEmail) {
         throw new Error("Users not found!");
     }
 }
+async function addClientToTrainer({ currentTrainer, currentClient }) {
+    const batch = writeBatch(db);
+    // Add a new trainer document to the users collection
+    const q = query(usersRef, where("email", "==", currentTrainer));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) throw new Error("Trainer Not Found");
+    const trainerDoc = querySnapshot.docs[0];
+    const trainerRef = trainerDoc.ref;
+    let updatedClients = trainerDoc.data().myClients;
+    updatedClients.push({ clientEmail: currentClient, courses: [] });
+    batch.update(trainerRef, { myClients: updatedClients });
+
+    const q2 = query(usersRef, where("isAdmin", "==", true));
+    const querySnapshot2 = await getDocs(q2);
+    if (querySnapshot2.empty) throw new Error("Admin Not Found");
+    const adminDoc = querySnapshot2.docs[0];
+    const adminRef = adminDoc.ref;
+    let updatedAdminClients = adminDoc.data().myClients;
+    updatedAdminClients.map((client) => {
+        if (client.clientEmail === currentClient) {
+            client.unAssigned = false;
+        }
+        return client;
+    });
+    let updatedAdminTrainers = adminDoc.data().trainers;
+    updatedAdminTrainers.map((trainer) => {
+        if (trainer.trainerEmail === currentTrainer) {
+            trainer.clients.push(currentClient);
+        }
+        return trainer;
+    });
+    batch.update(adminRef, {
+        myClients: updatedAdminClients,
+        trainers: updatedAdminTrainers,
+    });
+    batch.commit();
+    return { myClients: updatedAdminClients, trainers: updatedAdminTrainers };
+}
 export {
     getUserData,
     addUserToDB,
@@ -322,4 +364,5 @@ export {
     markCourseAsComplete,
     addCourseToUser,
     removeCourseFromUser,
+    addClientToTrainer,
 };
