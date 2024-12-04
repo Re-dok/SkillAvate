@@ -1,13 +1,12 @@
 // code rel to userDB
 import {
     collection,
-    addDoc,
     query,
     where,
     getDocs,
     updateDoc,
     writeBatch,
-    doc
+    doc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 const usersRef = collection(db, "users");
@@ -18,7 +17,7 @@ const addUserToDB = async ({ email, isTrainer }) => {
         // Add a new trainer document to the users collection
         const newTrainerRef = doc(usersRef);
         batch.set(newTrainerRef, { email, isTrainer, myClients: [] });
-        // Query to find the admin user 
+        // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
         const querySnapshot = await getDocs(q);
 
@@ -38,8 +37,8 @@ const addUserToDB = async ({ email, isTrainer }) => {
         const batch = writeBatch(db);
         // Add a new user document to the users collection
         const newUserRef = doc(usersRef);
-        batch.set(newUserRef, { email, isTrainer,courses:[],Grades:[] });
-        // Query to find the admin user 
+        batch.set(newUserRef, { email, isTrainer, courses: [], Grades: [] });
+        // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
         const querySnapshot = await getDocs(q);
 
@@ -208,8 +207,12 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0].data().isTrainer
             ? querySnapshot.docs[1]
+            : querySnapshot.docs[0].data().isAdmin
+            ? querySnapshot.docs[1]
             : querySnapshot.docs[0];
         const trainerDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[0]
+            : querySnapshot.docs[0].data().isAdmin
             ? querySnapshot.docs[0]
             : querySnapshot.docs[1];
         const userData = userDoc.data();
@@ -270,8 +273,12 @@ async function removeCourseFromUser(email, courseId, trainerEmail) {
     if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0].data().isTrainer
             ? querySnapshot.docs[1]
+            : querySnapshot.docs[0].data().isAdmin
+            ? querySnapshot.docs[1]
             : querySnapshot.docs[0];
         const trainerDoc = querySnapshot.docs[0].data().isTrainer
+            ? querySnapshot.docs[0]
+            : querySnapshot.docs[0].data().isAdmin
             ? querySnapshot.docs[0]
             : querySnapshot.docs[1];
         const userRef = userDoc.ref;
