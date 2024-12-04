@@ -26,7 +26,7 @@ const addUserToDB = async ({ email, isTrainer }) => {
             const trainerRef = trainerDoc.ref;
             // Update trainers field for the admin
             let updatedTrainers = trainerDoc.data().trainers || [];
-            updatedTrainers.push({ trainerEmail: email, courses: [] });
+            updatedTrainers.push({ trainerEmail: email, clients: [] });
             batch.update(trainerRef, { trainers: updatedTrainers });
         } else {
             throw new Error("No admin found");
@@ -47,7 +47,7 @@ const addUserToDB = async ({ email, isTrainer }) => {
             const userRef = userDoc.ref;
             // Update users field for the admin
             let updatedUsers = userDoc.data().myClients || [];
-            updatedUsers.push({ clientEmail: email, courses: [] });
+            updatedUsers.push({ clientEmail: email, courses: [],unAssgined:true });
             batch.update(userRef, { myClients: updatedUsers });
         } else {
             throw new Error("No admin found");
@@ -194,7 +194,7 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
                 myClients: userData.myClients,
-                // TODO change the myClients thing
+                trainers:userData.trainers
             };
         }
     } else {
