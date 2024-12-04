@@ -7,6 +7,7 @@ import {
     doAddCourseToUser,
     doAdddClientToTrainer,
     doRemoveCourseFromUser,
+    doRemoveClientFromTrainer
 } from "../../features/user/userSlice";
 
 class MyClients extends Component {
@@ -88,6 +89,8 @@ class MyClients extends Component {
         };
         const handleAddClient = async () => {
             this.setState({ isLoading: true });
+            const { currentClient, currentCourse} =
+                this.state;
             const resp = await this.props.doAdddClientToTrainer({
                 currentTrainer: currentClient,
                 currentClient: currentCourse,
@@ -104,11 +107,25 @@ class MyClients extends Component {
                     modalResp: true,
                     modalMessage: "Somthing went wrong, please try again!",
                 });
-            // alert("add client");
         };
-        const handleRemoveClient = () => {
+        const handleRemoveClient = async () => {
             this.setState({ isLoading: true });
-            alert("reomve client");
+            const resp = await this.props.doRemoveClientFromTrainer({
+                currentTrainer: currentClient,
+                currentClient: currentCourse,
+            });
+            if (!resp.error)
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Clinet Removed Successfully!",
+                });
+            else
+                this.setState({
+                    isLoading: false,
+                    modalResp: true,
+                    modalMessage: "Somthing went wrong, please try again!",
+                });
         };
         const myClients = this.props.myClients;
         const trainers = this.props.trainers;
@@ -609,6 +626,7 @@ const mapDispatchToProps = {
     doAddCourseToUser,
     doRemoveCourseFromUser,
     doAdddClientToTrainer,
+    doRemoveClientFromTrainer
 };
 export default connect(
     mapStateToprops,

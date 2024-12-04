@@ -9,6 +9,7 @@ import {
     doc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
+import { coursesRef } from "./firebaseCourseDB";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 const addUserToDB = async ({ email, isTrainer }) => {
@@ -357,6 +358,84 @@ async function addClientToTrainer({ currentTrainer, currentClient }) {
     batch.commit();
     return { myClients: updatedAdminClients, trainers: updatedAdminTrainers };
 }
+async function removeClientFromTrainer({ currentTrainer, currentClient }) {
+    const batch = writeBatch(db);
+    const q2 = query(usersRef, where("isAdmin", "==", true));
+    const querySnapshot2 = await getDocs(q2);
+    if (querySnapshot2.empty) throw new Error("Admin Not Found");
+    const adminDoc = querySnapshot2.docs[0];
+    const adminRef = adminDoc.ref;
+    // change admin clinets list to true
+    let updatedAdminClients = adminDoc.data().myClients;
+    const adminEmail = adminDoc.data().email;
+    updatedAdminClients.map((client) => {
+        if (client.clientEmail === currentClient) {
+            client.unAssigned = true;
+        }
+        return client;
+    });
+    // remove from dmins trainer list
+    let updatedAdminTrainers = adminDoc.data().trainers;
+    updatedAdminTrainers.map((trainer) => {
+        if (trainer.trainerEmail === currentTrainer) {
+            const i = trainer.clients.indexOf(currentClient);
+            if (i > -1) {
+                trainer.clients.splice(i, 1);
+            }
+        }
+        return trainer;
+    });
+    batch.update(adminRef, {
+        myClients: updatedAdminClients,
+        trainers: updatedAdminTrainers,
+    });
+    const q = query(
+        usersRef,
+        where("email", "in", [currentTrainer, currentClient])
+    );
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) throw new Error("Users Not Found!");
+    const userDoc = querySnapshot.docs[0].data().isTrainer
+        ? querySnapshot.docs[1]
+        : querySnapshot.docs[0];
+    const trainerDoc = querySnapshot.docs[0].data().isTrainer
+        ? querySnapshot.docs[0]
+        : querySnapshot.docs[1];
+    const userData = userDoc.data();
+    const trainerData = trainerDoc.data();
+    const trainerRef = trainerDoc.ref;
+    const userRef = userDoc.ref;
+    let updatedClients = trainerData.myClients;
+    updatedClients.map((client) => {
+        if (client.clientEmail === currentClient) {
+            return null;
+        }
+        return client;
+    });
+    batch.update(trainerRef, { myClients: updatedClients });
+    const q3 = query(coursesRef, where("createrEmail", "==", adminEmail));
+    const querySnapshot3 = await getDocs(q3);
+    let coursesNotToRemove = [];
+    if (!querySnapshot3.empty) {
+        querySnapshot3.docs.map((doc) => {
+            const courseId = doc.data().courseId;
+            coursesNotToRemove.push(courseId);
+        });
+    }
+    const updatedGrades = userData.Grades;
+    const updatedCourses = userData.courses;
+    updatedCourses.map((course) => {
+        if (coursesNotToRemove.includes(course.courseId)) return course;
+        return null;
+    });
+    updatedGrades.map((grade) => {
+        if (coursesNotToRemove.includes(grade.courseId)) return grade;
+        return null;
+    });
+    batch.update(userRef, { Grades: updatedGrades, courses: updatedCourses });
+    batch.commit();
+    return { myClients: updatedAdminClients, trainers: updatedAdminTrainers };
+}
 export {
     getUserData,
     addUserToDB,
@@ -365,4 +444,5 @@ export {
     addCourseToUser,
     removeCourseFromUser,
     addClientToTrainer,
+    removeClientFromTrainer,
 };

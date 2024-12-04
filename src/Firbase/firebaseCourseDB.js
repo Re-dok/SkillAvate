@@ -6,7 +6,6 @@ import {
     addDoc,
     doc,
     updateDoc,
-    getDoc,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
@@ -340,4 +339,4 @@ async function addCourse() {
     await addDoc(coursesRef, course);
     return "courese added!";
 }
-export { getCourseDetails, addCourse, updateCourseDetails, getMyCourses };
+export { getCourseDetails, addCourse, updateCourseDetails, getMyCourses ,coursesRef};

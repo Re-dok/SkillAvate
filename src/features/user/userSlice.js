@@ -12,6 +12,7 @@ import {
     markCourseAsComplete,
     removeCourseFromUser,
     updateProgress,
+    removeClientFromTrainer,
 } from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
@@ -171,6 +172,22 @@ const doAdddClientToTrainer = createAsyncThunk(
             const state = getState();
             if (!state.user.isAdmin) throw new Error("Unautherised!");
             return await addClientToTrainer({ currentTrainer, currentClient });
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
+const doRemoveClientFromTrainer = createAsyncThunk(
+    "user/removeClientFromUser",
+    async ({ currentTrainer, currentClient }, { getState }) => {
+        try {
+            console.log("hi");
+            const state = getState();
+            if (!state.user.isAdmin) throw new Error("Unautherised!");
+            return await removeClientFromTrainer({
+                currentTrainer,
+                currentClient,
+            });
         } catch (err) {
             throw new Error(err.message);
         }
@@ -346,6 +363,20 @@ const userSlice = createSlice({
                     state.myClients = action.payload.myClients;
                     state.trainers = action.payload.trainers;
                 }
+            })
+            .addCase(doRemoveClientFromTrainer.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doRemoveClientFromTrainer.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doRemoveClientFromTrainer.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    state.myClients = action.payload.myClients;
+                    state.trainers = action.payload.trainers;
+                }
             });
     },
 });
@@ -370,4 +401,5 @@ export {
     doAddCourseToUser,
     doRemoveCourseFromUser,
     doAdddClientToTrainer,
+    doRemoveClientFromTrainer
 };
