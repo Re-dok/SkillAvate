@@ -63,7 +63,7 @@ class CourseCard extends Component {
                                 size="sm"
                                 onClick={() => {
                                     this.props.navigate(
-                                        `/editCourse/${this.props.courseId}`
+                                        `/view/${this.props.courseId}`
                                     );
                                     this.props.clearOtherUserCoursesInfo(
                                         this.props.courseId
@@ -355,7 +355,7 @@ class TrainerCourses extends Component {
                                     isPublished={course.isPublished}
                                 />
                             );
-                        }
+                        }else return <></>
                     })}
                     {openPublishedCourse &&
                         !this.state.publishedCoursesArePresent && (

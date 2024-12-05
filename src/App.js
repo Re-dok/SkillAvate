@@ -23,6 +23,7 @@ import ViewCourse from "./Pages/ViewCourse";
 import TrainerCourses from "./Pages/TrainerPages/TrainerCourses";
 import MyClients from "./Pages/TrainerPages/MyClients";
 import EditCourse from "./Pages/TrainerPages/EditCourse";
+import ViewTrainerCourse from "./Pages/TrainerPages/ViewTrainerCourse";
 // FIXME make urls from base like the one sir did
 // all the grades irrespective of course id are being stored in the same array, will need to
 // change this logic
@@ -102,6 +103,15 @@ class App extends Component {
                         }
                     />
                     <Route
+                        path="/view/:courseId"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <ViewTrainerCourse />
+                            </TrainerRoute>
+                        }
+                    />
+                    <Route
                         path="/editCourse/:courseId"
                         exact
                         element={
@@ -127,15 +137,6 @@ class App extends Component {
                             // <ClientRoute>
                             <>settings</>
                             // </ClientRoute>
-                        }
-                    />
-                    <Route
-                        path="/trainer"
-                        exact
-                        element={
-                            <TrainerRoute>
-                                <>trainer</>
-                            </TrainerRoute>
                         }
                     />
                     <Route path="/resetPassword" element={<ResetPassword />} />

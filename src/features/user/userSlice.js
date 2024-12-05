@@ -62,9 +62,7 @@ const doUpdateCourseProgress = createAsyncThunk(
         try {
             const state = getState();
             const { email } = state.user.userCredentials;
-            // console.log("Hi");//
             await updateProgress(email, courseId, newProgress, prevProgress);
-            // console.log("Hi2");
             return newProgress;
         } catch (error) {
             throw new Error(error.message);
@@ -181,7 +179,6 @@ const doRemoveClientFromTrainer = createAsyncThunk(
     "user/removeClientFromUser",
     async ({ currentTrainer, currentClient }, { getState }) => {
         try {
-            console.log("hi");
             const state = getState();
             if (!state.user.isAdmin) throw new Error("Unautherised!");
             return await removeClientFromTrainer({

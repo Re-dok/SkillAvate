@@ -3,7 +3,6 @@ import {
     getCourseDetails,
     updateCourseDetails,
 } from "../../Firbase/firebaseCourseDB";
-import { throttle } from "lodash";
 
 const initialState = {
     course: [],

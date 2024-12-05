@@ -473,8 +473,8 @@ class ContentCard extends Component {
                             ></ReactPlayer>
                         </div>
                     )}
-                    {/* TODO add the docLink condition later on when you have added it to the db */}
-                    {/* {docLink && ( */}
+                    {/* TODO check if this works ok */}
+                    {docLink && (
                     <div>
                         <div
                             role="button"
@@ -485,7 +485,7 @@ class ContentCard extends Component {
                             Reading Assignment
                         </div>
                     </div>
-                    {/* )} */}
+                    )}
 
                     {writeUp && (
                         <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
