@@ -338,14 +338,14 @@ async function addClientToTrainer({ currentTrainer, currentClient }) {
     const adminDoc = querySnapshot2.docs[0];
     const adminRef = adminDoc.ref;
     let updatedAdminClients = adminDoc.data().myClients;
-    updatedAdminClients.map((client) => {
+    updatedAdminClients = updatedAdminClients.map((client) => {
         if (client.clientEmail === currentClient) {
             client.unAssigned = false;
         }
         return client;
     });
     let updatedAdminTrainers = adminDoc.data().trainers;
-    updatedAdminTrainers.map((trainer) => {
+    updatedAdminTrainers = updatedAdminTrainers.map((trainer) => {
         if (trainer.trainerEmail === currentTrainer) {
             trainer.clients.push(currentClient);
         }
@@ -368,15 +368,14 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
     // change admin clinets list to true
     let updatedAdminClients = adminDoc.data().myClients;
     const adminEmail = adminDoc.data().email;
-    updatedAdminClients.map((client) => {
+    updatedAdminClients = updatedAdminClients.map((client) => {
         if (client.clientEmail === currentClient) {
             client.unAssigned = true;
         }
         return client;
     });
     // remove from dmins trainer list
-    let updatedAdminTrainers = adminDoc.data().trainers;
-    updatedAdminTrainers.map((trainer) => {
+    let updatedAdminTrainers = adminDoc.data().trainers.map((trainer) => {
         if (trainer.trainerEmail === currentTrainer) {
             const i = trainer.clients.indexOf(currentClient);
             if (i > -1) {
@@ -405,13 +404,9 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
     const trainerData = trainerDoc.data();
     const trainerRef = trainerDoc.ref;
     const userRef = userDoc.ref;
-    let updatedClients = trainerData.myClients;
-    updatedClients.map((client) => {
-        if (client.clientEmail === currentClient) {
-            return null;
-        }
-        return client;
-    });
+    let updatedClients = trainerData?.myClients?.filter(
+        (client) => client.clientEmail !== currentClient
+    );
     batch.update(trainerRef, { myClients: updatedClients });
     const q3 = query(coursesRef, where("createrEmail", "==", adminEmail));
     const querySnapshot3 = await getDocs(q3);
@@ -422,16 +417,12 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
             coursesNotToRemove.push(courseId);
         });
     }
-    const updatedGrades = userData.Grades;
-    const updatedCourses = userData.courses;
-    updatedCourses.map((course) => {
-        if (coursesNotToRemove.includes(course.courseId)) return course;
-        return null;
-    });
-    updatedGrades.map((grade) => {
-        if (coursesNotToRemove.includes(grade.courseId)) return grade;
-        return null;
-    });
+    let updatedGrades = userData.Grades.filter((grade) =>
+        coursesNotToRemove.includes(grade.courseId)
+    );
+    let updatedCourses = userData.courses?.filter((course) =>
+        coursesNotToRemove.includes(course.courseId)
+    );
     batch.update(userRef, { Grades: updatedGrades, courses: updatedCourses });
     batch.commit();
     return { myClients: updatedAdminClients, trainers: updatedAdminTrainers };
