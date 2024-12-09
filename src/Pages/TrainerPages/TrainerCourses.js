@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
+    doGetMyCourses,
 } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import { Button, CloseButton, Collapse, Nav } from "reactstrap";
@@ -63,9 +64,13 @@ class CourseCard extends Component {
                                 className="rounded-3 p-3 mb-3 fw-bold"
                                 size="sm"
                                 onClick={() => {
-                                    this.props.navigate(
-                                        `/view/${this.props.courseId}`
-                                    );
+                                    this.props.isPublished
+                                        ? this.props.navigate(
+                                              `/view/${this.props.courseId}`
+                                          )
+                                        : this.props.navigate(
+                                              `/editCourse/${this.props.courseId}`
+                                          );
                                     this.props.clearOtherUserCoursesInfo(
                                         this.props.courseId
                                     );
@@ -265,9 +270,13 @@ const ConectedCourseCard = connect(
     mapStateToprops,
     mapDispatchToProps
 )(withRouter(CourseCard));
+const mapDispatchToPropsCourseCard = {
+    doGetMyCourses,
+};
 const mapStateToPropsForMyCourses = (state) => {
     return {
         userEmail: state.user.userCredentials.email,
+        courses: state.course.course,
     };
 };
 class TrainerCourses extends Component {
@@ -292,8 +301,9 @@ class TrainerCourses extends Component {
     };
     async componentDidMount() {
         window.scrollTo(0, 0);
-        const courses = await getMyCourses(this.props.userEmail);
-        this.setState({ courses: courses.coursesData });
+        await this.props.doGetMyCourses();
+        // const courses = await getMyCourses(this.props.userEmail);
+        // this.setState({ courses: courses.coursesData });
     }
     render() {
         const {
@@ -346,7 +356,8 @@ class TrainerCourses extends Component {
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.state.courses.map((course, courseNumber) => {
+                    {!openPublishedCourse && <AddCourse />}
+                    {this.props.courses.map((course, courseNumber) => {
                         if (course.isPublished === openPublishedCourse) {
                             notePresence(openPublishedCourse);
                             return (
@@ -358,7 +369,6 @@ class TrainerCourses extends Component {
                             );
                         } else return <></>;
                     })}
-                    {!openPublishedCourse && <AddCourse />}
                     {openPublishedCourse &&
                         !this.state.publishedCoursesArePresent && (
                             <>Nothing here!</>
@@ -372,4 +382,7 @@ class TrainerCourses extends Component {
         );
     }
 }
-export default connect(mapStateToPropsForMyCourses, null)(TrainerCourses);
+export default connect(
+    mapStateToPropsForMyCourses,
+    mapDispatchToPropsCourseCard
+)(TrainerCourses);

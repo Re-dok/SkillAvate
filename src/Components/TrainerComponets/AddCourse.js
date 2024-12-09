@@ -46,7 +46,7 @@ class AddCourse extends Component {
             }, 2000);
         };
         return (
-            <div className="row">
+            <div className="row m-0">
                 <Button
                     className="col-7 col-md-3 col-lg-2 text-white bg-primary-o"
                     onClick={() =>

@@ -23,7 +23,7 @@ const initialState = {
         email: null,
         password: null,
     },
-
+    name: "",
     isAdmin: false,
     isTrainer: false,
     isPersistent: false,
@@ -277,10 +277,14 @@ const userSlice = createSlice({
                 state.success = "data fetch Successfull!";
                 state.isLoggedIn = true;
                 // FIXME make it such that everones in my clients
-                if (action.payload.isAdmin || action.payload.isTrainer)
+                if (action.payload.isAdmin || action.payload.isTrainer) {
                     state.myClients = action.payload.myClients;
-                if (action.payload.isAdmin)
+                    state.name = action.payload.name;
+                }
+                if (action.payload.isAdmin) {
                     state.trainers = action.payload.trainers;
+                    state.name = action.payload.name;
+                }
             })
             .addCase(doGetUserData.rejected, (state, action) => {
                 state.loading = false;
@@ -398,5 +402,5 @@ export {
     doAddCourseToUser,
     doRemoveCourseFromUser,
     doAdddClientToTrainer,
-    doRemoveClientFromTrainer
+    doRemoveClientFromTrainer,
 };

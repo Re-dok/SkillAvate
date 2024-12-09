@@ -1,6 +1,8 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
+    addCourse,
     getCourseDetails,
+    getMyCourses,
     updateCourseDetails,
 } from "../../Firbase/firebaseCourseDB";
 
@@ -10,6 +12,29 @@ const initialState = {
     courseError: "",
     courseSuccess: "",
 };
+const doCreateCourse = createAsyncThunk(
+    "courses/createCourse",
+    async ({ courseName, courseDiscp }, { getState }) => {
+        try {
+            const state = getState();
+            if (state.user.userName)
+                throw new Error(
+                    "Please make sure you have filled your basic details in settings page, before creating a course!"
+                );
+            const courseDate = {
+                courseName,
+                courseDiscp,
+                createrName: state.user.name,
+                isPublished: false,
+                createrEmail: state.user.userCredentials.email,
+                modules: [],
+            };
+            const resp = await addCourse(courseDate);
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
 const doGetCourseDetails = createAsyncThunk(
     "courses/getCourseDetails",
     async (courseId) => {
@@ -114,6 +139,19 @@ const doUpdateHeadingName = createAsyncThunk(
         }
     }
 );
+const doGetMyCourses = createAsyncThunk(
+    "course/getMyCourses",
+    async (_, { getState }) => {
+        try {
+            const state = getState();
+            const createrEmail = state.user.userCredentials.email;
+            const resp = await getMyCourses(createrEmail);
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -175,6 +213,19 @@ const courseSlice = createSlice({
             .addCase(doUpdateHeadingName.fulfilled, (state, action) => {
                 if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Courses data updated";
+            })
+            .addCase(doCreateCourse.pending, () => {})
+            .addCase(doCreateCourse.fulfilled, (state, action) => {})
+            .addCase(doGetMyCourses.pending, (state) => {
+                state.courseLoading = true;
+            })
+            .addCase(doGetMyCourses.rejected, (state) => {
+                state.courseLoading = false;
+                state.course = [];
+            })
+            .addCase(doGetMyCourses.fulfilled, (state, action) => {
+                state.courseLoading = false;
+                state.course = action.payload.coursesData;
             });
     },
 });
@@ -186,4 +237,5 @@ export {
     doUpdateCourseUnit,
     doUpdateCourseInfo,
     doUpdateHeadingName,
+    doGetMyCourses,
 };
