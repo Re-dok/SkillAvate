@@ -1,9 +1,5 @@
 import React, { Component } from "react";
-import {
-    Offcanvas,
-    OffcanvasHeader,
-    OffcanvasBody,
-} from "reactstrap";
+import { Offcanvas, OffcanvasHeader, OffcanvasBody } from "reactstrap";
 import { doGetCourseDetails } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../../Components/WithRouter";
@@ -42,17 +38,6 @@ class EditCourse extends Component {
             this.props.navigate("/notFound");
             return;
         }
-        const modules = courseData[0].modules;
-        let firstUnitCoorditantes = () => {
-            if (modules[0]?.content) return [0, -1, -1];
-            else {
-                if (modules[0]?.headings[0]?.content) return [0, 0, -1];
-                return [0, 0, 0];
-            }
-        };
-        // this.setState({
-        //     openUnit: firstUnitCoorditantes(),
-        // });
     }
     render() {
         if (this.props.isLoading) return <>Loading...</>;

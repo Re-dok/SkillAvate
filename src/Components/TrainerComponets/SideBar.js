@@ -23,6 +23,17 @@ class SideBar extends Component {
             modalMsg: null,
             coordinatesTochange: null,
             newName: "",
+            showUnitModal: !false,
+            unitModalMsg: null,
+            unitModalResp: false,
+            newHeading: null,
+            newModule: null,
+            newSubheading: null,
+            unitDepth: 0,
+            // depending on the depth we handle one of the 6 cases, in which we add new units
+            // 0 module lvl
+            // 1 headig lvl
+            // 2 subheaidng lvl
         };
     }
     componentDidMount() {
@@ -64,8 +75,18 @@ class SideBar extends Component {
         const { courseData, unitType } = this.props;
         if (!this.props.courseData) return <>Loading</>;
         else {
-            const { isLoading, modalMsg, newName, coordinatesTochange } =
-                this.state;
+            const {
+                isLoading,
+                modalMsg,
+                newName,
+                coordinatesTochange,
+                unitModalMsg,
+                showUnitModal,
+                newModule,
+                newHeading,
+                newSubheading,
+                unitDepth,
+            } = this.state;
             const handleEditHeadingName = (
                 e,
                 oldName,
@@ -108,6 +129,15 @@ class SideBar extends Component {
                     [name]: value?.replace(/\s+/g, " ").trim() || "",
                 });
             };
+            const unitIsValid = (() => {
+                if (unitDepth === 2)
+                    return newSubheading === null || newSubheading.length === 0;
+                if (unitDepth === 1)
+                    return newHeading === null || newHeading.length === 0;
+                if (unitDepth === 0)
+                    return newModule === null || newModule.length === 0;
+            })();
+            const doAddUnit = () => {};
             return (
                 <div className="mt-5">
                     <div className="px-2 mb-3 fs-6 fw-bold">
@@ -434,20 +464,20 @@ class SideBar extends Component {
                                                                     </div>
                                                                 )
                                                             )}
-                                                                <div
-                                                                    role="button"
-                                                                    className={
-                                                                        "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
-                                                                    }
-                                                                    onClick={() =>
-                                                                        alert(
-                                                                            "Add this"
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <i class="bi bi-plus-circle me-2"></i>
-                                                                    Add Sub-heading
-                                                                </div>
+                                                            <div
+                                                                role="button"
+                                                                className={
+                                                                    "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                                                }
+                                                                onClick={() =>
+                                                                    alert(
+                                                                        "Add this"
+                                                                    )
+                                                                }
+                                                            >
+                                                                <i class="bi bi-plus-circle me-2"></i>
+                                                                Add Sub-heading
+                                                            </div>
                                                         </Collapse>
                                                     </div>
                                                 )
@@ -538,6 +568,132 @@ class SideBar extends Component {
                                     }}
                                 >
                                     {modalMsg ? "Close" : "Cancel"}
+                                </Button>
+                            </div>
+                        </ModalBody>
+                    </Modal>
+                    <Modal isOpen={showUnitModal} size="lg">
+                        <ModalBody className="pb-3 rounded p-4 justify-content-center">
+                            <p className="d-flex justify-content-center mb-2">
+                                {unitModalMsg ? (
+                                    unitModalMsg
+                                ) : (
+                                    <div className="w-100 bg-grey p-2 px-3">
+                                        <p>Please enter the details</p>
+
+                                        {unitDepth < 1 && (
+                                            <div className="fw-bold mb-3 w-100">
+                                                Module Name :
+                                                <Input
+                                                    rows="1"
+                                                    required
+                                                    className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                                                    value={newModule}
+                                                    name="newModule"
+                                                    onChange={onChangeValue}
+                                                    onBlur={onBlurValue}
+                                                    invalid={
+                                                        newModule == null ||
+                                                        newModule.length === 0
+                                                    }
+                                                />
+                                                <FormFeedback invalid>
+                                                    Name can not be empty!
+                                                </FormFeedback>
+                                            </div>
+                                        )}
+                                        {unitDepth < 2 && (
+                                            <div className="fw-bold mb-3 w-100">
+                                                Heading Name :
+                                                <Input
+                                                    rows="1"
+                                                    required
+                                                    className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                                                    value={newHeading}
+                                                    onBlur={onBlurValue}
+                                                    name="newHeading"
+                                                    onChange={onChangeValue}
+                                                    placeholder={
+                                                        unitDepth === 1
+                                                            ? ""
+                                                            : "Optional"
+                                                    }
+                                                    invalid={
+                                                        unitDepth === 1
+                                                            ? newHeading ===
+                                                                  null ||
+                                                              newHeading?.length ===
+                                                                  0
+                                                            : false
+                                                    }
+                                                />
+                                                <FormFeedback invalid>
+                                                    Name can not be empty!
+                                                </FormFeedback>
+                                            </div>
+                                        )}
+                                        <div className="fw-bold mb-3 w-100">
+                                            Subheading Name :
+                                            <Input
+                                                rows="1"
+                                                required
+                                                className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
+                                                value={newSubheading}
+                                                name="newSubheading"
+                                                onChange={onChangeValue}
+                                                onBlur={onBlurValue}
+                                                placeholder={
+                                                    unitDepth === 2
+                                                        ? ""
+                                                        : "Optional"
+                                                }
+                                                invalid={
+                                                    unitDepth === 2
+                                                        ? newSubheading ===
+                                                              null ||
+                                                          newSubheading.length ===
+                                                              0
+                                                        : false
+                                                }
+                                            />
+                                            <FormFeedback invalid>
+                                                Name can not be empty!
+                                            </FormFeedback>
+                                        </div>
+                                    </div>
+                                )}
+                            </p>
+                            <div className="col gap-3 mx-auto d-flex justify-content-center">
+                                {!unitModalMsg && (
+                                    <Button
+                                        className="rounded-3 py-2 fw-bold"
+                                        size="sm"
+                                        color="success"
+                                        onClick={doAddUnit}
+                                        disabled={unitIsValid}
+                                    >
+                                        {isLoading ? "Loading..." : "Save"}
+                                    </Button>
+                                )}
+                                <Button
+                                    className="rounded-3 py-2 fw-bold"
+                                    size="sm"
+                                    color="warning"
+                                    disabled={isLoading}
+                                    onClick={() => {
+                                        this.setState({
+                                            showUnitModal: false,
+                                            unitModalMsg: null,
+                                            unitModalResp: false,
+                                            newHeading: null,
+                                            newModule: null,
+                                            newSubheading: null,
+                                            unitDepth: 2,
+                                            isLoading: false,
+                                        });
+                                    }}
+                                >
+                                    {unitModalMsg ? "Close" : "Cancel"}
                                 </Button>
                             </div>
                         </ModalBody>
