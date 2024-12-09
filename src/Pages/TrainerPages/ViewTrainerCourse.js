@@ -62,13 +62,32 @@ class SideBar extends Component {
     }
 
     render() {
-        const { courseData } = this.props;
+        const { courseData, unitType } = this.props;
         if (!this.props.courseData) return <>Loading</>;
         else {
             return (
                 <div className="mt-5">
                     <div className="px-2 mb-3 fs-6 fw-bold">
                         {courseData?.courseName}
+                    </div>
+                    <div
+                        role="button"
+                        className={
+                            "fs-6 mb-3 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-between" +
+                            (unitType === 1 ? " bg-secondary text-white" : "")
+                        }
+                        onClick={() => {
+                            this.props.setOpenUnit([-1, -1, -1], 1);
+                            this.setState({
+                                openModule: -1,
+                                openHeading: -1,
+                                currentSubheading: -1,
+                            });
+                            if (this.props.isCanvas) this.props.toggleSideBar();
+                        }}
+                    >
+                        Course Details
+                        <i className="bi bi-chevron-right ms-3"></i>
                     </div>
                     <ListGroup>
                         {courseData?.modules?.map((module, moduleNumber) => (
@@ -293,9 +312,10 @@ class ViewCourse extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            openUnit: [0, 0, 0],
+            openUnit: [-1, -1, -1],
             navbarIsOpen: false,
             qnaIsOpen: false,
+            unitType: 1,
         };
     }
     async componentDidMount() {
@@ -311,8 +331,17 @@ class ViewCourse extends Component {
         });
     }
     render() {
-        if (this.props.isLoading) return <>Loading...</>;
+        if (this.props.isLoading || !this.props.courseData[0])
+            return <>Loading...</>;
         else {
+            const { unitType } = this.state;
+            const {
+                courseName,
+                courseId,
+                createrName,
+                createrEmail,
+                courseDiscp,
+            } = this.props.courseData[0];
             return (
                 <div className="row m-0">
                     {/* Button for sidebar on mobile */}
@@ -348,9 +377,13 @@ class ViewCourse extends Component {
                                 <SideBar
                                     openUnit={this.state.openUnit}
                                     courseData={this.props.courseData[0]}
-                                    setOpenUnit={(newUnit) => {
-                                        this.setState({ openUnit: newUnit });
+                                    setOpenUnit={(newUnit, unitType = 0) => {
+                                        this.setState({
+                                            openUnit: newUnit,
+                                            unitType: unitType,
+                                        });
                                     }}
+                                    unitType={this.state.unitType}
                                     toggleSideBar={() => {
                                         this.setState({
                                             navbarIsOpen:
@@ -368,21 +401,53 @@ class ViewCourse extends Component {
                         <SideBar
                             openUnit={this.state.openUnit}
                             courseData={this.props.courseData[0]}
-                            setOpenUnit={(newUnit) => {
-                                this.setState({ openUnit: newUnit });
+                            setOpenUnit={(newUnit, unitType = 0) => {
+                                this.setState({
+                                    openUnit: newUnit,
+                                    unitType: unitType,
+                                });
                             }}
+                            unitType={this.state.unitType}
                             isCanvas={false}
                         />
                         <div className="my-5"></div>
                     </div>
                     {/* main content*/}
                     <div className="col-lg-9 col bg-grey py-5 px-lg-5">
-                        <ViewContentCard
-                            modules={this.props.courseData[0]?.modules}
-                            openUnit={this.state.openUnit}
-                            courseName={this.props.courseData[0]?.courseName}
-                            createrName={this.props.courseData[0]?.createrName}
-                        />
+                        {unitType === 0 && (
+                            <ViewContentCard
+                                modules={this.props.courseData[0]?.modules}
+                                openUnit={this.state.openUnit}
+                                courseName={
+                                    this.props.courseData[0]?.courseName
+                                }
+                                createrName={
+                                    this.props.courseData[0]?.createrName
+                                }
+                            />
+                        )}
+                        {unitType === 1 && (
+                            <div className="mx-lg-5 mt-5 py-5 rounded px-lg-4 px-2 bg-grey">
+                                <div className="fw-bold fs-3 mb-3">
+                                    Course Details
+                                </div>
+                                <div className="fw-bold mb-3">
+                                    Course Name: {courseName}
+                                </div>
+                                <div className="fw-bold mb-3">
+                                    Course Discription: {courseDiscp}
+                                </div>
+                                <div className="fw-bold mb-3">
+                                    Course ID: {courseId}
+                                </div>
+                                <div className="fw-bold mb-3">
+                                    Instructor Name: {createrName}
+                                </div>
+                                <div className="fw-bold mb-3">
+                                    Instructor Email: {createrEmail}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             );

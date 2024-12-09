@@ -434,15 +434,53 @@ class SideBar extends Component {
                                                                     </div>
                                                                 )
                                                             )}
+                                                                <div
+                                                                    role="button"
+                                                                    className={
+                                                                        "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                                                    }
+                                                                    onClick={() =>
+                                                                        alert(
+                                                                            "Add this"
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <i class="bi bi-plus-circle me-2"></i>
+                                                                    Add Sub-heading
+                                                                </div>
                                                         </Collapse>
                                                     </div>
                                                 )
                                             )}
+                                            <div
+                                                role="button"
+                                                className={
+                                                    "m-0 ms-2 fs-6 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                                }
+                                                onClick={() =>
+                                                    alert("Add this")
+                                                }
+                                            >
+                                                <i class="bi bi-plus-circle me-2"></i>
+                                                Add Heading
+                                            </div>
                                         </div>
                                     }
                                 </Collapse>
                             </ListGroupItem>
                         ))}
+                        <ListGroupItem className="p-0 border-0">
+                            <div
+                                role="button"
+                                className={
+                                    "fs-6 mb-1 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                }
+                                onClick={() => alert("Add this")}
+                            >
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Add Module
+                            </div>
+                        </ListGroupItem>
                     </ListGroup>
                     <Modal isOpen={this.state.showModal}>
                         <ModalBody className="pb-3 rounded p-4 justify-content-center">
