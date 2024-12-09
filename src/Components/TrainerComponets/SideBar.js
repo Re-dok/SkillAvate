@@ -505,43 +505,49 @@ class SideBar extends Component {
                                                                     </div>
                                                                 )
                                                             )}
-                                                            <div
-                                                                role="button"
-                                                                className={
-                                                                    "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
-                                                                }
-                                                                onClick={() =>
-                                                                    handleAddUnit(
-                                                                        moduleNumber,
-                                                                        headingNumber,
-                                                                        heading
-                                                                            .subheadings
-                                                                            ?.length
-                                                                    )
-                                                                }
-                                                            >
-                                                                <i class="bi bi-plus-circle me-2"></i>
-                                                                Add Subheading
-                                                            </div>
+                                                            {!heading.content && (
+                                                                <div
+                                                                    role="button"
+                                                                    className={
+                                                                        "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleAddUnit(
+                                                                            moduleNumber,
+                                                                            headingNumber,
+                                                                            heading
+                                                                                .subheadings
+                                                                                ?.length
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <i class="bi bi-plus-circle me-2"></i>
+                                                                    Add
+                                                                    Subheading
+                                                                </div>
+                                                            )}
                                                         </Collapse>
                                                     </div>
                                                 )
                                             )}
-                                            <div
-                                                role="button"
-                                                className={
-                                                    "m-0 ms-2 fs-6 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
-                                                }
-                                                onClick={() =>
-                                                    handleAddUnit(
-                                                        moduleNumber,
-                                                        module?.headings.length
-                                                    )
-                                                }
-                                            >
-                                                <i class="bi bi-plus-circle me-2"></i>
-                                                Add Heading
-                                            </div>
+                                            {!module.content && (
+                                                <div
+                                                    role="button"
+                                                    className={
+                                                        "m-0 ms-2 fs-6 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
+                                                    }
+                                                    onClick={() =>
+                                                        handleAddUnit(
+                                                            moduleNumber,
+                                                            module?.headings
+                                                                .length
+                                                        )
+                                                    }
+                                                >
+                                                    <i class="bi bi-plus-circle me-2"></i>
+                                                    Add Heading
+                                                </div>
+                                            )}
                                         </div>
                                     }
                                 </Collapse>

@@ -12,7 +12,6 @@ import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
 import {
     doAddCourseUnit,
-    doUpdateCourseUnit,
 } from "../../features/course/courseSlice";
 class NewUnitCard extends Component {
     constructor(props) {
@@ -261,7 +260,6 @@ class NewUnitCard extends Component {
                             Module Name: {headings[0]}
                         </div>
                     )}
-                    {headings[0]}
                     {headings[1] && (
                         <div className="fw-bold mb-3">
                             Heading Name: {headings[1]}
@@ -520,9 +518,13 @@ class NewUnitCard extends Component {
                                     <div className="row mt-2">
                                         <Button
                                             className="col-2 mx-auto"
-                                            onClick={() =>
-                                                this.props.setOpenUnit()
-                                            }
+                                            onClick={() => {
+                                                this.setState({
+                                                    showModal: false,
+                                                    modalMessge: null,
+                                                });
+                                                this.props.setOpenUnit();
+                                            }}
                                         >
                                             Close
                                         </Button>
