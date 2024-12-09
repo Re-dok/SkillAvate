@@ -163,6 +163,7 @@ class ContentCard extends Component {
                 questionIndex = null,
                 optionIndex = null
             ) => {
+                this.props.setNoNav(true);
                 let { name, value } = e.target;
                 if (name === "answer") {
                     this.setState((prevState) => {
@@ -227,6 +228,7 @@ class ContentCard extends Component {
                     unsavedChanges: false,
                     newModuleDiscp: null,
                 });
+                this.props.setNoNav(false);
             };
             const handleSubmit = () => {
                 if (!isValidSubmission(newHeading, newModuleDiscp, newTest)) {
@@ -247,6 +249,7 @@ class ContentCard extends Component {
                     moduleDiscp,
                     moduleIndex: [i, j, k],
                 });
+                this.props.setNoNav(false);
             };
             const removeQuestion = (questionIndex) => {
                 this.setState((prevState) => {

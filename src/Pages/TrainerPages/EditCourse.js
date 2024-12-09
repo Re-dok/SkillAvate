@@ -20,8 +20,9 @@ class EditCourse extends Component {
             // 0 for content edit
             // 1 for basic info edit
             unitType: 1,
-            newUnitHeadings:[],
-            newUnitCoordinates:[]
+            newUnitHeadings: [],
+            newUnitCoordinates: [],
+            noNav: false,
         };
     }
     async componentDidMount() {
@@ -82,12 +83,18 @@ class EditCourse extends Component {
                                     openUnit={this.state.openUnit}
                                     // courseProgress={this.state.courseProgress}
                                     courseData={this.props.courseData[0]}
-                                    setOpenUnit={(newUnit, unitType = 0,newUnitCoordinates=[],headings=[]) => {
+                                    setOpenUnit={(
+                                        newUnit,
+                                        unitType = 0,
+                                        newUnitCoordinates = [],
+                                        headings = []
+                                    ) => {
                                         this.setState({
                                             openUnit: newUnit,
                                             unitType: unitType,
-                                            newUnitCoordinates:newUnitCoordinates,
-                                            headings
+                                            newUnitCoordinates:
+                                                newUnitCoordinates,
+                                            headings,
                                         });
                                     }}
                                     toggleSideBar={() => {
@@ -98,6 +105,8 @@ class EditCourse extends Component {
                                     }}
                                     unitType={this.state.unitType}
                                     isCanvas={true}
+                                    noNav={this.state.noNav}
+
                                     // isComplete={this.state.isComplete}
                                 />
                             </OffcanvasBody>
@@ -110,16 +119,22 @@ class EditCourse extends Component {
                             openUnit={this.state.openUnit}
                             //     courseProgress={this.state.courseProgress}
                             courseData={this.props.courseData[0]}
-                            setOpenUnit={(newUnit, unitType = 0,newUnitCoordinates=[],headings=[]) => {
+                            setOpenUnit={(
+                                newUnit,
+                                unitType = 0,
+                                newUnitCoordinates = [],
+                                headings = []
+                            ) => {
                                 this.setState({
                                     openUnit: newUnit,
                                     unitType: unitType,
-                                    newUnitCoordinates:newUnitCoordinates,
-                                    newUnitHeadings:headings
+                                    newUnitCoordinates: newUnitCoordinates,
+                                    newUnitHeadings: headings,
                                 });
                             }}
                             unitType={this.state.unitType}
                             isCanvas={false}
+                            noNav={this.state.noNav}
                             //     isComplete={this.state.isComplete}
                         />
                         <div className="my-5"></div>
@@ -135,6 +150,9 @@ class EditCourse extends Component {
                                 }
                                 createrName={
                                     this.props.courseData[0]?.createrName
+                                }
+                                setNoNav={(val) =>
+                                    this.setState({ noNav: val })
                                 }
                             />
                         </div>
@@ -155,6 +173,9 @@ class EditCourse extends Component {
                                 courseDiscp={
                                     this.props.courseData[0]?.courseDiscp
                                 }
+                                setNoNav={(val) =>
+                                    this.setState({ noNav: val })
+                                }
                             />
                         </div>
                     )}
@@ -163,7 +184,9 @@ class EditCourse extends Component {
                             <ConnectedNewUnitCard
                                 modules={this.props.courseData[0]?.modules}
                                 headings={this.state.newUnitHeadings}
-                                newUnitCoordinates={this.state.newUnitCoordinates}
+                                newUnitCoordinates={
+                                    this.state.newUnitCoordinates
+                                }
                                 courseName={
                                     this.props.courseData[0]?.courseName
                                 }
@@ -172,10 +195,13 @@ class EditCourse extends Component {
                                 }
                                 setOpenUnit={() => {
                                     this.setState({
-                                        openUnit: [-1,-1,-1],
+                                        openUnit: [-1, -1, -1],
                                         unitType: 1,
                                     });
                                 }}
+                                setNoNav={(val) =>
+                                    this.setState({ noNav: val })
+                                }
                             />
                         </div>
                     )}

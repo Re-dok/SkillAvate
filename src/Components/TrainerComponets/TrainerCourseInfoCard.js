@@ -24,12 +24,14 @@ class TrainerCourseInfoCard extends Component {
                 showModal: false,
                 hasUnsavedChanges: false,
             });
+            this.props.setNoNav(false);
         };
         function isValidSubmission() {
             if (newCourseName && newCourseDiscp) return true;
             return false;
         }
         const onChangeValue = (e) => {
+            this.props.setNoNav(true);
             let { name, value } = e.target;
             const { hasUnsavedChanges } = this.state;
             if (hasUnsavedChanges) this.setState({ [name]: value });
@@ -62,6 +64,7 @@ class TrainerCourseInfoCard extends Component {
             else {
                 this.setState({ hasUnsavedChanges: false });
             }
+            this.props.setNoNav(false);
         };
 
         const { courseDiscp, courseName, courseId, createrEmail, createrName } =

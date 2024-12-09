@@ -10,9 +10,7 @@ import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
-import {
-    doAddCourseUnit,
-} from "../../features/course/courseSlice";
+import { doAddCourseUnit } from "../../features/course/courseSlice";
 class NewUnitCard extends Component {
     constructor(props) {
         super(props);
@@ -82,11 +80,11 @@ class NewUnitCard extends Component {
         }
         return [i, j, k, 0, 0, false];
     }
-    componentDidUpdate(prevProps) {
-        if (prevProps !== this.props) {
-            window.scrollTo(0, 0);
-        }
-    }
+    // componentDidUpdate(prevProps) {
+    //     if (prevProps !== this.props) {
+    //         window.scrollTo(0, 0);
+    //     }
+    // }
     triggerModal() {
         this.setState({ showModal: true });
     }
@@ -122,6 +120,8 @@ class NewUnitCard extends Component {
                 questionIndex = null,
                 optionIndex = null
             ) => {
+                this.props.setNoNav(true);
+
                 let { name, value } = e.target;
                 if (name === "answer") {
                     this.setState((prevState) => {
@@ -185,6 +185,7 @@ class NewUnitCard extends Component {
                     unsavedChanges: false,
                     newModuleDiscp: null,
                 });
+                this.props.setNoNav(false);
                 this.props.setOpenUnit();
             };
             const handleSubmit = async () => {
@@ -213,6 +214,7 @@ class NewUnitCard extends Component {
                 } else {
                     this.props.setOpenUnit();
                 }
+                this.props.setNoNav(false);
             };
             const removeQuestion = (questionIndex) => {
                 this.setState((prevState) => {
