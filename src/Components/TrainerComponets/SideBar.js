@@ -23,13 +23,14 @@ class SideBar extends Component {
             modalMsg: null,
             coordinatesTochange: null,
             newName: "",
-            showUnitModal: !false,
+            showUnitModal: false,
             unitModalMsg: null,
             unitModalResp: false,
             newHeading: null,
             newModule: null,
             newSubheading: null,
             unitDepth: 0,
+            moduleCoordiantes: [],
             // depending on the depth we handle one of the 6 cases, in which we add new units
             // 0 module lvl
             // 1 headig lvl
@@ -86,6 +87,7 @@ class SideBar extends Component {
                 newHeading,
                 newSubheading,
                 unitDepth,
+                moduleCoordiantes,
             } = this.state;
             const handleEditHeadingName = (
                 e,
@@ -137,7 +139,36 @@ class SideBar extends Component {
                 if (unitDepth === 0)
                     return newModule === null || newModule.length === 0;
             })();
-            const doAddUnit = () => {};
+            const handleAddUnit = (
+                moduleNumber,
+                headingNumber = -1,
+                subheadingNumber = -1
+            ) => {
+                let unitDepth = 2;
+                if ((headingNumber === -1)) {
+                    unitDepth = 0;
+                } else if ((subheadingNumber === -1)) {
+                    unitDepth = 1;
+                }
+                this.setState({
+                    moduleCoordiantes: [
+                        moduleNumber,
+                        headingNumber,
+                        subheadingNumber,
+                    ],
+                    showUnitModal: true,
+                    unitDepth,
+                });
+            };
+            const doAddUnit = () => {
+                this.setState({ isLoading: true });
+                setTimeout(() => {
+                    this.setState({
+                        isLoading: false,
+                        unitModalMsg: "WORKING?",
+                    });
+                }, 3000);
+            };
             return (
                 <div className="mt-5">
                     <div className="px-2 mb-3 fs-6 fw-bold">
@@ -331,7 +362,7 @@ class SideBar extends Component {
                                                                 }
                                                             }}
                                                         >
-                                                            <p>
+                                                            <p className="me-3 m-0">
                                                                 {
                                                                     heading.headingName
                                                                 }
@@ -470,13 +501,17 @@ class SideBar extends Component {
                                                                     "ms-3 my-1 p-3 border border-2 rounded-pill d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
                                                                 }
                                                                 onClick={() =>
-                                                                    alert(
-                                                                        "Add this"
+                                                                    handleAddUnit(
+                                                                        moduleNumber,
+                                                                        headingNumber,
+                                                                        heading
+                                                                            .subheadings
+                                                                            ?.length
                                                                     )
                                                                 }
                                                             >
                                                                 <i class="bi bi-plus-circle me-2"></i>
-                                                                Add Sub-heading
+                                                                Add Subheading
                                                             </div>
                                                         </Collapse>
                                                     </div>
@@ -488,7 +523,10 @@ class SideBar extends Component {
                                                     "m-0 ms-2 fs-6 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
                                                 }
                                                 onClick={() =>
-                                                    alert("Add this")
+                                                    handleAddUnit(
+                                                        moduleNumber,
+                                                        module?.headings.length
+                                                    )
                                                 }
                                             >
                                                 <i class="bi bi-plus-circle me-2"></i>
@@ -505,7 +543,9 @@ class SideBar extends Component {
                                 className={
                                     "fs-6 mb-1 p-2 py-3 border border-2 rounded d-flex align-content-center align-items-center justify-content-center bg-secondary text-white"
                                 }
-                                onClick={() => alert("Add this")}
+                                onClick={() =>
+                                    handleAddUnit(courseData?.modules?.length)
+                                }
                             >
                                 <i class="bi bi-plus-circle me-2"></i>
                                 Add Module
