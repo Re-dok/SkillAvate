@@ -153,6 +153,101 @@ const doGetMyCourses = createAsyncThunk(
         }
     }
 );
+const doAddCourseUnit = createAsyncThunk(
+    "courses/addCourseUnit",
+    async (
+        { headings, unitCoordinates, unitDiscp, newContent },
+        { getState }
+    ) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
+            }
+            const courseId = state.course?.course[0].courseId;
+            let newCourseData = structuredClone(state.course?.course[0]);
+            let modules = newCourseData.modules || [];
+            const moduleName = headings[0];
+            const headingName = headings[1];
+            const subheadingName = headings[2];
+            if (unitCoordinates[2] === -1) {
+                if (unitCoordinates[1] === -1) {
+                    // appending to module
+                    if (subheadingName) {
+                        // add with subheading,heading
+                        let subheadings = [];
+                        subheadings.push({
+                            subheadingName: subheadingName,
+                            content: newContent,
+                        });
+                        let headings = [];
+                        headings.push({
+                            headingName: headingName,
+                            subheadings: subheadings,
+                        });
+                        modules.push({
+                            moduleName: moduleName,
+                            moduleDiscp: unitDiscp,
+                            headings: headings,
+                        });
+                    } else if (headingName) {
+                        // add with heading
+                        let headings = [];
+                        headings.push({
+                            headingName: headingName,
+                            content: newContent,
+                        });
+                        modules.push({
+                            moduleName: moduleName,
+                            moduleDiscp: unitDiscp,
+                            headings: headings,
+                        });
+                    } else {
+                        modules.push({
+                            moduleName: moduleName,
+                            moduleDiscp: unitDiscp,
+                            content: newContent,
+                        });
+                    }
+                } else {
+                    // appending to headings
+                    if (subheadingName) {
+                        // add with subheading
+                        let subheadings = [];
+                        subheadings.push({
+                            subheadingName: subheadingName,
+                            content: newContent,
+                        });
+                        modules[unitCoordinates[0]].headings.push({
+                            headingName: headingName,
+                            subheadings: subheadings,
+                        });
+                    } else {
+                        modules[unitCoordinates[0]].headings.push({
+                            headingName: headingName,
+                            content: newContent,
+                        });
+                    }
+                }
+            } else {
+                // appending to subheading
+                modules[unitCoordinates[0]].headings[
+                    unitCoordinates[1]
+                ].subheadings.push({
+                    subheadingName: subheadingName,
+                    content: newContent,
+                });
+            }
+            const resp = await updateCourseDetails(courseId, newCourseData);
+            return resp;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -232,6 +327,18 @@ const courseSlice = createSlice({
             .addCase(doGetMyCourses.fulfilled, (state, action) => {
                 state.courseLoading = false;
                 state.course = action.payload.coursesData;
+            })
+            .addCase(doAddCourseUnit.pending, (state) => {
+                state.courseLoading = true;
+            })
+            .addCase(doAddCourseUnit.rejected, (state, action) => {
+                state.courseLoading = false;
+                state.courseError = action.error.message;
+            })
+            .addCase(doAddCourseUnit.fulfilled, (state, action) => {
+                state.courseLoading = false;
+                if (action.payload) state.course[0] = action.payload;
+                state.courseSuccess = "Unit added";
             });
     },
 });
@@ -245,4 +352,5 @@ export {
     doUpdateHeadingName,
     doGetMyCourses,
     doCreateCourse,
+    doAddCourseUnit,
 };

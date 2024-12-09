@@ -10,7 +10,10 @@ import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
-import { doUpdateCourseUnit } from "../../features/course/courseSlice";
+import {
+    doAddCourseUnit,
+    doUpdateCourseUnit,
+} from "../../features/course/courseSlice";
 class NewUnitCard extends Component {
     constructor(props) {
         super(props);
@@ -25,6 +28,8 @@ class NewUnitCard extends Component {
             unsavedChanges: false,
             headingIsInvalid: false,
             showModal: false,
+            // modalMessge: null,
+            modalMessge: null,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -89,7 +94,7 @@ class NewUnitCard extends Component {
     render() {
         if (this.props.modules === undefined) return <>loading</>;
         else {
-            const {headings}=this.props;
+            const headings = this.props.headings;
             const newVideoLink = this.state.newVideoLink;
             const newDocLink = this.state.newDocLink;
             const newWriteUp = this.state.newWriteUp;
@@ -183,7 +188,7 @@ class NewUnitCard extends Component {
                 });
                 this.props.setOpenUnit();
             };
-            const handleSubmit = () => {
+            const handleSubmit = async () => {
                 if (!isValidSubmission(newModuleDiscp, newTest)) {
                     this.setState({ showModal: true });
                     return;
@@ -194,19 +199,21 @@ class NewUnitCard extends Component {
                     writeUp: newWriteUp,
                     test: newTest,
                 };
-                //     const newHeading =
-                //         this.state.newHeading !== null
-                //             ? this.state.newHeading
-                //             : this.props.headings[1];
-                //   TODO change this logic and inputs accordingly
-                const moduleDiscp = newModuleDiscp;
-                // this.props.doUpdateCourseUnit({
-                //     newContent,
-                //     headingName,
-                //     moduleDiscp,
-                // //     TODO change the logic here
-                // //     moduleIndex: [i, j, k],
-                // });
+                const unitCoordinates = this.props.newUnitCoordinates;
+                const resp = await this.props.doAddCourseUnit({
+                    headings,
+                    unitCoordinates,
+                    unitDiscp: newModuleDiscp,
+                    newContent,
+                });
+                if (resp.error) {
+                    this.setState({
+                        showModal: true,
+                        modalMessge: "Somthing went wrong! Please try again!",
+                    });
+                } else {
+                    this.props.setOpenUnit();
+                }
             };
             const removeQuestion = (questionIndex) => {
                 this.setState((prevState) => {
@@ -254,6 +261,7 @@ class NewUnitCard extends Component {
                             Module Name: {headings[0]}
                         </div>
                     )}
+                    {headings[0]}
                     {headings[1] && (
                         <div className="fw-bold mb-3">
                             Heading Name: {headings[1]}
@@ -273,7 +281,7 @@ class NewUnitCard extends Component {
                                 required
                                 className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
                                 value={newModuleDiscp}
-                                placeholder="Heading Here!"
+                                placeholder="Discription Here!"
                                 name="newModuleDiscp"
                                 onChange={onChangeValue}
                                 invalid={newModuleDiscp.length === 0}
@@ -503,10 +511,30 @@ class NewUnitCard extends Component {
                         isOpen={this.state.showModal}
                         toggle={() => this.setState({ showModal: false })}
                     >
-                        <ModalBody className="pb-5 rounded p-4">
-                            Please ensure all necessary fields, such as the
-                            discription and at least one question, are filled
-                            in.
+                        <ModalBody className="rounded p-4">
+                            {this.state.modalMessge ? (
+                                <div>
+                                    <div className="d-flex justify-content-center">
+                                        {this.state.modalMessge}
+                                    </div>
+                                    <div className="row mt-2">
+                                        <Button
+                                            className="col-2 mx-auto"
+                                            onClick={() =>
+                                                this.props.setOpenUnit()
+                                            }
+                                        >
+                                            Close
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <>
+                                    Please ensure all necessary fields, such as
+                                    the discription and at least one question,
+                                    are filled in.
+                                </>
+                            )}
                         </ModalBody>
                     </Modal>
                 </div>
@@ -516,6 +544,7 @@ class NewUnitCard extends Component {
 }
 const mapDispatchToProps = {
     // doUpdateCourseUnit,
+    doAddCourseUnit,
 };
 const ConnectedNewUnitCard = connect(
     null,

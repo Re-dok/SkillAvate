@@ -86,7 +86,7 @@ class EditCourse extends Component {
                                         this.setState({
                                             openUnit: newUnit,
                                             unitType: unitType,
-                                            newUnitCoordinates,
+                                            newUnitCoordinates:newUnitCoordinates,
                                             headings
                                         });
                                     }}
@@ -114,8 +114,8 @@ class EditCourse extends Component {
                                 this.setState({
                                     openUnit: newUnit,
                                     unitType: unitType,
-                                    newUnitCoordinates,
-                                    headings
+                                    newUnitCoordinates:newUnitCoordinates,
+                                    newUnitHeadings:headings
                                 });
                             }}
                             unitType={this.state.unitType}
@@ -163,6 +163,7 @@ class EditCourse extends Component {
                             <ConnectedNewUnitCard
                                 modules={this.props.courseData[0]?.modules}
                                 headings={this.state.newUnitHeadings}
+                                newUnitCoordinates={this.state.newUnitCoordinates}
                                 courseName={
                                     this.props.courseData[0]?.courseName
                                 }
