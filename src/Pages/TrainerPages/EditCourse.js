@@ -6,6 +6,7 @@ import withRouter from "../../Components/WithRouter";
 import TrainerContentCard from "../../Components/TrainerComponets/TrainerContentCard";
 import TrainerCourseInfoCard from "../../Components/TrainerComponets/TrainerCourseInfoCard";
 import SideBar from "../../Components/TrainerComponets/SideBar";
+import ConnectedNewUnitCard from "../../Components/TrainerComponets/NewUnitCard";
 
 class EditCourse extends Component {
     constructor(props) {
@@ -19,6 +20,8 @@ class EditCourse extends Component {
             // 0 for content edit
             // 1 for basic info edit
             unitType: 1,
+            newUnitHeadings:[],
+            newUnitCoordinates:[]
         };
     }
     async componentDidMount() {
@@ -79,10 +82,12 @@ class EditCourse extends Component {
                                     openUnit={this.state.openUnit}
                                     // courseProgress={this.state.courseProgress}
                                     courseData={this.props.courseData[0]}
-                                    setOpenUnit={(newUnit, unitType = 0) => {
+                                    setOpenUnit={(newUnit, unitType = 0,newUnitCoordinates=[],headings=[]) => {
                                         this.setState({
                                             openUnit: newUnit,
                                             unitType: unitType,
+                                            newUnitCoordinates,
+                                            headings
                                         });
                                     }}
                                     toggleSideBar={() => {
@@ -105,10 +110,12 @@ class EditCourse extends Component {
                             openUnit={this.state.openUnit}
                             //     courseProgress={this.state.courseProgress}
                             courseData={this.props.courseData[0]}
-                            setOpenUnit={(newUnit, unitType = 0) => {
+                            setOpenUnit={(newUnit, unitType = 0,newUnitCoordinates=[],headings=[]) => {
                                 this.setState({
                                     openUnit: newUnit,
                                     unitType: unitType,
+                                    newUnitCoordinates,
+                                    headings
                                 });
                             }}
                             unitType={this.state.unitType}
@@ -148,6 +155,26 @@ class EditCourse extends Component {
                                 courseDiscp={
                                     this.props.courseData[0]?.courseDiscp
                                 }
+                            />
+                        </div>
+                    )}
+                    {unitType === 2 && (
+                        <div className="col-lg-9 col bg-grey py-5 px-lg-5">
+                            <ConnectedNewUnitCard
+                                modules={this.props.courseData[0]?.modules}
+                                headings={this.state.newUnitHeadings}
+                                courseName={
+                                    this.props.courseData[0]?.courseName
+                                }
+                                createrName={
+                                    this.props.courseData[0]?.createrName
+                                }
+                                setOpenUnit={() => {
+                                    this.setState({
+                                        openUnit: [-1,-1,-1],
+                                        unitType: 1,
+                                    });
+                                }}
                             />
                         </div>
                     )}

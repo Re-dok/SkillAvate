@@ -145,9 +145,9 @@ class SideBar extends Component {
                 subheadingNumber = -1
             ) => {
                 let unitDepth = 2;
-                if ((headingNumber === -1)) {
+                if (headingNumber === -1) {
                     unitDepth = 0;
-                } else if ((subheadingNumber === -1)) {
+                } else if (subheadingNumber === -1) {
                     unitDepth = 1;
                 }
                 this.setState({
@@ -161,13 +161,23 @@ class SideBar extends Component {
                 });
             };
             const doAddUnit = () => {
-                this.setState({ isLoading: true });
-                setTimeout(() => {
-                    this.setState({
-                        isLoading: false,
-                        unitModalMsg: "WORKING?",
-                    });
-                }, 3000);
+                const headings = [newModule, newHeading, newSubheading];
+                this.props.setOpenUnit(
+                    [-1, -1, -1],
+                    2,
+                    moduleCoordiantes,
+                    headings
+                );
+                this.setState({
+                    showUnitModal: false,
+                    unitModalMsg: null,
+                    unitModalResp: false,
+                    newHeading: null,
+                    newModule: null,
+                    newSubheading: null,
+                    unitDepth: 2,
+                    isLoading: false,
+                });
             };
             return (
                 <div className="mt-5">
@@ -709,10 +719,16 @@ class SideBar extends Component {
                                         className="rounded-3 py-2 fw-bold"
                                         size="sm"
                                         color="success"
-                                        onClick={doAddUnit}
+                                        onClick={() => {
+                                            this.setState({
+                                                showUnitModal: true,
+                                                unitModalMsg:
+                                                    "Fill the Unit Details and Click save to finish the process.",
+                                            });
+                                        }}
                                         disabled={unitIsValid}
                                     >
-                                        {isLoading ? "Loading..." : "Save"}
+                                        {isLoading ? "Loading..." : "Next"}
                                     </Button>
                                 )}
                                 <Button
@@ -720,20 +736,9 @@ class SideBar extends Component {
                                     size="sm"
                                     color="warning"
                                     disabled={isLoading}
-                                    onClick={() => {
-                                        this.setState({
-                                            showUnitModal: false,
-                                            unitModalMsg: null,
-                                            unitModalResp: false,
-                                            newHeading: null,
-                                            newModule: null,
-                                            newSubheading: null,
-                                            unitDepth: 2,
-                                            isLoading: false,
-                                        });
-                                    }}
+                                    onClick={doAddUnit}
                                 >
-                                    {unitModalMsg ? "Close" : "Cancel"}
+                                    {unitModalMsg ? "OK" : "Cancel"}
                                 </Button>
                             </div>
                         </ModalBody>
