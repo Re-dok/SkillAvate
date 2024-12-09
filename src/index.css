@@ -50,10 +50,12 @@ body {
 
 }
 
-.bg-primary-o {
+.bg-primary-o{
       background-color: var(--primary);
 }
-
+.bg-primary-o:hover{
+      background-color: var(--primary);
+}
 .bg-secodary-o {
       background-color: var(--secondary);
 }

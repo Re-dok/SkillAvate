@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import { Button, CloseButton, Collapse, Nav } from "reactstrap";
 import { addCourse, getMyCourses } from "../../Firbase/firebaseCourseDB";
 import withRouter from "../../Components/WithRouter";
+import AddCourse from "../../Components/TrainerComponets/AddCourse";
 class CourseCard extends Component {
     // props = courseId,courseProgress
     constructor(props) {
@@ -355,8 +356,9 @@ class TrainerCourses extends Component {
                                     isPublished={course.isPublished}
                                 />
                             );
-                        }else return <></>
+                        } else return <></>;
                     })}
+                    {!openPublishedCourse && <AddCourse />}
                     {openPublishedCourse &&
                         !this.state.publishedCoursesArePresent && (
                             <>Nothing here!</>
@@ -365,7 +367,6 @@ class TrainerCourses extends Component {
                         !this.state.unPublishedCoursesArePresent && (
                             <>Nothing here!</>
                         )}
-                    {/* <Button onClick={this.addCourse}>Add course</Button> */}
                 </div>
             </div>
         );
