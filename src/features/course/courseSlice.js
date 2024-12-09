@@ -17,7 +17,7 @@ const doCreateCourse = createAsyncThunk(
     async ({ courseName, courseDiscp }, { getState }) => {
         try {
             const state = getState();
-            if (state.user.userName)
+            if (!state.user.name)
                 throw new Error(
                     "Please make sure you have filled your basic details in settings page, before creating a course!"
                 );
@@ -30,6 +30,7 @@ const doCreateCourse = createAsyncThunk(
                 modules: [],
             };
             const resp = await addCourse(courseDate);
+            return resp;
         } catch (err) {
             throw new Error(err.message);
         }
@@ -215,7 +216,12 @@ const courseSlice = createSlice({
                 state.courseSuccess = "Courses data updated";
             })
             .addCase(doCreateCourse.pending, () => {})
-            .addCase(doCreateCourse.fulfilled, (state, action) => {})
+            .addCase(doCreateCourse.rejected, (state, action) => {
+                state.courseError = action.error.message;
+            })
+            .addCase(doCreateCourse.fulfilled, (state, action) => {
+                state.course.push(action.payload);
+            })
             .addCase(doGetMyCourses.pending, (state) => {
                 state.courseLoading = true;
             })
@@ -238,4 +244,5 @@ export {
     doUpdateCourseInfo,
     doUpdateHeadingName,
     doGetMyCourses,
+    doCreateCourse,
 };

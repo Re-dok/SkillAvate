@@ -279,11 +279,11 @@ const userSlice = createSlice({
                 // FIXME make it such that everones in my clients
                 if (action.payload.isAdmin || action.payload.isTrainer) {
                     state.myClients = action.payload.myClients;
-                    state.name = action.payload.name;
+                    state.name = action.payload.name || null;
                 }
                 if (action.payload.isAdmin) {
                     state.trainers = action.payload.trainers;
-                    state.name = action.payload.name;
+                    state.name = action.payload.name || null;
                 }
             })
             .addCase(doGetUserData.rejected, (state, action) => {

@@ -190,6 +190,7 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
                 myClients: userData.myClients,
+                name: userData.name,
             };
         } else if (isAdmin) {
             return {
@@ -200,6 +201,7 @@ async function getUserData(email) {
                 courses: userData.courses,
                 myClients: userData.myClients,
                 trainers: userData.trainers,
+                name: userData.name,
             };
         }
     } else {

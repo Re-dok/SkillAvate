@@ -53,7 +53,6 @@ class TrainerCourseInfoCard extends Component {
                 courseDiscp: newCourseDiscp,
             });
             this.setState({ isLoading: false });
-            console.log(resp);
             if (resp.error)
                 this.setState({
                     showModal: true,
@@ -118,7 +117,7 @@ class TrainerCourseInfoCard extends Component {
                 </div>
                 <div className="fw-bold mb-5">
                     <i className="bi bi-pencil-fill me-2"></i>
-                    Edit Module Discription :
+                    Edit Course Discription :
                     <Input
                         rows="4"
                         required

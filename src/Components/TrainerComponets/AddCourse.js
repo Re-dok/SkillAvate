@@ -1,10 +1,7 @@
 import React, { Component } from "react";
-import {
-    Button,
-    Modal,
-    Input,
-    FormFeedback,
-} from "reactstrap";
+import { connect } from "react-redux";
+import { Button, Modal, Input, FormFeedback } from "reactstrap";
+import { doCreateCourse } from "../../features/course/courseSlice";
 class AddCourse extends Component {
     constructor(props) {
         super(props);
@@ -14,6 +11,7 @@ class AddCourse extends Component {
             isLoading: false,
             newCourseDiscp: "",
             newCourseName: "",
+            modalResp: false,
         };
     }
     render() {
@@ -21,6 +19,7 @@ class AddCourse extends Component {
             showModal,
             isLoading,
             modalMessage,
+            modalResp,
             newCourseDiscp,
             newCourseName,
         } = this.state;
@@ -35,15 +34,25 @@ class AddCourse extends Component {
             let { name, value } = e.target;
             this.setState({ [name]: value });
         };
-        const handleAddCourse = () => {
-            this.setState({ isLoading: true });
-            setTimeout(() => {
+        const handleAddCourse = async () => {
+            this.setState({ isLoading: true, modalResp: true });
+            const { newCourseDiscp, newCourseName } = this.state;
+
+            const resp = await this.props.doCreateCourse({
+                courseName: newCourseName,
+                courseDiscp: newCourseDiscp,
+            });
+            if (resp.error) {
                 this.setState({
-                    modalMessage:
-                        "Course Added! You can edit it in the 'Unannounced' section",
                     isLoading: false,
+                    modalMessage:
+                        "Somthing went wrong! Please try again!\n(Make sure you have filled in your name in the settings page!",
                 });
-            }, 2000);
+            } else
+                this.setState({
+                    isLoading: false,
+                    modalMessage: "Course Created!",
+                });
         };
         return (
             <div className="row m-0">
@@ -99,7 +108,7 @@ class AddCourse extends Component {
                             )}
                         </div>
                         <div className="col gap-3 mx-auto d-flex justify-content-center">
-                            {!modalMessage && (
+                            {!modalResp && (
                                 <Button
                                     className="rounded-3 py-2 fw-bold"
                                     size="sm"
@@ -123,13 +132,14 @@ class AddCourse extends Component {
                                     this.setState({
                                         showModal: false,
                                         isLoading: false,
-                                        modalMessage: "",
+                                        modalResp: false,
                                         newCourseDiscp: "",
                                         newCourseName: "",
+                                        modalMessage: "",
                                     })
                                 }
                             >
-                                {modalMessage ? "Close" : " Cancel"}
+                                {modalResp ? "Close" : " Cancel"}
                             </Button>
                         </div>
                     </div>
@@ -138,4 +148,7 @@ class AddCourse extends Component {
         );
     }
 }
-export default AddCourse;
+const mapDispatchToProps = {
+    doCreateCourse,
+};
+export default connect(null, mapDispatchToProps)(AddCourse);
