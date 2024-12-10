@@ -5,6 +5,7 @@ import {
     getMyCourses,
     updateCourseDetails,
 } from "../../Firbase/firebaseCourseDB";
+import { remove } from "lodash";
 
 const initialState = {
     course: [],
@@ -146,8 +147,8 @@ const doGetMyCourses = createAsyncThunk(
         try {
             const state = getState();
             const createrEmail = state.user.userCredentials.email;
-            const isAdmin=state.user?.isAdmin||false;
-            const resp = await getMyCourses(createrEmail,isAdmin);
+            const isAdmin = state.user?.isAdmin || false;
+            const resp = await getMyCourses(createrEmail, isAdmin);
             return resp;
         } catch (err) {
             throw new Error(err.message);
@@ -249,6 +250,50 @@ const doAddCourseUnit = createAsyncThunk(
         }
     }
 );
+const doRemoveCourseUnit = createAsyncThunk(
+    "course/removeCourseUnit",
+    async ({ i, j, k }, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
+            }
+            const courseId = state.course?.course[0].courseId;
+            let newCourseData = structuredClone(state.course?.course[0]);
+            let modules = newCourseData.modules || [];
+            // based on the nodes posstion, a node is delelted
+            // if the node is the only child to its parents then their parents are also deleted
+            if (j === -1) {
+                // return [i, -1, -1];
+                modules.splice(i, 1);
+            } else if (k === -1) {
+                modules[i].headings.length > 1
+                    ? modules[i].headings.splice(j, 1)
+                    : // [i, j, -1]
+                      // [i, -1, -1];
+                      modules.splice(i, 1);
+            } else {
+                if (modules[i].headings[j].subheadings.length > 1) {
+                    // return [i, j, k];
+                    modules[i].headings[j].subheadings.splice(k, 1);
+                } else {
+                    modules[i].headings.length > 1
+                        ? modules[i].headings.splice(j, 1)
+                        : //  [i, j, -1]
+                          //  [i, -1, -1];
+                          modules.splice(i, 1);
+                }
+            }
+            const resp = await updateCourseDetails(courseId, newCourseData);
+            return resp;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -340,6 +385,18 @@ const courseSlice = createSlice({
                 state.courseLoading = false;
                 if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Unit added";
+            })
+            .addCase(doRemoveCourseUnit.pending, (state) => {
+                state.courseLoading = true;
+            })
+            .addCase(doRemoveCourseUnit.rejected, (state, action) => {
+                state.courseLoading = false;
+                state.courseError = action.error.message;
+            })
+            .addCase(doRemoveCourseUnit.fulfilled, (state, action) => {
+                state.courseLoading = false;
+                if (action.payload) state.course[0] = action.payload;
+                state.courseSuccess = "Unit added";
             });
     },
 });
@@ -354,4 +411,5 @@ export {
     doGetMyCourses,
     doCreateCourse,
     doAddCourseUnit,
+    doRemoveCourseUnit,
 };

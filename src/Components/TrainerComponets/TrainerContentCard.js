@@ -10,7 +10,10 @@ import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
-import { doUpdateCourseUnit } from "../../features/course/courseSlice";
+import {
+    doRemoveCourseUnit,
+    doUpdateCourseUnit,
+} from "../../features/course/courseSlice";
 class ContentCard extends Component {
     constructor(props) {
         super(props);
@@ -102,26 +105,28 @@ class ContentCard extends Component {
             // sybHeading number
             const k = this.props.openUnit[2];
             const { content, heading, moduleDiscp } = (() => {
-                let content, heading, moduleDiscp;
+                let content = "",
+                    heading = "",
+                    moduleDiscp = "";
                 moduleDiscp = false;
-                if (modules[i].content) {
+                if (modules[i]?.content) {
                     content = modules[i].content;
                     heading = modules[i].moduleName;
                     moduleDiscp = modules[i].moduleDiscp;
-                } else if (modules[i].headings[j].content) {
+                } else if (modules[i]?.headings[j]?.content) {
                     content = modules[i].headings[j].content;
                     heading = modules[i].headings[j].headingName;
                 } else {
-                    content = modules[i].headings[j].subheadings[k].content;
+                    content = modules[i]?.headings[j]?.subheadings[k]?.content;
                     heading =
-                        modules[i].headings[j].subheadings[k].subheadingName;
+                        modules[i]?.headings[j]?.subheadings[k]?.subheadingName;
                 }
                 return { content, heading, moduleDiscp };
             })();
-            const writeUp = content.writeUp;
-            const docLink = content.docLink;
-            const videoLink = content.videoLink;
-            const test = content.test;
+            const writeUp = content?.writeUp;
+            const docLink = content?.docLink;
+            const videoLink = content?.videoLink;
+            const test = content?.test;
             const newVideoLink =
                 this.state.newVideoLink !== null
                     ? this.state.newVideoLink
@@ -297,11 +302,23 @@ class ContentCard extends Component {
                     modalMessage: "Are you sure you want to remove?",
                 });
             };
-            const doRemoveUnit = () => {
+            const doRemoveUnit = async () => {
                 this.setState({ isLoading: true });
-                setTimeout(() => {
-                    this.setState({ isLoading: false });
-                }, 2000);
+                const resp = await this.props.doRemoveCourseUnit({ i, j, k });
+                if (resp.error) {
+                    this.setState({
+                        isLoading: false,
+                        showModal: true,
+                        modalMessage: "Somthing went wrong! Please try again!",
+                    });
+                } else {
+                    this.setState({
+                        isLoading: false,
+                        showModal: true,
+                        modalMessage: "Removed!",
+                    });
+                    this.props.openInfoPage();
+                }
             };
             return (
                 <div className="mx-lg-5 px-lg-4">
@@ -345,7 +362,7 @@ class ContentCard extends Component {
                             placeholder="Heading Here!"
                             name="newHeading"
                             onChange={onChangeValue}
-                            invalid={newHeading.length === 0}
+                            invalid={newHeading?.length === 0}
                             onBlur={onBlurValue}
                         />
                         <FormFeedback invalid>
@@ -474,7 +491,7 @@ class ContentCard extends Component {
                         </div>
                     </div>
                     <div>
-                        {newTest.map((q, questionIndex) => (
+                        {newTest?.map((q, questionIndex) => (
                             <div
                                 key={questionIndex}
                                 className="border-bottom border-2 border-rounded rounded-5 bg-white p-4 mb-3"
@@ -641,6 +658,7 @@ class ContentCard extends Component {
 }
 const mapDispatchToProps = {
     doUpdateCourseUnit,
+    doRemoveCourseUnit,
 };
 const ConnectedContentCard = connect(
     null,

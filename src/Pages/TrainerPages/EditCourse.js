@@ -155,6 +155,12 @@ class EditCourse extends Component {
                                 setNoNav={(val) =>
                                     this.setState({ noNav: val })
                                 }
+                                openInfoPage={() =>
+                                    this.setState({
+                                        openUnit: [-1, -1, -1],
+                                        unitType: 1,
+                                    })
+                                }
                             />
                         </div>
                     )}
