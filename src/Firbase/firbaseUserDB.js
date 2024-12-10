@@ -208,6 +208,39 @@ async function getUserData(email) {
         throw new Error("User not found");
     }
 }
+async function  getAdminCourses(enrolledCourses) {
+    const adminQuery = query(usersRef, where("isAdmin", "==", true));
+    const adminSnapshot = await getDocs(adminQuery);
+
+    if (adminSnapshot.empty) {
+        throw new Error("Admin not found");
+    }
+
+    const adminDoc = adminSnapshot.docs[0]; // Assuming there is at least one admin
+    const adminEmail = adminDoc.data().email; // Extract admin's email
+
+    // Step 2: Query for courses created by the admin and published
+    const coursesQuery = query(
+        coursesRef,
+        where("createrEmail", "==", adminEmail),
+        where("isPublished", "==", true)
+    );
+
+    const coursesSnapshot = await getDocs(coursesQuery);
+    if (coursesSnapshot.empty) {
+        return { coursesData: [], message: "No published courses found for the admin." };
+    }
+
+    let coursesData = coursesSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+    }));
+    if(enrolledCourses && enrolledCourses.length){
+        const excludeId=enrolledCourses.map((c)=>c.courseId);
+        coursesData=coursesData.filter((course)=>!excludeId.includes(course.courseId))
+    }
+    console.log(coursesData);
+    return { courses:coursesData };
+}
 async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
     const q = query(usersRef, where("email", "in", [email, trainerEmail]));
     const querySnapshot = await getDocs(q);
@@ -438,4 +471,5 @@ export {
     removeCourseFromUser,
     addClientToTrainer,
     removeClientFromTrainer,
+    getAdminCourses
 };

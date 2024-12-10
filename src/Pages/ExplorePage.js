@@ -4,10 +4,9 @@ import {
     doGetCourseDetails,
 } from "../features/course/courseSlice";
 import { connect } from "react-redux";
-import { Button, CloseButton, Collapse, Progress } from "reactstrap";
-import { addCourse } from "../Firbase/firebaseCourseDB";
+import {  CloseButton, Collapse } from "reactstrap";
 import withRouter from "../Components/WithRouter";
-
+import { getAdminCourses } from "../Firbase/firbaseUserDB";
 class CourseCard extends Component {
     // props = courseId,courseProgress
     constructor(props) {
@@ -26,10 +25,8 @@ class CourseCard extends Component {
             test: true,
         };
     }
-     
-    async componentDidMount() {
-         
 
+    async componentDidMount() {
         const currentCourseId = this.props.courseId;
         let courseData = this.props.coursesData.filter(
             (course) => course.courseId === currentCourseId
@@ -37,7 +34,7 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        // 
+        //
         courseData = this.props.coursesData[this.props.coursesData.length - 1];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
@@ -300,22 +297,37 @@ const mapStateToPropsForMyCourses = (state) => {
     };
 };
 class ExplorePage extends Component {
-    componentDidMount(props){
-        window.scrollTo(0,0);
+    constructor(props) {
+        super(props);
+        this.state = {
+            courses: [],
+        };
     }
-    // FIXME make it such that only non enrolled courses show up
+    async componentDidMount() {
+        window.scrollTo(0, 0);
+        const resp = await getAdminCourses(this.props.courses);
+        if (!resp.error) this.setState({ courses: resp.courses });
+    }
     render() {
         return (
             <div className="d-flex row mw-100 justify-content-center">
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.map((course, courseNumber) => (
+                    {this.state.courses?.map((course, courseNumber) => (
                         <ConectedCourseCard
                             key={courseNumber}
                             courseId={course.courseId}
                             courseProgress={course.courseProgress}
                         />
                     ))}
-                    {/* <Button onClick={this.addCourse}>Add course</Button> */}
+                    {!this.state.courses.length && (
+                        <div>
+                            <p>Nothing To Explore!</p>
+                            <p>
+                                We will let you know when new courses are
+                                available
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         );
