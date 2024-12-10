@@ -4,8 +4,8 @@ import {
     getCourseDetails,
     getMyCourses,
     updateCourseDetails,
+    removeCourse
 } from "../../Firbase/firebaseCourseDB";
-import { remove } from "lodash";
 
 const initialState = {
     course: [],
@@ -294,6 +294,27 @@ const doRemoveCourseUnit = createAsyncThunk(
         }
     }
 );
+const doRemoveCourse = createAsyncThunk(
+    "courses/removeCourse",
+    async (_, { getState }) => {
+        try{
+
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            const { email } = state.user.userCredentials;
+            if (!(isTrainer || isAdmin)) {
+                throw new Error("Unautherised! You are not an admin or a trainer!");
+            }
+            const { courseId, createrEmail } = state.course?.course[0];
+            if (createrEmail !== email)
+                throw new Error("Unautherised!Not your course!");
+            const resp = await removeCourse(courseId);
+            return resp;
+        }catch(err){
+            throw new Error("issue occured while trying to delete course!",err.message)
+        }
+    }
+);
 const courseSlice = createSlice({
     name: "course",
     initialState,
@@ -397,6 +418,18 @@ const courseSlice = createSlice({
                 state.courseLoading = false;
                 if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "Unit added";
+            })
+            .addCase(doRemoveCourse.pending, (state) => {
+                state.courseLoading = true;
+            })
+            .addCase(doRemoveCourse.rejected, (state, action) => {
+                state.courseLoading = false;
+                state.courseError = action.error.message;
+            })
+            .addCase(doRemoveCourse.fulfilled, (state) => {
+                state.courseLoading = false;
+                // if (action.payload) state.course[0] = action.payload;
+                state.courseSuccess = "course removed";
             });
     },
 });
@@ -412,4 +445,5 @@ export {
     doCreateCourse,
     doAddCourseUnit,
     doRemoveCourseUnit,
+    doRemoveCourse,
 };

@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Button, Input, FormFeedback, Modal, ModalBody } from "reactstrap";
-import { doUpdateCourseInfo } from "../../features/course/courseSlice";
+import { doUpdateCourseInfo,doRemoveCourse } from "../../features/course/courseSlice";
+import withRouter from "../WithRouter";
 class TrainerCourseInfoCard extends Component {
     constructor(props) {
         super(props);
@@ -12,11 +13,12 @@ class TrainerCourseInfoCard extends Component {
             hasUnsavedChanges: false,
             isLoading: false,
             modalMsg: null,
+            modalResp: false,
         };
     }
     render() {
         if (!this.props.courseName) return <>Loading...</>;
-
+        const { modalResp } = this.state;
         const handleDiscardChanges = () => {
             this.setState({
                 newCourseDiscp: null,
@@ -60,9 +62,15 @@ class TrainerCourseInfoCard extends Component {
                     showModal: true,
                     modalMsg:
                         "Somthing went wrong while updating the details!Please try again!",
+                    modalResp: true,
                 });
             } else {
-                this.setState({ hasUnsavedChanges: false,showModal: true,modalMsg:"Saved!" });
+                this.setState({
+                    hasUnsavedChanges: false,
+                    showModal: true,
+                    modalMsg: "Saved!",
+                    modalResp: true,
+                });
             }
             this.props.setNoNav(false);
         };
@@ -78,12 +86,38 @@ class TrainerCourseInfoCard extends Component {
             this.state.newCourseDiscp !== null
                 ? this.state.newCourseDiscp
                 : courseDiscp;
+        const handleRemoveCourse = () => {
+            this.setState({
+                showModal: true,
+                modalMsg: "Are you sure you want to Delete this Course?",
+            });
+        };
+        const doRemoveCourse = async () => {
+            this.setState({ isLoading: true });
+            const resp = await this.props.doRemoveCourse();
+            if (resp.error) {
+                this.setState({
+                    isLoading: false,
+                    showModal: true,
+                    modalMsg: "Somthing went wrong! Please try again!",
+                    modalResp: true,
+                });
+            } else {
+                this.setState({
+                    isLoading: false,
+                    showModal: true,
+                    modalMsg: "Removed!",
+                    modalResp: true,
+                });
+                this.props.navigate("/courses");
+            }
+        };
         return (
             <div className="mx-lg-5 mt-5 py-5 rounded px-lg-4 px-2 bg-grey">
                 <div className="fw-bold fs-3 mb-3">Course Details</div>
                 <div className=" mb-5 mt-3 mt-md-0 mb-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
                     <Button
-                        disabled={!isLoading && !hasUnsavedChanges}
+                        disabled={isLoading && !hasUnsavedChanges}
                         color="success"
                         className="col"
                         onClick={handleSubmit}
@@ -91,13 +125,22 @@ class TrainerCourseInfoCard extends Component {
                         {isLoading ? "Saving..." : "Save"}
                     </Button>
                     <Button
-                        disabled={!isLoading && !hasUnsavedChanges}
-                        color="danger"
+                        disabled={isLoading && !hasUnsavedChanges}
+                        color="warning"
                         className="col"
                         onClick={handleDiscardChanges}
                     >
+                        Revert
+                    </Button>
+                    <Button
+                        disabled={isLoading}
+                        color="danger"
+                        className="col"
+                        size="sm"
+                        onClick={handleRemoveCourse}
+                    >
                         <i className="bi bi-trash me-2" />
-                        Discard
+                        Remove Course
                     </Button>
                 </div>
                 <div className="fw-bold mb-3">
@@ -154,6 +197,17 @@ class TrainerCourseInfoCard extends Component {
                                 : modalMsg}
                         </p>
                         <div className="col gap-3 mx-auto d-flex justify-content-center">
+                            {!modalResp && (
+                                <Button
+                                    className="rounded-3 py-2 fw-bold"
+                                    color="danger"
+                                    size="sm"
+                                    onClick={doRemoveCourse}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? "Loading.." : "Yes Remove"}
+                                </Button>
+                            )}
                             <Button
                                 className="rounded-3 py-2 fw-bold"
                                 size="sm"
@@ -162,10 +216,12 @@ class TrainerCourseInfoCard extends Component {
                                     this.setState({
                                         showModal: false,
                                         modalMsg: null,
+                                        modalResp: false,
                                     })
                                 }
+                                disabled={isLoading}
                             >
-                                Close
+                                {modalResp ? "Close" : "Cancel"}
                             </Button>
                         </div>
                     </ModalBody>
@@ -176,5 +232,9 @@ class TrainerCourseInfoCard extends Component {
 }
 const mapDispatchToProps = {
     doUpdateCourseInfo,
+    doRemoveCourse
 };
-export default connect(null, mapDispatchToProps)(TrainerCourseInfoCard);
+export default connect(
+    null,
+    mapDispatchToProps
+)(withRouter(TrainerCourseInfoCard));
