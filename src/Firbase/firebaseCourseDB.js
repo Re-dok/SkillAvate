@@ -22,11 +22,16 @@ async function getCourseDetails(courseId) {
         throw new Error("Course not found");
     }
 }
-async function getMyCourses(createrEmail) {
-    const q = query(coursesRef, where("createrEmail", "==", createrEmail));
+async function getMyCourses(createrEmail,isAdmin) {
+    let q;
+    if(isAdmin)
+        q=coursesRef;
+    else
+    q = query(coursesRef, where("createrEmail", "==", createrEmail));
     const querySnapshot = await getDocs(q);
     if (!querySnapshot.empty) {
-        const coursesData = querySnapshot.docs.map((doc) => doc.data());
+        let coursesData = querySnapshot.docs.map((doc) => doc.data());
+        coursesData=coursesData.filter((course)=>course.createrEmail===createrEmail||course.isPublished===true);
         return {
             coursesData,
         };

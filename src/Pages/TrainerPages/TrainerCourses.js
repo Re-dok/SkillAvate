@@ -17,6 +17,8 @@ class CourseCard extends Component {
             courseName: null,
             courseDiscp: null,
 
+            createrName: null,
+
             modules: [],
             // view module details
             openDetatils: -1,
@@ -39,10 +41,13 @@ class CourseCard extends Component {
             (course) => course.courseId === currentCourseId
         )[0];
         if (courseData) {
-            const { courseName, modules, courseDiscp } = courseData;
+            const { courseName, modules, courseDiscp, createrName } =
+                courseData;
             this.setState({
                 courseName: courseName,
                 modules: modules,
+
+                createrName: createrName,
 
                 courseDiscp: courseDiscp,
             });
@@ -60,6 +65,9 @@ class CourseCard extends Component {
                                 {this.state.courseName}
                             </span>
                             <p>{this.state.courseDiscp}</p>
+                            <p>
+                                by : <strong>{this.state.createrName}</strong>
+                            </p>
                             <Button
                                 className="rounded-3 p-3 mb-3 fw-bold"
                                 size="sm"

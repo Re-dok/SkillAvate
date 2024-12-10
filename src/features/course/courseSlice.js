@@ -146,7 +146,8 @@ const doGetMyCourses = createAsyncThunk(
         try {
             const state = getState();
             const createrEmail = state.user.userCredentials.email;
-            const resp = await getMyCourses(createrEmail);
+            const isAdmin=state.user?.isAdmin||false;
+            const resp = await getMyCourses(createrEmail,isAdmin);
             return resp;
         } catch (err) {
             throw new Error(err.message);
