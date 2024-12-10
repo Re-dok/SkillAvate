@@ -25,6 +25,9 @@ class ContentCard extends Component {
             unsavedChanges: false,
             headingIsInvalid: false,
             showModal: false,
+            modalMessage: null,
+            modalResp: false,
+            isLoading: false,
         };
     }
     openReadingAssignment = (docLink) => {
@@ -91,7 +94,7 @@ class ContentCard extends Component {
             return <>loading</>;
         else {
             const modules = this.props.modules;
-
+            const { modalMessage, modalResp, isLoading } = this.state;
             // module number
             const i = this.props.openUnit[0];
             // heading number
@@ -230,7 +233,8 @@ class ContentCard extends Component {
                 });
                 this.props.setNoNav(false);
             };
-            const handleSubmit = () => {
+            const handleSubmit = async () => {
+                this.setState({ isLoading: true });
                 if (!isValidSubmission(newHeading, newModuleDiscp, newTest)) {
                     this.setState({ showModal: true });
                     return;
@@ -243,12 +247,26 @@ class ContentCard extends Component {
                 };
                 const headingName = newHeading;
                 const moduleDiscp = newModuleDiscp;
-                this.props.doUpdateCourseUnit({
+                const resp = await this.props.doUpdateCourseUnit({
                     newContent,
                     headingName,
                     moduleDiscp,
                     moduleIndex: [i, j, k],
                 });
+                if (resp.error) {
+                    this.setState({
+                        showModal: true,
+                        modalResp: true,
+                        modalMessage: "Somthing went wrong! Try again!",
+                        isLoading: false,
+                    });
+                } else
+                    this.setState({
+                        showModal: true,
+                        modalMessage: "Saved!",
+                        modalResp: true,
+                        isLoading: false,
+                    });
                 this.props.setNoNav(false);
             };
             const removeQuestion = (questionIndex) => {
@@ -273,25 +291,46 @@ class ContentCard extends Component {
                     return { newTest: updatedTest };
                 });
             };
+            const handleRemoveUnit = () => {
+                this.setState({
+                    showModal: true,
+                    modalMessage: "Are you sure you want to remove?",
+                });
+            };
+            const doRemoveUnit = () => {
+                this.setState({ isLoading: true });
+                setTimeout(() => {
+                    this.setState({ isLoading: false });
+                }, 2000);
+            };
             return (
                 <div className="mx-lg-5 px-lg-4">
                     <div className=" mb-5 mt-3 mt-md-0 mb-md-3 row justify-content-end row-cols-md-6 px-3 rounded row gap-3">
                         <Button
-                            // disabled={!unsavedChanges}
                             color="success"
                             className="col"
                             onClick={handleSubmit}
+                            disabled={isLoading}
                         >
-                            Save
+                            {isLoading ? "loading.." : "Save"}
                         </Button>
                         <Button
-                            // disabled={!unsavedChanges}
-                            color="danger"
+                            color="warning"
                             className="col"
                             onClick={handleDiscardChanges}
+                            disabled={isLoading}
                         >
-                            <i className="bi bi-trash me-2" />
-                            Discard
+                            {isLoading ? "loading" : "Revert"}
+                        </Button>
+                        <Button
+                            color="danger"
+                            className="col"
+                            onClick={handleRemoveUnit}
+                            size="sm"
+                            disabled={isLoading}
+                        >
+                            <i className="bi bi-trash me-1" />
+                            {isLoading ? "loading" : "Remove Unit"}
                         </Button>
                     </div>
 
@@ -551,9 +590,48 @@ class ContentCard extends Component {
                         isOpen={this.state.showModal}
                         toggle={() => this.setState({ showModal: false })}
                     >
-                        <ModalBody className="pb-5 rounded p-4">
-                            Please ensure all necessary fields, such as the
-                            heading and at least one question, are filled in.
+                        <ModalBody className="pb-5 rounded px-4 d-flex justify-content-center">
+                            {modalMessage ? (
+                                <div className="row px-5 justify-content-center">
+                                    <p className="d-flex justify-content-center">
+                                        {modalMessage}
+                                    </p>
+                                    <div className="row px-5 gap-3">
+                                        {!modalResp && (
+                                            <Button
+                                                className="col"
+                                                color="danger"
+                                                onClick={doRemoveUnit}
+                                                disabled={isLoading}
+                                            >
+                                                {isLoading
+                                                    ? "Loading.."
+                                                    : "Yes Remove"}
+                                            </Button>
+                                        )}
+                                        <Button
+                                            className="col"
+                                            color="warning"
+                                            onClick={() =>
+                                                this.setState({
+                                                    showModal: false,
+                                                    modalMessage: null,
+                                                    modalResp: false,
+                                                })
+                                            }
+                                            disabled={isLoading}
+                                        >
+                                            {modalResp ? "Close" : "Cancel"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p>
+                                    Please ensure all necessary fields, such as
+                                    the heading and at least one question, are
+                                    filled in.
+                                </p>
+                            )}
                         </ModalBody>
                     </Modal>
                 </div>

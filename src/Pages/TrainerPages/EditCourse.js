@@ -44,7 +44,8 @@ class EditCourse extends Component {
         }
     }
     render() {
-        if (this.props.isLoading) return <>Loading...</>;
+        if (!this.props.courseData || this.props.courseData.length === 0)
+            return <>Loading...</>;
         else {
             const { unitType } = this.state;
             return (

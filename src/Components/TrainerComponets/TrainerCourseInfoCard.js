@@ -55,14 +55,14 @@ class TrainerCourseInfoCard extends Component {
                 courseDiscp: newCourseDiscp,
             });
             this.setState({ isLoading: false });
-            if (resp.error)
+            if (resp.error) {
                 this.setState({
                     showModal: true,
                     modalMsg:
                         "Somthing went wrong while updating the details!Please try again!",
                 });
-            else {
-                this.setState({ hasUnsavedChanges: false });
+            } else {
+                this.setState({ hasUnsavedChanges: false,showModal: true,modalMsg:"Saved!" });
             }
             this.props.setNoNav(false);
         };

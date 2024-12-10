@@ -181,7 +181,7 @@ class SideBar extends Component {
                 if (this.props.isCanvas) this.props.toggleSideBar();
             };
             return (
-                <div className={"mt-5" + this.props.noNav ? "opacity-75" : ""}>
+                <div className={"mt-5"}>
                     {!this.props.noNav ? (
                         <div className="">
                             <div className="px-2 mb-3 fs-6 fw-bold">
