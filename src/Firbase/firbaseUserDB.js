@@ -11,8 +11,41 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { coursesRef } from "./firebaseCourseDB";
+import * as XLSX from "xlsx";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
+export const downloadMultipleCollectionsAsExcel = async () => {
+    try {
+        const workbook = XLSX.utils.book_new(); // Create a new workbook
+        const collectionNames = ["users", "courses"];
+        for (const collectionName of collectionNames) {
+            // Fetch data from Firestore
+            const querySnapshot = await getDocs(collection(db, collectionName));
+            const data = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+
+            if (data.length === 0) {
+                console.warn(
+                    `No data found in the collection: ${collectionName}`
+                );
+                continue;
+            }
+
+            // Create a worksheet for the current collection
+            const worksheet = XLSX.utils.json_to_sheet(data);
+
+            // Append the worksheet to the workbook
+            XLSX.utils.book_append_sheet(workbook, worksheet, collectionName);
+        }
+
+        // Export the workbook as an Excel file
+        XLSX.writeFile(workbook, `All_Collections_Data.xlsx`);
+    } catch (error) {
+        console.error("Error downloading data:", error);
+    }
+};
 async function getUsersByMonthAndYear() {
     try {
         // Fetch all users
@@ -552,5 +585,5 @@ export {
     removeClientFromTrainer,
     getAdminCourses,
     setUserName,
-    getUsersByMonthAndYear
+    getUsersByMonthAndYear,
 };

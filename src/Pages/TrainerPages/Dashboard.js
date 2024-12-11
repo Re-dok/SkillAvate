@@ -3,7 +3,7 @@ import { Button, Table } from "reactstrap";
 import { useState } from "react";
 import { Carousel, CarouselItem, CarouselControl } from "reactstrap";
 import { connect } from "react-redux";
-import { getUsersByMonthAndYear } from "../../Firbase/firbaseUserDB";
+import { downloadMultipleCollectionsAsExcel, getUsersByMonthAndYear } from "../../Firbase/firbaseUserDB";
 // const mapDispatchToProps = {
 //     doPasswordReset,
 //     doSignOut,
@@ -105,19 +105,18 @@ class Dashboard extends Component {
     }
     async componentDidMount() {
         const resp = await getUsersByMonthAndYear();
-        console.log(resp);
         this.setState({ usersBymonth: resp });
     }
     render() {
-        const hanldeExport = () => {
-            alert("add this!");
+        const handleExport = async() => {
+            await downloadMultipleCollectionsAsExcel();
         };
         const { usersBymonth } = this.state;
         const { totalClients, totalTrainers, trainers } = this.props;
         return (
             <div className="d-flex row gap-0 m-0 p-0 pt-3  mw-100 justify-content-center">
                 <div className="row flex-row-reverse px-5 p-0 mb-0 mx-5 gap-4 justify-content-center justify-content-md-between align-content-center align-items-center ">
-                    <Button className="col-5 col-lg-2" onClick={hanldeExport}>
+                    <Button className="col-5 col-lg-2" onClick={handleExport}>
                         Export
                     </Button>
                 </div>
