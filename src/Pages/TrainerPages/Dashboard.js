@@ -1,8 +1,21 @@
 import React, { Component } from "react";
-import { Table } from "reactstrap";
+import { Button, Table } from "reactstrap";
 import { useState } from "react";
 import { Carousel, CarouselItem, CarouselControl } from "reactstrap";
-
+import { connect } from "react-redux";
+// const mapDispatchToProps = {
+//     doPasswordReset,
+//     doSignOut,
+//     doSetUserName,
+// };
+const mapStateToProps = (state) => {
+    return {
+        name: state.user.name,
+        totalClients: state.user.myClients.length,
+        totalTrainers: state.user.trainers.length,
+        trainers: state.user.trainers,
+    };
+};
 const items = [
     {
         src: "https://picsum.photos/id/123/1200/400",
@@ -42,18 +55,13 @@ function ClientsPerMonthCard(args) {
         setActiveIndex(nextIndex);
     };
 
-    const goToIndex = (newIndex) => {
-        if (animating) return;
-        setActiveIndex(newIndex);
-    };
-
     const slides = items.map((item) => {
         return (
             <CarouselItem
                 onExiting={() => setAnimating(true)}
                 onExited={() => setAnimating(false)}
                 key={item.src}
-                className=" p-md-5 p-0 py-3"
+                className=" p-md-2 p-lg-5 p-0 py-3"
             >
                 <div className="p-3 mx-5 my-4 py-4 rounded rounded-4 shadow-lg">
                     <p>New Clients in Jan 2021</p>
@@ -88,7 +96,7 @@ function ClientsPerMonthCard(args) {
         </Carousel>
     );
 }
-export default class Dashboard extends Component {
+class Dashboard extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -102,62 +110,50 @@ export default class Dashboard extends Component {
             isLoading: false,
         };
     }
-    //     componentDidMount() {
-    //   const resp = getDashBoardInfo();
-    //         this.setState({
-    //             trainers: resp.trainers,
-    //             totalClients: resp.totalClients,
-    //             usersBymonth: resp.usersBymonth,
-    //         });
-    //     }
     render() {
-        const { totalClients, totalTrainers } = this.state;
+        const hanldeExport = () => {
+            alert("add this!");
+        };
+        const { totalClients, totalTrainers, trainers } = this.props;
         return (
-            <div className="d-flex row gap-0 m-0 p-0  mw-100 justify-content-center">
-                <div className="row px-5 p-0 mb-0 mx-5 mt-3 gap-4 align-content-center align-items-center ">
+            <div className="d-flex row gap-0 m-0 p-0 pt-3  mw-100 justify-content-center">
+                <div className="row flex-row-reverse px-5 p-0 mb-0 mx-5 gap-4 justify-content-center justify-content-md-between align-content-center align-items-center ">
+                    <Button className="col-5 col-lg-2" onClick={hanldeExport}>
+                        Export
+                    </Button>
+                </div>
+                <div className="row px-5 p-0 mb-0 mx-5 gap-4 align-content-center align-items-center ">
                     <div className=" col-lg-4 col-md-6 col-12">
                         <ClientsPerMonthCard />
                     </div>
-                    <div className="d-none d-md-flex col-lg-3 col-md-3 col-12"></div>
+                    <div className="d-none d-md-flex d-lg-none col-lg-3 col-md-3 col-12"></div>
                     <div className="col-lg-2 col-md-4 p-3 py-4 rounded rounded-4 shadow-lg">
                         <p>Total Number of Clients</p>
-                        {totalClients}
+                        {totalClients || 0}
                     </div>
                     <div className="col-lg-2 col-md-4 p-3 py-4 rounded rounded-4 shadow-lg">
                         <p>Total Number of Trainers</p>
-                        {totalTrainers}
+                        {totalTrainers || 0}
                     </div>
                 </div>
                 <div className="row px-5 mx-5 my-lg-1 my-4 gap-3">
                     <div className="fw-bold fs-5 p-0">Trainers Per Client</div>
-                    <Table responsive striped className="shadow-lg">
+                    <Table responsive striped className="shadow">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
                                 <th>Email</th>
-                                <th>Number of cliets</th>
+                                <th>Number of clients</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                                <td>@fat</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Larry</td>
-                                <td>the Bird</td>
-                                <td>@twitter</td>
-                            </tr>
+                            {trainers.map((trainer, i) => (
+                                <tr key={i}>
+                                    <th scope="row">{i + 1}</th>
+                                    <td>{trainer?.trainerEmail || "NA"}</td>
+                                    <td>{trainer?.clients.length || 0}</td>
+                                </tr>
+                            ))}
                         </tbody>
                     </Table>
                 </div>
@@ -165,3 +161,4 @@ export default class Dashboard extends Component {
         );
     }
 }
+export default connect(mapStateToProps, null)(Dashboard);
