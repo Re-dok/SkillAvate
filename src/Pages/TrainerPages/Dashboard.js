@@ -3,6 +3,7 @@ import { Button, Table } from "reactstrap";
 import { useState } from "react";
 import { Carousel, CarouselItem, CarouselControl } from "reactstrap";
 import { connect } from "react-redux";
+import { getUsersByMonthAndYear } from "../../Firbase/firbaseUserDB";
 // const mapDispatchToProps = {
 //     doPasswordReset,
 //     doSignOut,
@@ -16,56 +17,49 @@ const mapStateToProps = (state) => {
         trainers: state.user.trainers,
     };
 };
-const items = [
-    {
-        src: "https://picsum.photos/id/123/1200/400",
-        altText: "Slide 1",
-        caption: "Slide 1",
-        key: 1,
-    },
-    {
-        src: "https://picsum.photos/id/456/1200/400",
-        altText: "Slide 2",
-        caption: "Slide 2",
-        key: 2,
-    },
-    {
-        src: "https://picsum.photos/id/678/1200/400",
-        altText: "Slide 3",
-        caption: "Slide 3",
-        key: 3,
-    },
-];
-
-function ClientsPerMonthCard(args) {
+function ClientsPerMonthCard(props) {
     const [activeIndex, setActiveIndex] = useState(0);
     const [animating, setAnimating] = useState(false);
-
     const next = () => {
         if (animating) return;
         const nextIndex =
-            activeIndex === items.length - 1 ? 0 : activeIndex + 1;
+            activeIndex === props.usersBymonth.length - 1 ? 0 : activeIndex + 1;
         setActiveIndex(nextIndex);
     };
-
     const previous = () => {
         if (animating) return;
         const nextIndex =
-            activeIndex === 0 ? items.length - 1 : activeIndex - 1;
+            activeIndex === 0 ? props.usersBymonth.length - 1 : activeIndex - 1;
         setActiveIndex(nextIndex);
     };
-
-    const slides = items.map((item) => {
+    const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ];
+    const slides = props.usersBymonth.map((time, i) => {
         return (
             <CarouselItem
                 onExiting={() => setAnimating(true)}
                 onExited={() => setAnimating(false)}
-                key={item.src}
+                key={i}
                 className=" p-md-2 p-lg-5 p-0 py-3"
             >
                 <div className="p-3 mx-5 my-4 py-4 rounded rounded-4 shadow-lg">
-                    <p>New Clients in Jan 2021</p>
-                    <p className="mb-0">0</p>
+                    <p className="mb-0">
+                        New Clients in {monthNames[time.month]}
+                    </p>
+                    <p className="mb-1">{time.year}</p>
+                    <p className="mb-0">{time.count}</p>
                 </div>
             </CarouselItem>
         );
@@ -76,7 +70,6 @@ function ClientsPerMonthCard(args) {
             activeIndex={activeIndex}
             next={next}
             previous={previous}
-            {...args}
             dark
             interval={false}
         >
@@ -110,10 +103,16 @@ class Dashboard extends Component {
             isLoading: false,
         };
     }
+    async componentDidMount() {
+        const resp = await getUsersByMonthAndYear();
+        console.log(resp);
+        this.setState({ usersBymonth: resp });
+    }
     render() {
         const hanldeExport = () => {
             alert("add this!");
         };
+        const { usersBymonth } = this.state;
         const { totalClients, totalTrainers, trainers } = this.props;
         return (
             <div className="d-flex row gap-0 m-0 p-0 pt-3  mw-100 justify-content-center">
@@ -124,7 +123,9 @@ class Dashboard extends Component {
                 </div>
                 <div className="row px-5 p-0 mb-0 mx-5 gap-4 align-content-center align-items-center ">
                     <div className=" col-lg-4 col-md-6 col-12">
-                        <ClientsPerMonthCard />
+                        <ClientsPerMonthCard
+                            usersBymonth={usersBymonth || []}
+                        />
                     </div>
                     <div className="d-none d-md-flex d-lg-none col-lg-3 col-md-3 col-12"></div>
                     <div className="col-lg-2 col-md-4 p-3 py-4 rounded rounded-4 shadow-lg">

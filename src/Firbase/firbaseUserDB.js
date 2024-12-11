@@ -7,11 +7,56 @@ import {
     updateDoc,
     writeBatch,
     doc,
+    serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { coursesRef } from "./firebaseCourseDB";
 const usersRef = collection(db, "users");
 // FIXME add other things to init
+async function getUsersByMonthAndYear() {
+    try {
+        // Fetch all users
+        const querySnapshot = await getDocs(usersRef);
+
+        // Initialize a nested map for user counts by year and month
+        const userCounts = {};
+
+        // Iterate over all users
+        querySnapshot.docs.forEach((doc) => {
+            const user = doc.data();
+
+            // Ensure `createdAt` exists and is a Firestore Timestamp
+            if (user.createdAt && user.createdAt.toDate) {
+                const createdAt = user.createdAt.toDate();
+                const year = createdAt.getFullYear();
+                const month = createdAt.getMonth();
+
+                // Initialize the year in the map if not already present
+                if (!userCounts[year]) {
+                    userCounts[year] = Array(12).fill(0); // Array of 12 months
+                }
+
+                // Increment the count for the respective month
+                userCounts[year][month]++;
+            }
+        });
+
+        // Convert the userCounts object into a single array
+        const sortedYears = Object.keys(userCounts).sort((a, b) => a - b);
+        const flattenedCounts = [];
+
+        sortedYears.forEach((year) => {
+            userCounts[year].forEach((count, month) => {
+                flattenedCounts.push({ year: parseInt(year), month, count });
+            });
+        });
+
+        return flattenedCounts;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
+        return [];
+    }
+}
 const addUserToDB = async ({ email, isTrainer }) => {
     if (isTrainer) {
         const batch = writeBatch(db);
@@ -27,7 +72,12 @@ const addUserToDB = async ({ email, isTrainer }) => {
             const trainerRef = trainerDoc.ref;
             // Update trainers field for the admin
             let updatedTrainers = trainerDoc.data().trainers || [];
-            updatedTrainers.push({ trainerEmail: email, clients: [] });
+            const createdAt = serverTimestamp();
+            updatedTrainers.push({
+                trainerEmail: email,
+                clients: [],
+                createdAt: createdAt,
+            });
             batch.update(trainerRef, { trainers: updatedTrainers });
         } else {
             throw new Error("No admin found");
@@ -38,7 +88,14 @@ const addUserToDB = async ({ email, isTrainer }) => {
         const batch = writeBatch(db);
         // Add a new user document to the users collection
         const newUserRef = doc(usersRef);
-        batch.set(newUserRef, { email, isTrainer, courses: [], Grades: [] });
+        const createdAt = serverTimestamp();
+        batch.set(newUserRef, {
+            email,
+            isTrainer,
+            courses: [],
+            Grades: [],
+            createdAt: createdAt,
+        });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
         const querySnapshot = await getDocs(q);
@@ -53,7 +110,9 @@ const addUserToDB = async ({ email, isTrainer }) => {
                 courses: [],
                 unAssgined: true,
             });
-            batch.update(userRef, { myClients: updatedUsers });
+            batch.update(userRef, {
+                myClients: updatedUsers,
+            });
         } else {
             throw new Error("No admin found");
         }
@@ -493,4 +552,5 @@ export {
     removeClientFromTrainer,
     getAdminCourses,
     setUserName,
+    getUsersByMonthAndYear
 };

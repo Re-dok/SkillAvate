@@ -6,7 +6,8 @@ import {
     addDoc,
     doc,
     updateDoc,
-    deleteDoc
+    deleteDoc,
+    serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
@@ -62,6 +63,7 @@ async function updateCourseDetails(courseId, newCourse) {
 }
 async function addCourse(course) {
     course.courseId = uuidv4();
+    course.createdAt = serverTimestamp();
     await addDoc(coursesRef, course);
     return course;
 }
