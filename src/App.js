@@ -9,11 +9,7 @@ import {
 } from "./Components/PrivateRoutes";
 import ResetPassword from "./Pages/ResetPassword";
 import ToolBar from "./Components/Toolbar";
-import {
-    // doGetUserData,
-    resetMessages,
-    setInitialURL,
-} from "./features/user/userSlice";
+import { resetMessages, setInitialURL } from "./features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
 import NotFound from "./Pages/NotFound";
@@ -25,6 +21,7 @@ import MyClients from "./Pages/TrainerPages/MyClients";
 import EditCourse from "./Pages/TrainerPages/EditCourse";
 import ViewTrainerCourse from "./Pages/TrainerPages/ViewTrainerCourse";
 import Dashboard from "./Pages/TrainerPages/Dashboard";
+import Settings from "./Pages/Settings";
 // FIXME make urls from base like the one sir did
 // all the grades irrespective of course id are being stored in the same array, will need to
 // change this logic
@@ -63,7 +60,7 @@ class App extends Component {
                         exact
                         element={
                             <AdminRoute>
-                                <Dashboard/>
+                                <Dashboard />
                             </AdminRoute>
                         }
                     />
@@ -130,14 +127,22 @@ class App extends Component {
                             </ClientRoute>
                         }
                     />
-                    {/* TODO ask what differnt settings will the users,trainers and clients have, based of which you can create a new common private route or differnet settings for different roles */}
                     <Route
                         path="/settings"
                         exact
                         element={
-                            // <ClientRoute>
-                            <>settings</>
-                            // </ClientRoute>
+                            <ClientRoute>
+                                <Settings />
+                            </ClientRoute>
+                        }
+                    />
+                    <Route
+                        path="/mySettings"
+                        exact
+                        element={
+                            <TrainerRoute>
+                                <Settings />
+                            </TrainerRoute>
                         }
                     />
                     <Route path="/resetPassword" element={<ResetPassword />} />

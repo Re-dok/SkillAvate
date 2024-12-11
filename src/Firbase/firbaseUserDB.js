@@ -61,6 +61,21 @@ const addUserToDB = async ({ email, isTrainer }) => {
         // await addDoc(usersRef, { email, isTrainer, courses: [], Grades: [] });
     }
 };
+async function setUserName(email, name) {
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    const userDoc = querySnapshot.docs[0];
+    const userRef = userDoc.ref;
+    try {
+        // Attempt to update Firestore with modified data
+        await updateDoc(userRef, {
+            name: name,
+        });
+        return name;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+}
 async function updateProgress(email, courseId, newProgress, prevProgress) {
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -181,6 +196,7 @@ async function getUserData(email) {
                 isPersistant: userData.isPersistant,
                 email: email,
                 courses: userData.courses,
+                name: userData?.name,
             };
         } else if (isTrainer) {
             return {
@@ -190,7 +206,7 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
                 myClients: userData.myClients,
-                name: userData.name,
+                name: userData?.name,
             };
         } else if (isAdmin) {
             return {
@@ -208,7 +224,7 @@ async function getUserData(email) {
         throw new Error("User not found");
     }
 }
-async function  getAdminCourses(enrolledCourses) {
+async function getAdminCourses(enrolledCourses) {
     const adminQuery = query(usersRef, where("isAdmin", "==", true));
     const adminSnapshot = await getDocs(adminQuery);
 
@@ -228,18 +244,22 @@ async function  getAdminCourses(enrolledCourses) {
 
     const coursesSnapshot = await getDocs(coursesQuery);
     if (coursesSnapshot.empty) {
-        return { coursesData: [], message: "No published courses found for the admin." };
+        return {
+            coursesData: [],
+            message: "No published courses found for the admin.",
+        };
     }
 
     let coursesData = coursesSnapshot.docs.map((doc) => ({
         ...doc.data(),
     }));
-    if(enrolledCourses && enrolledCourses.length){
-        const excludeId=enrolledCourses.map((c)=>c.courseId);
-        coursesData=coursesData.filter((course)=>!excludeId.includes(course.courseId))
+    if (enrolledCourses && enrolledCourses.length) {
+        const excludeId = enrolledCourses.map((c) => c.courseId);
+        coursesData = coursesData.filter(
+            (course) => !excludeId.includes(course.courseId)
+        );
     }
-    console.log(coursesData);
-    return { courses:coursesData };
+    return { courses: coursesData };
 }
 async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
     const q = query(usersRef, where("email", "in", [email, trainerEmail]));
@@ -471,5 +491,6 @@ export {
     removeCourseFromUser,
     addClientToTrainer,
     removeClientFromTrainer,
-    getAdminCourses
+    getAdminCourses,
+    setUserName,
 };

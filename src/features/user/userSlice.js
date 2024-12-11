@@ -13,6 +13,7 @@ import {
     removeCourseFromUser,
     updateProgress,
     removeClientFromTrainer,
+    setUserName,
 } from "../../Firbase/firbaseUserDB";
 const initialState = {
     loading: false,
@@ -89,6 +90,18 @@ const doSignOut = createAsyncThunk("user/signOutUser", async () => {
         throw new Error(err.message);
     }
 });
+const doSetUserName = createAsyncThunk(
+    "user/setName",
+    async (name, { getState }) => {
+        try {
+            const email = getState().user.userCredentials.email;
+            const resp = await setUserName(email, name);
+            return resp;
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
+);
 const doSignIn = createAsyncThunk(
     "user/signInUser",
     async (_, { getState }) => {
@@ -279,11 +292,11 @@ const userSlice = createSlice({
                 // FIXME make it such that everones in my clients
                 if (action.payload.isAdmin || action.payload.isTrainer) {
                     state.myClients = action.payload.myClients;
-                    state.name = action.payload.name || null;
                 }
+                state.name = action.payload.name || "";
                 if (action.payload.isAdmin) {
                     state.trainers = action.payload.trainers;
-                    state.name = action.payload.name || null;
+                    // state.name = action.payload.name || null;
                 }
             })
             .addCase(doGetUserData.rejected, (state, action) => {
@@ -378,6 +391,19 @@ const userSlice = createSlice({
                     state.myClients = action.payload.myClients;
                     state.trainers = action.payload.trainers;
                 }
+            })
+            .addCase(doSetUserName.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(doSetUserName.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(doSetUserName.fulfilled, (state, action) => {
+                state.loading = false;
+                if (action.payload) {
+                    state.name = action.payload;
+                }
             });
     },
 });
@@ -403,4 +429,5 @@ export {
     doRemoveCourseFromUser,
     doAdddClientToTrainer,
     doRemoveClientFromTrainer,
+    doSetUserName,
 };
