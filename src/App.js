@@ -24,6 +24,7 @@ import TrainerCourses from "./Pages/TrainerPages/TrainerCourses";
 import MyClients from "./Pages/TrainerPages/MyClients";
 import EditCourse from "./Pages/TrainerPages/EditCourse";
 import ViewTrainerCourse from "./Pages/TrainerPages/ViewTrainerCourse";
+import Dashboard from "./Pages/TrainerPages/Dashboard";
 // FIXME make urls from base like the one sir did
 // all the grades irrespective of course id are being stored in the same array, will need to
 // change this logic
@@ -62,7 +63,7 @@ class App extends Component {
                         exact
                         element={
                             <AdminRoute>
-                                <>dashboard</>
+                                <Dashboard/>
                             </AdminRoute>
                         }
                     />
