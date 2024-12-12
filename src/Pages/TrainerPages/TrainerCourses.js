@@ -3,6 +3,7 @@ import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
     doGetMyCourses,
+    doPublishCourse,
 } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import {
@@ -70,23 +71,34 @@ class CourseCard extends Component {
         else {
             const { modalResp, modalMessage, showModal, isLoading } =
                 this.state;
-            const handleTogglePublish = () => {
+            const handleTogglePublish = async () => {
                 this.setState({ isLoading: true });
-                setTimeout(() => {
-                    if (this.props.isPublished) {
+                // setTimeout(() => {
+                if (this.props.isPublished) {
+                    this.setState({
+                        isLoading: false,
+                        modalResp: true,
+                        modalMessage: "Done!",
+                    });
+                } else {
+                    const resp = await this.props.doPublishCourse(
+                        this.props.courseId
+                    );
+                    if (resp.error) {
                         this.setState({
                             isLoading: false,
                             modalResp: true,
-                            modalMessage: "Done!",
+                            modalMessage:
+                                "Somthing went wrong! Please try again!",
                         });
                     } else {
                         this.setState({
                             isLoading: false,
                             modalResp: true,
-                            modalMessage: "done!",
+                            modalMessage: "Published!",
                         });
                     }
-                }, 3000);
+                }
             };
             return (
                 <div className="row">
@@ -136,6 +148,10 @@ class CourseCard extends Component {
                                                   modalMessage: "Are you sure?",
                                               });
                                     }}
+                                    disabled={
+                                        !this.props.isPublished &&
+                                        this.state.modules.length === 0
+                                    }
                                     color={
                                         this.props.isPublished
                                             ? "danger"
@@ -370,6 +386,7 @@ class CourseCard extends Component {
 const mapDispatchToProps = {
     doGetCourseDetails,
     clearOtherUserCoursesInfo,
+    doPublishCourse,
 };
 const mapStateToprops = (state) => {
     return {

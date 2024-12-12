@@ -4,8 +4,9 @@ import {
     getCourseDetails,
     getMyCourses,
     updateCourseDetails,
-    removeCourse
+    removeCourse,
 } from "../../Firbase/firebaseCourseDB";
+import bcrypt from "bcryptjs";
 
 const initialState = {
     course: [],
@@ -48,6 +49,91 @@ const doGetCourseDetails = createAsyncThunk(
         }
     }
 );
+const doPublishCourse = createAsyncThunk(
+    "courses/publish",
+    async (courseId, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            const course = state.course.course.find(
+                (c) => c.courseId === courseId
+            );
+
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unauthorized! You are not an admin or a trainer!"
+                );
+            }
+
+            if (!course) {
+                throw new Error("Course not found!");
+            }
+
+            // Deep clone the course object
+            const newCourse = structuredClone(course);
+
+            // Function to hash test answers using a loop
+            const hashAnswers = async (test) => {
+                if (!test) return [];
+                for (let i = 0; i < test.length; i++) {
+                    const question = test[i];
+                    question.answer = await bcrypt.hash(
+                        question.options[question.answer],
+                        10
+                    );
+                }
+                return test;
+            };
+
+            // Process the modules, headings, and subheadings using loops
+            for (let i = 0; i < newCourse.modules.length; i++) {
+                const module = newCourse.modules[i];
+
+                if (module.content) {
+                    if (module.content.test) {
+                        await hashAnswers(module.content.test);
+                    }
+                }
+
+                if (module.headings) {
+                    for (let j = 0; j < module.headings.length; j++) {
+                        const heading = module.headings[j];
+
+                        if (heading.content && heading.content.test) {
+                            await hashAnswers(heading.content.test);
+                        }
+
+                        if (heading.subheadings) {
+                            for (
+                                let k = 0;
+                                k < heading.subheadings.length;
+                                k++
+                            ) {
+                                const subheading = heading.subheadings[k];
+
+                                if (
+                                    subheading.content &&
+                                    subheading.content.test
+                                ) {
+                                    await hashAnswers(subheading.content.test);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            newCourse.isPublished = true;
+
+            const resp = await updateCourseDetails(courseId, newCourse);
+            // Return the processed course or perform API updates as needed
+            return newCourse;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
+
 const doUpdateCourseUnit = createAsyncThunk(
     "courses/updateCourseUnit",
     async (
@@ -297,21 +383,25 @@ const doRemoveCourseUnit = createAsyncThunk(
 const doRemoveCourse = createAsyncThunk(
     "courses/removeCourse",
     async (_, { getState }) => {
-        try{
-
+        try {
             const state = getState();
             const { isAdmin, isTrainer } = state.user;
             const { email } = state.user.userCredentials;
             if (!(isTrainer || isAdmin)) {
-                throw new Error("Unautherised! You are not an admin or a trainer!");
+                throw new Error(
+                    "Unautherised! You are not an admin or a trainer!"
+                );
             }
             const { courseId, createrEmail } = state.course?.course[0];
             if (createrEmail !== email)
                 throw new Error("Unautherised!Not your course!");
             const resp = await removeCourse(courseId);
             return resp;
-        }catch(err){
-            throw new Error("issue occured while trying to delete course!",err.message)
+        } catch (err) {
+            throw new Error(
+                "issue occured while trying to delete course!",
+                err.message
+            );
         }
     }
 );
@@ -430,6 +520,19 @@ const courseSlice = createSlice({
                 state.courseLoading = false;
                 // if (action.payload) state.course[0] = action.payload;
                 state.courseSuccess = "course removed";
+            })
+            .addCase(doPublishCourse.pending, () => {})
+            .addCase(doPublishCourse.fulfilled, (state, action) => {
+                state.course = state.course.map((c) => {
+                    if (c.courseId === action.payload.courseId) {
+                        return action.payload; // Return the updated course object
+                    }
+                    return c; // Return the unmodified course object
+                });
+            })
+            .addCase(doPublishCourse.rejected, (state,action) => {
+                state.courseError = action.error.message;
+
             });
     },
 });
@@ -446,4 +549,5 @@ export {
     doAddCourseUnit,
     doRemoveCourseUnit,
     doRemoveCourse,
+    doPublishCourse,
 };
