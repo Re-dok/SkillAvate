@@ -4,6 +4,7 @@ import {
     doGetCourseDetails,
     doGetMyCourses,
     doPublishCourse,
+    doUnpublishCourse,
 } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
 import {
@@ -75,11 +76,23 @@ class CourseCard extends Component {
                 this.setState({ isLoading: true });
                 // setTimeout(() => {
                 if (this.props.isPublished) {
-                    this.setState({
-                        isLoading: false,
-                        modalResp: true,
-                        modalMessage: "Done!",
-                    });
+                    const resp = await this.props.doUnpublishCourse(
+                        this.props.courseId
+                    );
+                    if (resp.error) {
+                        this.setState({
+                            isLoading: false,
+                            modalResp: true,
+                            modalMessage:
+                                "Somthing went wrong! Please try again!",
+                        });
+                    } else {
+                        this.setState({
+                            isLoading: false,
+                            modalResp: true,
+                            modalMessage: "UnPublished!",
+                        });
+                    }
                 } else {
                     const resp = await this.props.doPublishCourse(
                         this.props.courseId
@@ -387,6 +400,8 @@ const mapDispatchToProps = {
     doGetCourseDetails,
     clearOtherUserCoursesInfo,
     doPublishCourse,
+    doUnpublishCourse,
+
 };
 const mapStateToprops = (state) => {
     return {

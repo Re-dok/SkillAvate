@@ -133,7 +133,96 @@ const doPublishCourse = createAsyncThunk(
         }
     }
 );
+const doUnpublishCourse = createAsyncThunk(
+    "courses/unpublish",
+    async (courseId, { getState }) => {
+        try {
+            const state = getState();
+            const { isAdmin, isTrainer } = state.user;
+            const course = state.course.course.find(
+                (c) => c.courseId === courseId
+            );
 
+            if (!(isTrainer || isAdmin)) {
+                throw new Error(
+                    "Unauthorized! You are not an admin or a trainer!"
+                );
+            }
+
+            if (!course) {
+                throw new Error("Course not found!");
+            }
+
+            // Deep clone the course object
+            const updatedCourse = structuredClone(course);
+
+            // Function to hash test answers using a loop
+            const findCorrectAnswerIndex = async (test) => {
+                for (let i = 0; i < test.length; i++) {
+                    const question = test[i];
+                    const hashedAnswer = question.answer;
+                    for (let j = 0; j < question.options.length; j++) {
+                        const option = question.options[j];
+                        const isMatch = await bcrypt.compare(
+                            option,
+                            hashedAnswer
+                        );
+                        if (isMatch) {
+                            question.answer = j; // Set the answer to the correct index
+                            break;
+                        }
+                    }
+                }
+            };
+
+            // Process the modules, headings, and subheadings using loops
+            for (let i = 0; i < updatedCourse.modules.length; i++) {
+                const module = updatedCourse.modules[i];
+
+                if (module.content && module.content.test) {
+                    await findCorrectAnswerIndex(module.content.test);
+                }
+
+                if (module.headings) {
+                    for (let j = 0; j < module.headings.length; j++) {
+                        const heading = module.headings[j];
+
+                        if (heading.content && heading.content.test) {
+                            await findCorrectAnswerIndex(heading.content.test);
+                        }
+
+                        if (heading.subheadings) {
+                            for (
+                                let k = 0;
+                                k < heading.subheadings.length;
+                                k++
+                            ) {
+                                const subheading = heading.subheadings[k];
+
+                                if (
+                                    subheading.content &&
+                                    subheading.content.test
+                                ) {
+                                    await findCorrectAnswerIndex(
+                                        subheading.content.test
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            updatedCourse.isPublished = false;
+
+            const resp = await updateCourseDetails(courseId, updatedCourse);
+            // Return the processed course or perform API updates as needed
+            return updatedCourse;
+        } catch (error) {
+            throw new Error(error.message);
+        }
+    }
+);
 const doUpdateCourseUnit = createAsyncThunk(
     "courses/updateCourseUnit",
     async (
@@ -530,9 +619,20 @@ const courseSlice = createSlice({
                     return c; // Return the unmodified course object
                 });
             })
-            .addCase(doPublishCourse.rejected, (state,action) => {
+            .addCase(doPublishCourse.rejected, (state, action) => {
                 state.courseError = action.error.message;
-
+            })
+            .addCase(doUnpublishCourse.pending, () => {})
+            .addCase(doUnpublishCourse.fulfilled, (state, action) => {
+                state.course = state.course.map((c) => {
+                    if (c.courseId === action.payload.courseId) {
+                        return action.payload; // Return the updated course object
+                    }
+                    return c; // Return the unmodified course object
+                });
+            })
+            .addCase(doUnpublishCourse.rejected, (state, action) => {
+                state.courseError = action.error.message;
             });
     },
 });
@@ -550,4 +650,5 @@ export {
     doRemoveCourseUnit,
     doRemoveCourse,
     doPublishCourse,
+    doUnpublishCourse,
 };
