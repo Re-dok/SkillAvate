@@ -5,8 +5,15 @@ import {
     doGetMyCourses,
 } from "../../features/course/courseSlice";
 import { connect } from "react-redux";
-import { Button, CloseButton, Collapse, Nav } from "reactstrap";
-import { addCourse, getMyCourses } from "../../Firbase/firebaseCourseDB";
+import {
+    Button,
+    CloseButton,
+    Collapse,
+    Modal,
+    ModalBody,
+    Nav,
+} from "reactstrap";
+import { addCourse } from "../../Firbase/firebaseCourseDB";
 import withRouter from "../../Components/WithRouter";
 import AddCourse from "../../Components/TrainerComponets/AddCourse";
 class CourseCard extends Component {
@@ -27,6 +34,10 @@ class CourseCard extends Component {
             // course overview
 
             test: true,
+            modalMessage: "",
+            modalResp: false,
+            showModal: false,
+            isLoading: false,
         };
     }
     async componentDidMount() {
@@ -57,6 +68,26 @@ class CourseCard extends Component {
         if (this.props.isLoading === null || this.props.isLoading === true)
             return <>loading......</>;
         else {
+            const { modalResp, modalMessage, showModal, isLoading } =
+                this.state;
+            const handleTogglePublish = () => {
+                this.setState({ isLoading: true });
+                setTimeout(() => {
+                    if (this.props.isPublished) {
+                        this.setState({
+                            isLoading: false,
+                            modalResp: true,
+                            modalMessage: "Done!",
+                        });
+                    } else {
+                        this.setState({
+                            isLoading: false,
+                            modalResp: true,
+                            modalMessage: "done!",
+                        });
+                    }
+                }, 3000);
+            };
             return (
                 <div className="row">
                     <div className="col-sm-6 col-12 p-3">
@@ -68,28 +99,64 @@ class CourseCard extends Component {
                             <p>
                                 by : <strong>{this.state.createrName}</strong>
                             </p>
-                            <Button
-                                className="rounded-3 p-3 mb-3 fw-bold"
-                                size="sm"
-                                onClick={() => {
-                                    this.props.isPublished
-                                        ? this.props.navigate(
-                                              `/view/${this.props.courseId}`
-                                          )
-                                        : this.props.navigate(
-                                              `/editCourse/${this.props.courseId}`
-                                          );
-                                    this.props.clearOtherUserCoursesInfo(
-                                        this.props.courseId
-                                    );
-                                }}
-                            >
-                                <i className="bi bi-play-circle-fill me-1"></i>{" "}
-                                {this.props.isPublished
-                                    ? "View Course"
-                                    : "Continue Editing"}
-                            </Button>
+                            <div>
+                                <Button
+                                    className="rounded-3 p-3 mb-3 fw-bold me-lg-3 me-2"
+                                    size="sm"
+                                    onClick={() => {
+                                        this.props.isPublished
+                                            ? this.props.navigate(
+                                                  `/view/${this.props.courseId}`
+                                              )
+                                            : this.props.navigate(
+                                                  `/editCourse/${this.props.courseId}`
+                                              );
+                                        this.props.clearOtherUserCoursesInfo(
+                                            this.props.courseId
+                                        );
+                                    }}
+                                >
+                                    <i className="bi bi-play-circle-fill me-1"></i>{" "}
+                                    {this.props.isPublished
+                                        ? "View Course"
+                                        : "Continue Editing"}
+                                </Button>
 
+                                <Button
+                                    className="rounded-3 p-3 mb-3 fw-bold"
+                                    size="sm"
+                                    onClick={() => {
+                                        this.props.isPublished
+                                            ? this.setState({
+                                                  showModal: true,
+                                                  modalMessage: "Are you sure?",
+                                              })
+                                            : this.setState({
+                                                  showModal: true,
+                                                  modalMessage: "Are you sure?",
+                                              });
+                                    }}
+                                    color={
+                                        this.props.isPublished
+                                            ? "danger"
+                                            : "success"
+                                    }
+                                >
+                                    {/* <i className="bi bi-play-circle-fill me-1"></i>{" "} */}
+                                    {this.props.isPublished ? (
+                                        <>
+                                            {/* <i class="bi bi-radioactive"></i> */}
+                                            <i class="bi bi-x-octagon-fill me-2"></i>
+                                            UnPublish
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i class="bi bi-globe me-2"></i>
+                                            Publish
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
                             <div>
                                 <p
                                     role="button"
@@ -257,6 +324,44 @@ class CourseCard extends Component {
                             )}
                         </div>
                     </Collapse>
+                    <Modal isOpen={showModal}>
+                        <ModalBody>
+                            <div className="row gap-3 mx-auto d-flex justify-content-center">
+                                <div className="col-12 d-flex justify-content-center">
+                                    {modalMessage}
+                                </div>
+                                <div className="col-12 d-flex justify-content-center">
+                                    {!modalResp && (
+                                        <Button
+                                            className="rounded-3 py-2 fw-bold me-3"
+                                            size="sm"
+                                            color="success"
+                                            disabled={isLoading}
+                                            onClick={handleTogglePublish}
+                                        >
+                                            {isLoading ? "Loading..." : "Yes"}
+                                        </Button>
+                                    )}
+                                    <Button
+                                        className="rounded-3 py-2 fw-bold"
+                                        size="sm"
+                                        color="warning"
+                                        disabled={isLoading}
+                                        onClick={() =>
+                                            this.setState({
+                                                showModal: false,
+                                                isLoading: false,
+                                                modalResp: false,
+                                                modalMessage: "",
+                                            })
+                                        }
+                                    >
+                                        {modalResp ? "Close" : " Cancel"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </ModalBody>
+                    </Modal>
                 </div>
             );
         }
