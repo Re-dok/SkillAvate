@@ -325,10 +325,6 @@ class ViewCourse extends Component {
         if (courseData === undefined || courseData.length === 0) {
             await doGetCourseDetails(courseId);
         }
-        this.setState({
-            // FIXME user open first unit here
-            openUnit: [0, -1, -1],
-        });
     }
     render() {
         if (this.props.isLoading || !this.props.courseData[0])
