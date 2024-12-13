@@ -12,6 +12,7 @@ import {
 import { db } from "./firebaseConfig";
 import { coursesRef } from "./firebaseCourseDB";
 import * as XLSX from "xlsx";
+
 const usersRef = collection(db, "users");
 // FIXME add other things to init
 export const downloadMultipleCollectionsAsExcel = async () => {
@@ -574,6 +575,114 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
     batch.commit();
     return { myClients: updatedAdminClients, trainers: updatedAdminTrainers };
 }
+async function courseUnpublish(updatedCourse, email) {
+    const { courseId } = updatedCourse;
+    if (!courseId || !email) {
+        throw new Error(
+            "invalid-argument",
+            "The function must be called with the 'updatedCourse' and 'email' parameters."
+        );
+    }
+
+    try {
+        // Update the "courses" collection
+        // const coursesRef = db.collection("courses");
+        const courseQuery = query(
+            coursesRef,
+            where("courseId", "==", courseId)
+        );
+        const courseSnapshot = await getDocs(courseQuery);
+
+        if (courseSnapshot.empty) {
+            throw new Error(
+                "not-found",
+                "Course not found in the 'courses' collection."
+            );
+        }
+
+        const trainerQuery = query(
+            usersRef,
+            where("email", "==", updatedCourse.createrEmail)
+        );
+        const trainerSnapshot = await getDocs(trainerQuery);
+
+        // Fetch the trainer's data
+        // const usersRef = db.collection("users");
+        if (trainerSnapshot.empty) {
+            throw new Error(
+                "not-found",
+                "Trainer not found in the 'users' collection."
+            );
+        }
+
+        const trainerDoc = trainerSnapshot.docs[0];
+        const courseDoc = courseSnapshot.docs[0];
+
+        const trainerData = trainerSnapshot.docs[0].data();
+        const enrolledClients = trainerData.myClients.filter((client) =>
+            client.courses.includes(courseId)
+        );
+
+        // Update enrolled clients and their data
+        // const batch = db.batch();
+        const batch = writeBatch(db);
+
+        batch.update(courseDoc.ref, updatedCourse);
+
+        for (const client of enrolledClients) {
+            const clientEmail = client.clientEmail;
+            const clientQuery = query(
+                usersRef,
+                where("email", "==", clientEmail)
+            );
+
+            const clientSnapshot = await getDocs(clientQuery);
+
+            if (!clientSnapshot.empty) {
+                const clientDoc = clientSnapshot.docs[0];
+                const clientData = clientDoc.data();
+
+                // Remove courseId from client's courses array
+                const updatedCourses = clientData.courses.filter(
+                    (course) => course.courseId !== courseId
+                );
+
+                // Remove courseId from client's grades array
+                const updatedGrades = clientData.Grades.filter(
+                    (grade) => grade.courseId !== courseId
+                );
+
+                batch.update(clientDoc.ref, {
+                    courses: updatedCourses,
+                    Grades: updatedGrades,
+                });
+            }
+        }
+
+        // Update trainer's myClients array
+        const updatedMyClients = trainerData.myClients.map((client) => {
+            if (client.courses.includes(courseId)) {
+                return {
+                    ...client,
+                    courses: client.courses.filter((id) => id !== courseId),
+                };
+            }
+            return client;
+        });
+
+        batch.update(trainerDoc.ref, { myClients: updatedMyClients });
+
+        // Commit batch updates
+        await batch.commit();
+
+        return {
+            success: true,
+            message: "Course unpublished and users updated successfully.",
+        };
+    } catch (error) {
+        throw new Error("internal", error.message);
+    }
+}
 export {
     getUserData,
     addUserToDB,
@@ -586,4 +695,5 @@ export {
     getAdminCourses,
     setUserName,
     getUsersByMonthAndYear,
+    courseUnpublish,
 };

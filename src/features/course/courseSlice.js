@@ -7,6 +7,7 @@ import {
     removeCourse,
 } from "../../Firbase/firebaseCourseDB";
 import bcrypt from "bcryptjs";
+import { courseUnpublish } from "../../Firbase/firbaseUserDB";
 
 const initialState = {
     course: [],
@@ -139,6 +140,7 @@ const doUnpublishCourse = createAsyncThunk(
         try {
             const state = getState();
             const { isAdmin, isTrainer } = state.user;
+            const email = state.user.userCredentials.email;
             const course = state.course.course.find(
                 (c) => c.courseId === courseId
             );
@@ -152,7 +154,11 @@ const doUnpublishCourse = createAsyncThunk(
             if (!course) {
                 throw new Error("Course not found!");
             }
-
+            if (course.createrEmail !== email && !isAdmin) {
+                throw new Error(
+                    "Unauthorized! You are not allowed to unpublish this course!"
+                );
+            }
             // Deep clone the course object
             const updatedCourse = structuredClone(course);
 
@@ -215,7 +221,7 @@ const doUnpublishCourse = createAsyncThunk(
 
             updatedCourse.isPublished = false;
 
-            const resp = await updateCourseDetails(courseId, updatedCourse);
+            const resp = await courseUnpublish(updatedCourse,email);
             // Return the processed course or perform API updates as needed
             return updatedCourse;
         } catch (error) {
