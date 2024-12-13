@@ -4,7 +4,7 @@ import {
     doGetCourseDetails,
 } from "../features/course/courseSlice";
 import { connect } from "react-redux";
-import {  CloseButton, Collapse } from "reactstrap";
+import { CloseButton, Collapse } from "reactstrap";
 import withRouter from "../Components/WithRouter";
 import { getAdminCourses } from "../Firbase/firbaseUserDB";
 class CourseCard extends Component {
@@ -34,16 +34,14 @@ class CourseCard extends Component {
         if (courseData.length === 0) {
             await this.props.doGetCourseDetails(currentCourseId);
         }
-        //
-        courseData = this.props.coursesData[this.props.coursesData.length - 1];
+        courseData = this.props.coursesData.filter(
+            (course) => course.courseId === currentCourseId
+        )[0];
         if (courseData) {
             const { courseName, modules, courseDiscp } = courseData;
-            let courseProgressPersent = 100 * this.props.courseProgress[0];
-            if (modules.length) courseProgressPersent /= modules.length;
             this.setState({
                 courseName: courseName,
                 modules: modules,
-                progress: courseProgressPersent,
                 courseDiscp: courseDiscp,
             });
         }
@@ -60,34 +58,6 @@ class CourseCard extends Component {
                                 {this.state.courseName}
                             </span>
                             <p>{this.state.courseDiscp}</p>
-                            {/* <Button
-                                className="rounded-3 p-3 mb-3 fw-bold"
-                                size="sm"
-                                onClick={() => {
-                                    this.props.navigate(
-                                        `/viewCourse/${this.props.courseId}`
-                                    );
-                                    this.props.clearOtherUserCoursesInfo(
-                                        this.props.courseId
-                                    );
-                                }}
-                            >
-                                <i className="bi bi-play-circle-fill me-1"></i>{" "}
-                                Continue Learning
-                            </Button> */}
-                            {/* <div className="my-3 mt-4 fw-light">
-                                {this.state.progress}% complete
-                                <Progress
-                                    value={this.state.progress}
-                                    barClassName="bg-primary-o"
-                                    className="mt-1"
-                                    style={{
-                                        height: "7px",
-                                        width: "50%",
-                                        color: "red !important",
-                                    }}
-                                />
-                            </div> */}
                             <div>
                                 <p
                                     role="button"
@@ -100,11 +70,6 @@ class CourseCard extends Component {
                                     }
                                 >
                                     Modules
-                                    {!this.state.openModules ? (
-                                        <i className="ms-2 bi bi-chevron-down"></i>
-                                    ) : (
-                                        <i className="ms-2 bi bi-chevron-up"></i>
-                                    )}
                                 </p>
                                 <Collapse isOpen={true}>
                                     {this.state.modules.map(

@@ -314,16 +314,7 @@ class MyCourses extends Component {
         this.state = {
             openCompletedCourses: true,
         };
-    }
-    // TODO remove me later once the admin pages add Course is done
-    addCourse = () => {
-        try {
-            const ans = addCourse();
-            alert(ans);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
+    }  
     componentDidMount() {
         window.scrollTo(0, 0);
     }
@@ -369,33 +360,29 @@ class MyCourses extends Component {
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.length === 0 && <>Nothing Here!</>}
                     {this.props.courses.map((course, courseNumber) => {
                         if (course.isComplete !== openCompletedCourses) {
-                            if (course.isComplete === true) {
+                            if (course.isComplete === true && ifIsEmpty[0]) {
                                 ifIsEmpty[0] = false;
-                            } else {
+                            } else if (ifIsEmpty[1]) {
                                 ifIsEmpty[1] = false;
                             }
                             return (
-                                <ConectedCourseCard
-                                    key={courseNumber}
-                                    courseId={course.courseId}
-                                    courseProgress={course.courseProgress}
-                                    isComplete={course.isComplete}
-                                />
+                                <>
+                                    <ConectedCourseCard
+                                        key={courseNumber}
+                                        courseId={course.courseId}
+                                        courseProgress={course.courseProgress}
+                                        isComplete={course.isComplete}
+                                    />
+                                </>
                             );
                         }
-                        if (courseNumber + 1 === this.props.courses.length) {
-                            if (ifIsEmpty[0]) {
-                                return <>Nothing Here!</>;
-                            }
-                            if (ifIsEmpty[1]) {
-                                return <>Nothing Here!</>;
-                            }
-                        }
                     })}
-                    {/* <Button onClick={this.addCourse}>Add course</Button> */}
+                    {ifIsEmpty[0] && !openCompletedCourses && <>Nothing Here!</>}
+                    {ifIsEmpty[1] && openCompletedCourses && (
+                        <>Nothing Here!</>
+                    )}
                 </div>
             </div>
         );

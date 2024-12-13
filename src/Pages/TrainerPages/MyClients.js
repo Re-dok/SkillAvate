@@ -494,7 +494,7 @@ class MyClients extends Component {
                                       </>
                                   ) : (
                                       <>
-                                          No clients left unenorolled For this
+                                          No courses left unenorolled For this
                                           client
                                       </>
                                   ))
