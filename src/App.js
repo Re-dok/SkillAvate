@@ -23,10 +23,7 @@ import ViewTrainerCourse from "./Pages/TrainerPages/ViewTrainerCourse";
 import Dashboard from "./Pages/TrainerPages/Dashboard";
 import Settings from "./Pages/Settings";
 // FIXME make urls from base like the one sir did
-// all the grades irrespective of course id are being stored in the same array, will need to
-// change this logic
-// DONE make sure when ever a user is enrolled into a course, the corresponding fields in the courses db are filled,i,e, MUST HAVE courseId,courseProgress,isComplete intialized
-// TODO the ansers are stored as numbers in unpublished courses, once published the anser string is encoded and then stored.
+// the ansers are stored as numbers in unpublished courses, once published the anser string is encoded and then stored.
 class App extends Component {
     constructor(props) {
         super(props);

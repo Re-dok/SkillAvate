@@ -14,7 +14,6 @@ import { coursesRef } from "./firebaseCourseDB";
 import * as XLSX from "xlsx";
 
 const usersRef = collection(db, "users");
-// FIXME add other things to init
 export const downloadMultipleCollectionsAsExcel = async () => {
     try {
         const workbook = XLSX.utils.book_new(); // Create a new workbook

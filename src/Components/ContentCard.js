@@ -8,12 +8,6 @@ import {
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
 import bcrypt from "bcryptjs";
-// 1. badges on changeing unit wont show currect stuff, same with the submit button. 2. from 2,0 moving forward isnt correct;3. Options should not be selectable after submission ;
-// 4. Add logic to store the course Marks when ans is wrong and add logic to allow only 2 submissions
-// 6. change my courses to accom completed and incomplete
-// 6.add modal
-// 7.1 change colors for nav
-// TODO 7.0.add encrptions
 
 class QuestionCard extends Component {
     constructor(props) {
@@ -473,7 +467,6 @@ class ContentCard extends Component {
                             ></ReactPlayer>
                         </div>
                     )}
-                    {/* TODO check if this works ok */}
                     {docLink && (
                     <div>
                         <div

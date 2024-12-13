@@ -218,7 +218,6 @@ class EditCourse extends Component {
     }
 }
 const mapStatesToProps = (state) => ({
-    // TODO are these || working the way you think they are?
     isLoading: state.course.courseLoading,
     error: state.course.courseError || state.user.error,
     success: state.course.courseSuccess || state.user.success,

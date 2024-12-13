@@ -1,5 +1,4 @@
 // all auth rel code is here
-// TODO add init things like courses=[],myClients=[]
 import {
     createUserWithEmailAndPassword,
     sendEmailVerification,

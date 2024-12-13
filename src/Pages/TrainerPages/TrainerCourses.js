@@ -434,21 +434,9 @@ class TrainerCourses extends Component {
             courses: [],
         };
     }
-    //TODO Make a button and the corresponding page to make an 'add course' page
-    // TODO remove me later once the admin pages add Course is done
-    addCourse = () => {
-        try {
-            const ans = addCourse();
-            alert(ans);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
     async componentDidMount() {
         window.scrollTo(0, 0);
         await this.props.doGetMyCourses();
-        // const courses = await getMyCourses(this.props.userEmail);
-        // this.setState({ courses: courses.coursesData });
     }
     render() {
         const {

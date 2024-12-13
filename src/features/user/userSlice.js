@@ -280,23 +280,18 @@ const userSlice = createSlice({
             })
             .addCase(doGetUserData.fulfilled, (state, action) => {
                 state.loading = false;
-                // FIXME might need to change wayyy later when courses are added
                 state.userCredentials.email = action.payload.email;
                 state.isTrainer = action.payload.isTrainer;
-                // TODO check if the courses now carries both the progress,and the courseId
                 state.courses = action.payload.courses;
-                // handles the null case
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
                 state.success = "data fetch Successfull!";
                 state.isLoggedIn = true;
-                // FIXME make it such that everones in my clients
                 if (action.payload.isAdmin || action.payload.isTrainer) {
                     state.myClients = action.payload.myClients;
                 }
                 state.name = action.payload.name || "";
                 if (action.payload.isAdmin) {
                     state.trainers = action.payload.trainers;
-                    // state.name = action.payload.name || null;
                 }
             })
             .addCase(doGetUserData.rejected, (state, action) => {
