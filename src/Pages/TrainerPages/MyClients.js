@@ -2,13 +2,13 @@ import React, { Component } from "react";
 import { Button, Table, Modal, ModalHeader, Nav } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
-import { getMyCourses } from "../../Firbase/firebaseCourseDB";
+import { getMyCourses } from "../../Firebase/firebaseCourseDB";
 import {
     doAddCourseToUser,
-    doAdddClientToTrainer,
+    doAddClientToTrainer,
     doRemoveCourseFromUser,
     doRemoveClientFromTrainer
-} from "../../features/user/userSlice";
+} from "../../Features/user/userSlice";
 
 class MyClients extends Component {
     constructor(props) {
@@ -51,7 +51,7 @@ class MyClients extends Component {
                 this.setState({
                     isLoading: false,
                     modalResp: true,
-                    modalMessage: "Somthing went wrong, please try again!",
+                    modalMessage: "Something went wrong, please try again!",
                 });
         };
         const handleAddCourse = async () => {
@@ -61,14 +61,14 @@ class MyClients extends Component {
             const modules = myCourseDetails.filter(
                 (course) => course.courseId === currentCourse
             )[0].modules;
-            let firstUnitCoorditantes = () => {
+            let firstUnitCoordinates = () => {
                 if (modules[0]?.content) return [0, -1, -1];
                 else {
                     if (modules[0]?.headings[0]?.content) return [0, 0, -1];
                     return [0, 0, 0];
                 }
             };
-            const courseProgress = firstUnitCoorditantes();
+            const courseProgress = firstUnitCoordinates();
             const resp = await this.props.doAddCourseToUser({
                 currentClient,
                 currentCourse,
@@ -84,14 +84,14 @@ class MyClients extends Component {
                 this.setState({
                     isLoading: false,
                     modalResp: true,
-                    modalMessage: "Somthing went wrong, please try again!",
+                    modalMessage: "Something went wrong, please try again!",
                 });
         };
         const handleAddClient = async () => {
             this.setState({ isLoading: true });
             const { currentClient, currentCourse} =
                 this.state;
-            const resp = await this.props.doAdddClientToTrainer({
+            const resp = await this.props.doAddClientToTrainer({
                 currentTrainer: currentClient,
                 currentClient: currentCourse,
             });
@@ -105,7 +105,7 @@ class MyClients extends Component {
                 this.setState({
                     isLoading: false,
                     modalResp: true,
-                    modalMessage: "Somthing went wrong, please try again!",
+                    modalMessage: "Something went wrong, please try again!",
                 });
         };
         const handleRemoveClient = async () => {
@@ -118,13 +118,13 @@ class MyClients extends Component {
                 this.setState({
                     isLoading: false,
                     modalResp: true,
-                    modalMessage: "Clinet Removed Successfully!",
+                    modalMessage: "Client Removed Successfully!",
                 });
             else
                 this.setState({
                     isLoading: false,
                     modalResp: true,
-                    modalMessage: "Somthing went wrong, please try again!",
+                    modalMessage: "Something went wrong, please try again!",
                 });
         };
         const myClients = this.props.myClients;
@@ -140,7 +140,7 @@ class MyClients extends Component {
             currentClient,
             showClientsTable,
         } = this.state;
-        const avaiableCoursesForEnroll = () => {
+        const availableCoursesForEnroll = () => {
             const courses = myClients.filter(
                 (client) => client.clientEmail === currentClient
             )[0]?.courses;
@@ -148,7 +148,7 @@ class MyClients extends Component {
                 return !courses?.includes(course.courseId);
             });
         };
-        const unEnroledClients = () => {
+        const unEnrolledClients = () => {
             return myClients.filter((client) => client.unAssigned);
         };
         return (
@@ -421,12 +421,12 @@ class MyClients extends Component {
                         <div className="col-12 fw-bold d-flex justify-content-center">
                             {modalMessage}
                         </div>
-                        <div className="col-12 col gap-3 mx-auto d-flex paragram-text align-content-center justify-content-center align-items-center">
+                        <div className="col-12 col gap-3 mx-auto d-flex paragraph-text align-content-center justify-content-center align-items-center">
                             {showClientsTable
                                 ? isAdd &&
                                   !modalResp &&
                                   currentClient &&
-                                  (avaiableCoursesForEnroll().length !== 0 ? (
+                                  (availableCoursesForEnroll().length !== 0 ? (
                                       <>
                                           <Table responsive hover size="lg">
                                               <thead>
@@ -438,7 +438,7 @@ class MyClients extends Component {
                                                   </tr>
                                               </thead>
                                               <tbody>
-                                                  {avaiableCoursesForEnroll().map(
+                                                  {availableCoursesForEnroll().map(
                                                       (course, i) => (
                                                           <tr
                                                               role="button"
@@ -494,14 +494,14 @@ class MyClients extends Component {
                                       </>
                                   ) : (
                                       <>
-                                          No courses left unenorolled For this
+                                          No courses left unenrolled For this
                                           client
                                       </>
                                   ))
                                 : isAdd &&
                                   !modalResp &&
                                   (currentClient &&
-                                  unEnroledClients().length !== 0 ? (
+                                  unEnrolledClients().length !== 0 ? (
                                       <>
                                           <Table responsive hover size="lg">
                                               <thead>
@@ -511,7 +511,7 @@ class MyClients extends Component {
                                                   </tr>
                                               </thead>
                                               <tbody>
-                                                  {unEnroledClients().map(
+                                                  {unEnrolledClients().map(
                                                       (client, i) => (
                                                           <tr
                                                               role="button"
@@ -609,7 +609,7 @@ class MyClients extends Component {
         );
     }
 }
-const mapStateToprops = (state) => {
+const mapStateToProps = (state) => {
     return {
         isLoading: state.user.loading,
         error: state.user.error,
@@ -625,10 +625,10 @@ const mapStateToprops = (state) => {
 const mapDispatchToProps = {
     doAddCourseToUser,
     doRemoveCourseFromUser,
-    doAdddClientToTrainer,
+    doAddClientToTrainer,
     doRemoveClientFromTrainer
 };
 export default connect(
-    mapStateToprops,
+    mapStateToProps,
     mapDispatchToProps
 )(withRouter(MyClients));

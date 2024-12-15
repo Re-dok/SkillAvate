@@ -13,7 +13,7 @@ import withRouter from ".././WithRouter";
 import {
     doRemoveCourseUnit,
     doUpdateCourseUnit,
-} from "../../features/course/courseSlice";
+} from "../../Features/course/courseSlice";
 class ContentCard extends Component {
     constructor(props) {
         super(props);

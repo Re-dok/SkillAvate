@@ -10,7 +10,7 @@ import React, { Component } from "react";
 import ReactPlayer from "react-player";
 import { connect } from "react-redux";
 import withRouter from ".././WithRouter";
-import { doAddCourseUnit } from "../../features/course/courseSlice";
+import { doAddCourseUnit } from "../../Features/course/courseSlice";
 class NewUnitCard extends Component {
     constructor(props) {
         super(props);

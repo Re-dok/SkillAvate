@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { createLogger } from "redux-logger";
-import userReducer from "../features/user/userSlice";
-import courseReducer from "../features/course/courseSlice";
+import userReducer from "../Features/user/userSlice";
+import courseReducer from "../Features/course/courseSlice";
 const logger = createLogger();
 const store = configureStore({
     reducer: {

@@ -9,7 +9,7 @@ import {
     Input,
     FormFeedback,
 } from "reactstrap";
-import { doUpdateHeadingName } from "../../features/course/courseSlice";
+import { doUpdateHeadingName } from "../../Features/course/courseSlice";
 import { connect } from "react-redux";
 class SideBar extends Component {
     constructor(props) {

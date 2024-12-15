@@ -2,11 +2,11 @@ import React, { Component } from "react";
 import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
-} from "../features/course/courseSlice";
+} from "../Features/course/courseSlice";
 import { connect } from "react-redux";
 import { CloseButton, Collapse } from "reactstrap";
 import withRouter from "../Components/WithRouter";
-import { getAdminCourses } from "../Firbase/firbaseUserDB";
+import { getAdminCourses } from "../Firebase/firebaseUserDB";
 class CourseCard extends Component {
     // props = courseId,courseProgress
     constructor(props) {

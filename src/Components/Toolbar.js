@@ -10,7 +10,7 @@ import {
 } from "reactstrap";
 import withRouter from "./WithRouter";
 import { connect } from "react-redux";
-import { doSignOut } from "../features/user/userSlice";
+import { doSignOut } from "../Features/user/userSlice";
 
 class Toolbar extends Component {
     constructor(props) {

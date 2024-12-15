@@ -5,7 +5,7 @@ import {
     doPasswordReset,
     doSetUserName,
     doSignOut,
-} from "../features/user/userSlice";
+} from "../Features/user/userSlice";
 
 const mapDispatchToProps = {
     doPasswordReset,

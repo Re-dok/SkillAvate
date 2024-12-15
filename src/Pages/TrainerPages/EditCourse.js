@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Offcanvas, OffcanvasHeader, OffcanvasBody } from "reactstrap";
-import { doGetCourseDetails } from "../../features/course/courseSlice";
+import { doGetCourseDetails } from "../../Features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../../Components/WithRouter";
 import TrainerContentCard from "../../Components/TrainerComponets/TrainerContentCard";

@@ -7,7 +7,7 @@ import {
     ListGroupItem,
     Collapse,
 } from "reactstrap";
-import { doGetCourseDetails } from "../../features/course/courseSlice";
+import { doGetCourseDetails } from "../../Features/course/courseSlice";
 import { connect } from "react-redux";
 import withRouter from "../../Components/WithRouter";
 import ViewContentCard from "../../Components/TrainerComponets/ViewContentCard";

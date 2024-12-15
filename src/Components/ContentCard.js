@@ -4,7 +4,7 @@ import ReactPlayer from "react-player";
 import {
     doMarkCourseAsComplete,
     doUpdateCourseProgress,
-} from "../features/user/userSlice";
+} from "../Features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./WithRouter";
 import bcrypt from "bcryptjs";
@@ -14,7 +14,7 @@ class QuestionCard extends Component {
         super(props);
         this.state = {
             alertMessage: null,
-            answerIsCurrect: true,
+            answerIsCorrect: true,
             currentQuestion: 1,
             selectedOptions: null,
         };
@@ -36,14 +36,14 @@ class QuestionCard extends Component {
                 this.setState({
                     currentQuestion: this.props.test.length,
                     selectedOptions: null,
-                    answerIsCurrect: true,
+                    answerIsCorrect: true,
                     alertMessage: null,
                 });
             } else {
                 this.setState({
                     currentQuestion: this.props.courseProgress[4] + 1,
                     selectedOptions: null,
-                    answerIsCurrect: true,
+                    answerIsCorrect: true,
                     alertMessage: null,
                 });
             }
@@ -54,14 +54,14 @@ class QuestionCard extends Component {
                 this.setState({
                     currentQuestion: this.props.test.length,
                     selectedOptions: null,
-                    answerIsCurrect: true,
+                    answerIsCorrect: true,
                     alertMessage: null,
                 });
             } else {
                 this.setState({
                     currentQuestion: this.props.courseProgress[4] + 1,
                     selectedOptions: null,
-                    answerIsCurrect: true,
+                    answerIsCorrect: true,
                     alertMessage: null,
                 });
             }
@@ -77,7 +77,7 @@ class QuestionCard extends Component {
                 currentQuestion: this.state.currentQuestion + 1,
                 selectedOptions: null,
                 alertMessage: null,
-                answerIsCurrect: true,
+                answerIsCorrect: true,
             });
         }
     };
@@ -127,7 +127,7 @@ class QuestionCard extends Component {
             }
             this.setState({
                 alertMessage: null,
-                answerIsCurrect: null,
+                answerIsCorrect: null,
                 selectedOptions: null,
             });
         } else {
@@ -144,7 +144,7 @@ class QuestionCard extends Component {
                 this.setState({
                     alertMessage:
                         "Wrong Answer, you have one more attempt after which you will be moved to the next question!",
-                    answerIsCurrect: false,
+                    answerIsCorrect: false,
                     selectedOptions: null,
                 });
             } else {
@@ -177,7 +177,7 @@ class QuestionCard extends Component {
                 }
                 this.setState({
                     alertMessage: null,
-                    answerIsCurrect: null,
+                    answerIsCorrect: null,
                     selectedOptions: null,
                 });
             }
@@ -266,7 +266,7 @@ class QuestionCard extends Component {
                             "p-3 pb-0 d-flex border-bottom border-2 " +
                             (this.state.selectedOptions === optionNumber &&
                             !this.props.isComplete
-                                ? "bg-secodary-o"
+                                ? "bg-secondary-o"
                                 : "")
                         }
                         key={optionNumber}
@@ -293,16 +293,16 @@ class QuestionCard extends Component {
                     </div>
                 ))}
                 <Alert
-                    color={this.state.answerIsCurrect ? "success" : "danger"}
+                    color={this.state.answerIsCorrect ? "success" : "danger"}
                     className="mx-2 my-2"
                     isOpen={this.state.alertMessage}
                     toggle={() => {
-                        if (this.state.answerIsCurrect === true) {
+                        if (this.state.answerIsCorrect === true) {
                             this.nextQuestion();
                         }
                         this.setState({
                             alertMessage: null,
-                            answerIsCurrect: null,
+                            answerIsCorrect: null,
                             selectedOptions: null,
                         });
                     }}
@@ -481,7 +481,7 @@ class ContentCard extends Component {
                     )}
 
                     {writeUp && (
-                        <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
+                        <p className="paragraph-text rounded fw-light bg-white p-4 my-3 mb-5">
                             {writeUp}
                         </p>
                     )}

@@ -201,7 +201,7 @@ class ViewContentCard extends Component {
                     )}
 
                     {writeUp && (
-                        <p className="paragram-text rounded fw-light bg-white p-4 my-3 mb-5">
+                        <p className="paragraph-text rounded fw-light bg-white p-4 my-3 mb-5">
                             {writeUp}
                         </p>
                     )}

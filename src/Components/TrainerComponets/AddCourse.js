@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Button, Modal, Input, FormFeedback } from "reactstrap";
-import { doCreateCourse } from "../../features/course/courseSlice";
+import { doCreateCourse } from "../../Features/course/courseSlice";
 class AddCourse extends Component {
     constructor(props) {
         super(props);

@@ -2,10 +2,9 @@ import React, { Component } from "react";
 import {
     clearOtherUserCoursesInfo,
     doGetCourseDetails,
-} from "../features/course/courseSlice";
+} from "../Features/course/courseSlice";
 import { connect } from "react-redux";
 import { Button, CloseButton, Collapse, Progress, Nav } from "reactstrap";
-import { addCourse } from "../Firbase/firebaseCourseDB";
 import withRouter from "../Components/WithRouter";
 
 class CourseCard extends Component {

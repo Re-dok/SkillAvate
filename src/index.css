@@ -56,11 +56,11 @@ body {
 .bg-primary-o:hover{
       background-color: var(--primary);
 }
-.bg-secodary-o {
+.bg-secondary-o {
       background-color: var(--secondary);
 }
 
-.paragram-text {
+.paragraph-text {
       white-space: pre-wrap !important;
 }
 

@@ -9,7 +9,7 @@ import {
 } from "./Components/PrivateRoutes";
 import ResetPassword from "./Pages/ResetPassword";
 import ToolBar from "./Components/Toolbar";
-import { resetMessages, setInitialURL } from "./features/user/userSlice";
+import { resetMessages, setInitialURL } from "./Features/user/userSlice";
 import { connect } from "react-redux";
 import withRouter from "./Components/WithRouter";
 import NotFound from "./Pages/NotFound";
@@ -23,7 +23,7 @@ import ViewTrainerCourse from "./Pages/TrainerPages/ViewTrainerCourse";
 import Dashboard from "./Pages/TrainerPages/Dashboard";
 import Settings from "./Pages/Settings";
 // FIXME make urls from base like the one sir did
-// the ansers are stored as numbers in unpublished courses, once published the anser string is encoded and then stored.
+// the answers are stored as numbers in unpublished courses, once published the anser string is encoded and then stored.
 class App extends Component {
     constructor(props) {
         super(props);

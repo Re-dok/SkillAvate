@@ -9,22 +9,23 @@ import {
     browserSessionPersistence,
     signOut,
 } from "firebase/auth";
-import { addUserToDB } from "./firbaseUserDB";
+import { addUserToDB } from "./firebaseUserDB";
 import { auth } from "./firebaseConfig";
 async function doSignoutUser() {
     await auth.signOut();
     return "Signed Out!";
 }
-async function doSignUpUser({ email, password, isTrainer }) {
+async function doSignUpUser({ email, password, isTrainer,name }) {
     const userCreds = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
     );
     const user = userCreds.user;
     if (user) {
         await sendEmailVerification(user);
-        await addUserToDB({ email, isTrainer });
+        console.log("hi",name);
+        await addUserToDB({ email, isTrainer,name });
         await signOut(auth);
         return "Verification email sent! Please verify and sign in.";
     } else {

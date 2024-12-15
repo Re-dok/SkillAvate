@@ -4,7 +4,7 @@ import {
     doSignoutUser,
     doSignUpUser,
     doUserPasswordReset,
-} from "../../Firbase/firbaseAuth";
+} from "../../Firebase/firebaseAuth";
 import {
     addClientToTrainer,
     addCourseToUser,
@@ -14,7 +14,7 @@ import {
     updateProgress,
     removeClientFromTrainer,
     setUserName,
-} from "../../Firbase/firbaseUserDB";
+} from "../../Firebase/firebaseUserDB";
 const initialState = {
     loading: false,
     error: "",
@@ -45,10 +45,14 @@ const doSignUp = createAsyncThunk(
             const state = getState();
             const { email, password } = state.user.userCredentials;
             const isTrainer = state.user.isTrainer;
+            const name = state.user.name;
+            console.log(name);
+            console.log("hi");
             const response = await doSignUpUser({
                 email,
                 password,
                 isTrainer,
+                name
             });
             await doSignoutUser();
             return response;
@@ -176,12 +180,12 @@ const doRemoveCourseFromUser = createAsyncThunk(
         }
     }
 );
-const doAdddClientToTrainer = createAsyncThunk(
+const doAddClientToTrainer = createAsyncThunk(
     "user/addClientToUser",
     async ({ currentTrainer, currentClient }, { getState }) => {
         try {
             const state = getState();
-            if (!state.user.isAdmin) throw new Error("Unautherised!");
+            if (!state.user.isAdmin) throw new Error("Unauthorized!");
             return await addClientToTrainer({ currentTrainer, currentClient });
         } catch (err) {
             throw new Error(err.message);
@@ -193,7 +197,7 @@ const doRemoveClientFromTrainer = createAsyncThunk(
     async ({ currentTrainer, currentClient }, { getState }) => {
         try {
             const state = getState();
-            if (!state.user.isAdmin) throw new Error("Unautherised!");
+            if (!state.user.isAdmin) throw new Error("Unauthorized!");
             return await removeClientFromTrainer({
                 currentTrainer,
                 currentClient,
@@ -212,6 +216,9 @@ const userSlice = createSlice({
         },
         emailChanged: (state, action) => {
             state.userCredentials.email = action.payload;
+        },
+        nameChanged:(state,action)=>{
+            state.name=action.payload;
         },
         toggleUserRole: (state) => {
             state.isTrainer = !state.isTrainer;
@@ -253,7 +260,7 @@ const userSlice = createSlice({
                 state.userCredentials.password = null;
                 state.isLoggedIn = true;
                 // handles the null case
-                state.success = "Login Successfull!";
+                state.success = "Login Successful!";
             })
             .addCase(doSignIn.rejected, (state, action) => {
                 state.loading = false;
@@ -284,7 +291,7 @@ const userSlice = createSlice({
                 state.isTrainer = action.payload.isTrainer;
                 state.courses = action.payload.courses;
                 state.isAdmin = action.payload.isAdmin === true ? true : false;
-                state.success = "data fetch Successfull!";
+                state.success = "data fetch Successful!";
                 state.isLoggedIn = true;
                 if (action.payload.isAdmin || action.payload.isTrainer) {
                     state.myClients = action.payload.myClients;
@@ -359,14 +366,14 @@ const userSlice = createSlice({
                 state.loading = false;
                 if (action.payload) state.myClients = action.payload;
             })
-            .addCase(doAdddClientToTrainer.pending, (state) => {
+            .addCase(doAddClientToTrainer.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(doAdddClientToTrainer.rejected, (state, action) => {
+            .addCase(doAddClientToTrainer.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(doAdddClientToTrainer.fulfilled, (state, action) => {
+            .addCase(doAddClientToTrainer.fulfilled, (state, action) => {
                 state.loading = false;
                 if (action.payload) {
                     state.myClients = action.payload.myClients;
@@ -406,6 +413,7 @@ export default userSlice.reducer;
 export const {
     passwordChanged,
     emailChanged,
+    nameChanged,
     toggleUserRole,
     togglePersistent,
     setInitialURL,
@@ -422,7 +430,7 @@ export {
     doMarkCourseAsComplete,
     doAddCourseToUser,
     doRemoveCourseFromUser,
-    doAdddClientToTrainer,
+    doAddClientToTrainer,
     doRemoveClientFromTrainer,
     doSetUserName,
 };

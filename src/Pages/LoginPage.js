@@ -19,13 +19,14 @@ import {
     doSignUp,
     setInitialURL,
     doSignOut,
-} from "../features/user/userSlice";
+    nameChanged
+} from "../Features/user/userSlice";
 import { connect } from "react-redux";
 
-import { auth } from "../Firbase/firebaseConfig";
+import { auth } from "../Firebase/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 
-//check multiple signups with same email is possible
+//check multiple signup with same email is possible
 //nop
 // prevent from adding to db if theres already an acc
 
@@ -45,13 +46,13 @@ class LoginPage extends Component {
 
         // the isLoggedIn is false,
         if (!this.props.isLoggedIn) {
-            // this means we have to check persitence
+            // this means we have to check persistence
             this.unsubscribe = onAuthStateChanged(auth, async (user) => {
                 const authStateChangedIsEnabled = this.props.email;
 
                 if (authStateChangedIsEnabled === null) {
                     // if signedOut: do nothing
-                    // else if signedIn: navigate to the initalURL or to home
+                    // else if signedIn: navigate to the initialURL or to home
                     //         // run check Auth
                     // not signed in
                     if (!user) {
@@ -83,7 +84,7 @@ class LoginPage extends Component {
                 }
             });
         } else {
-            // if true make it go to home,since this meant that the user already logged in and came here only by accedent
+            // if true make it go to home,since this meant that the user already logged in and came here only by accident
             const { isAdmin, isTrainer } = this.props;
             this.props.navigate(
                 isAdmin === true
@@ -106,7 +107,7 @@ class LoginPage extends Component {
         if (!this.state.isLogin) {
             await this.props.doSignUp();
         } else {
-            const { email, password } = this.props;
+            const { email, password,name} = this.props;
             if (!email || !password) return;
             await this.props.doSignIn();
             const { success } = this.props;
@@ -152,11 +153,13 @@ class LoginPage extends Component {
     handleChange = (e) => {
         if (e.target.name === "password")
             this.props.passwordChanged(e.target.value);
+        else if(e.target.name==="name")
+            this.props.nameChanged(e.target.value);
         else this.props.emailChanged(e.target.value);
     };
     render() {
         const isDisabled =
-            !this.props.email || !this.props.password || this.props.isLoading;
+            !this.props.email || !this.props.password || this.props.isLoading || !this.props.name;
 
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
@@ -173,6 +176,16 @@ class LoginPage extends Component {
                             className="w-100 input-focus-none"
                         />
                     </InputGroup>
+                    {!this.state.isLogin &&
+                        <InputGroup className="gap-0 d-flex flex-column ">
+                        <Label>Full Name</Label>
+                        <Input
+                            required
+                            name="name"
+                            onChange={(e) => this.handleChange(e)}
+                            className="w-100 input-focus-none"
+                        />
+                    </InputGroup>}
                     <InputGroup className="gap-0 d-flex flex-column">
                         <Label>Password</Label>
                         <InputGroup className="d-flex flex-row border rounded border-2">
@@ -281,6 +294,7 @@ class LoginPage extends Component {
 const mapDispatchToProps = {
     passwordChanged,
     emailChanged,
+    nameChanged,
     doSignUp,
     toggleUserRole,
     doSignIn,
@@ -293,6 +307,7 @@ const mapStateToProps = (state) => {
     return {
         password: state.user.userCredentials.password,
         email: state.user.userCredentials.email,
+        name:state.user.name,
         isLoading: state.user.loading,
         isTrainer: state.user.isTrainer,
         isAdmin: state.user.isAdmin,

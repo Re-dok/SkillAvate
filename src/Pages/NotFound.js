@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Button } from "reactstrap";
 import withRouter from "../Components/WithRouter";
 import { connect } from "react-redux";
-import { setInitialURL } from "../features/user/userSlice";
+import { setInitialURL } from "../Features/user/userSlice";
 class NotFound extends Component {
     constructor(props) {
         super(props);

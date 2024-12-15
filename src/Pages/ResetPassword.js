@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Button, Input, InputGroup, Label, Alert } from "reactstrap";
-import { emailChanged, doPasswordReset } from "../features/user/userSlice";
+import { emailChanged, doPasswordReset } from "../Features/user/userSlice";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 

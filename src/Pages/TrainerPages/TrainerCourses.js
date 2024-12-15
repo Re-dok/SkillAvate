@@ -5,7 +5,7 @@ import {
     doGetMyCourses,
     doPublishCourse,
     doUnpublishCourse,
-} from "../../features/course/courseSlice";
+} from "../../Features/course/courseSlice";
 import { connect } from "react-redux";
 import {
     Button,
@@ -15,7 +15,6 @@ import {
     ModalBody,
     Nav,
 } from "reactstrap";
-import { addCourse } from "../../Firbase/firebaseCourseDB";
 import withRouter from "../../Components/WithRouter";
 import AddCourse from "../../Components/TrainerComponets/AddCourse";
 class CourseCard extends Component {

@@ -3,7 +3,7 @@ import { Button, Table } from "reactstrap";
 import { useState } from "react";
 import { Carousel, CarouselItem, CarouselControl } from "reactstrap";
 import { connect } from "react-redux";
-import { downloadMultipleCollectionsAsExcel, getUsersByMonthAndYear } from "../../Firbase/firbaseUserDB";
+import { downloadMultipleCollectionsAsExcel, getUsersByMonthAndYear } from "../../Firebase/firebaseUserDB";
 // const mapDispatchToProps = {
 //     doPasswordReset,
 //     doSignOut,

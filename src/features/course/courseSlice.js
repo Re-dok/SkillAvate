@@ -5,9 +5,9 @@ import {
     getMyCourses,
     updateCourseDetails,
     removeCourse,
-} from "../../Firbase/firebaseCourseDB";
+} from "../../Firebase/firebaseCourseDB";
 import bcrypt from "bcryptjs";
-import { courseUnpublish } from "../../Firbase/firbaseUserDB";
+import { courseUnpublish } from "../../Firebase/firebaseUserDB";
 
 const initialState = {
     course: [],

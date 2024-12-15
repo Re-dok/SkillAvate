@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Button, Input, FormFeedback, Modal, ModalBody } from "reactstrap";
-import { doUpdateCourseInfo,doRemoveCourse } from "../../features/course/courseSlice";
+import { doUpdateCourseInfo,doRemoveCourse } from "../../Features/course/courseSlice";
 import withRouter from "../WithRouter";
 class TrainerCourseInfoCard extends Component {
     constructor(props) {

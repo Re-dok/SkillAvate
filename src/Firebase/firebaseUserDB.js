@@ -90,12 +90,13 @@ async function getUsersByMonthAndYear() {
         return [];
     }
 }
-const addUserToDB = async ({ email, isTrainer }) => {
+const addUserToDB = async ({ email, isTrainer, name }) => {
     if (isTrainer) {
         const batch = writeBatch(db);
         // Add a new trainer document to the users collection
         const newTrainerRef = doc(usersRef);
-        batch.set(newTrainerRef, { email, isTrainer, myClients: [] });
+        console.log("THIS IS HERE:", name);
+        batch.set(newTrainerRef, { email, isTrainer, myClients: [], name });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
         const querySnapshot = await getDocs(q);
@@ -128,6 +129,7 @@ const addUserToDB = async ({ email, isTrainer }) => {
             courses: [],
             Grades: [],
             createdAt: createdAt,
+            name,
         });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
