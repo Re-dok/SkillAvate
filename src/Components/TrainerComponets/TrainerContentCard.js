@@ -262,7 +262,7 @@ class ContentCard extends Component {
                     this.setState({
                         showModal: true,
                         modalResp: true,
-                        modalMessage: "Somthing went wrong! Try again!",
+                        modalMessage: "Something went wrong! Try again!",
                         isLoading: false,
                     });
                 } else
@@ -309,7 +309,7 @@ class ContentCard extends Component {
                     this.setState({
                         isLoading: false,
                         showModal: true,
-                        modalMessage: "Somthing went wrong! Please try again!",
+                        modalMessage: "Something went wrong! Please try again!",
                     });
                 } else {
                     this.setState({
@@ -372,7 +372,7 @@ class ContentCard extends Component {
                     {newModuleDiscp !== false && (
                         <div className="fw-bold mb-3">
                             <i className="bi bi-pencil-fill me-2"></i>
-                            Edit Module Discription :
+                            Edit Module Description :
                             <Input
                                 rows="4"
                                 required
@@ -385,7 +385,7 @@ class ContentCard extends Component {
                                 onBlur={onBlurValue}
                             />
                             <FormFeedback invalid>
-                                Discription is Required!
+                                Description is Required!
                             </FormFeedback>
                         </div>
                     )}

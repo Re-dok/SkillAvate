@@ -209,7 +209,7 @@ class NewUnitCard extends Component {
                 if (resp.error) {
                     this.setState({
                         showModal: true,
-                        modalMessge: "Somthing went wrong! Please try again!",
+                        modalMessge: "Something went wrong! Please try again!",
                     });
                 } else {
                     this.props.setOpenUnit();
@@ -275,20 +275,20 @@ class NewUnitCard extends Component {
                     {newModuleDiscp !== false && (
                         <div className="fw-bold mb-3">
                             <i className="bi bi-pencil-fill me-2"></i>
-                            Edit Module Discription :
+                            Edit Module Description :
                             <Input
                                 rows="4"
                                 required
                                 className="mt-1 py-2 mb-0 border-0 border-bottom border-3"
                                 value={newModuleDiscp}
-                                placeholder="Discription Here!"
+                                placeholder="Description Here!"
                                 name="newModuleDiscp"
                                 onChange={onChangeValue}
                                 invalid={newModuleDiscp.length === 0}
                                 onBlur={onBlurValue}
                             />
                             <FormFeedback invalid>
-                                Discription is Required!
+                                Description is Required!
                             </FormFeedback>
                         </div>
                     )}
@@ -535,7 +535,7 @@ class NewUnitCard extends Component {
                             ) : (
                                 <>
                                     Please ensure all necessary fields, such as
-                                    the discription and at least one question,
+                                    the description and at least one question,
                                     are filled in.
                                 </>
                             )}

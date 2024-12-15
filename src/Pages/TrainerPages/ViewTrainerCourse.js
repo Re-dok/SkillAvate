@@ -431,7 +431,7 @@ class ViewCourse extends Component {
                                     Course Name: {courseName}
                                 </div>
                                 <div className="fw-bold mb-3">
-                                    Course Discription: {courseDiscp}
+                                    Course Description: {courseDiscp}
                                 </div>
                                 <div className="fw-bold mb-3">
                                     Course ID: {courseId}

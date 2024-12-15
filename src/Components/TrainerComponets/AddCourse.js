@@ -46,7 +46,7 @@ class AddCourse extends Component {
                 this.setState({
                     isLoading: false,
                     modalMessage:
-                        "Somthing went wrong! Please try again!\n(Make sure you have filled in your name in the settings page!",
+                        "Something went wrong! Please try again!\n(Make sure you have filled in your name in the settings page!",
                 });
             } else
                 this.setState({
@@ -95,14 +95,14 @@ class AddCourse extends Component {
                                         required
                                         className="mt-1 py-2 mb-0 mt-3 border-0 border-bottom border-3"
                                         value={newCourseDiscp}
-                                        placeholder="Course Discription Here!"
+                                        placeholder="Course Description Here!"
                                         name="newCourseDiscp"
                                         onChange={onChangeValue}
                                         invalid={newCourseDiscp.length === 0}
                                         onBlur={onBlurValue}
                                     />
                                     <FormFeedback invalid>
-                                        Course Discription is Required!
+                                        Course Description is Required!
                                     </FormFeedback>
                                 </>
                             )}

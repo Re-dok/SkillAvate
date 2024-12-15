@@ -16,7 +16,7 @@ class EditCourse extends Component {
             courseProgress: [0, 0, 0, 0, 0, false],
             navbarIsOpen: false,
             qnaIsOpen: false,
-            // based on the type different components are renderd
+            // based on the type different components are rendered
             // 0 for content edit
             // 1 for basic info edit
             unitType: 1,
@@ -33,7 +33,7 @@ class EditCourse extends Component {
             await doGetCourseDetails(courseId);
             courseData = this.props.courseData;
         }
-        // if the course doesnt exist or the course isnt yours to edit, you cant open it
+        // if the course doesn't exist or the course isn't yours to edit, you cant open it
         if (
             courseData === undefined ||
             courseData.length === 0 ||
@@ -77,7 +77,7 @@ class EditCourse extends Component {
                                     })
                                 }
                             >
-                                Close Nabar
+                                Close Navbar
                             </OffcanvasHeader>
                             <OffcanvasBody>
                                 <SideBar

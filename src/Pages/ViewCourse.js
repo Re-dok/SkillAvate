@@ -517,7 +517,7 @@ class ViewCourse extends Component {
                                     })
                                 }
                             >
-                                Close Nabar
+                                Close Navbar
                             </OffcanvasHeader>
                             <OffcanvasBody>
                                 <SideBar

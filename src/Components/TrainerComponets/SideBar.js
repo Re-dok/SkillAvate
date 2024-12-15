@@ -33,8 +33,8 @@ class SideBar extends Component {
             moduleCoordiantes: [],
             // depending on the depth we handle one of the 6 cases, in which we add new units
             // 0 module lvl
-            // 1 headig lvl
-            // 2 subheaidng lvl
+            // 1 heading lvl
+            // 2 subheading lvl
         };
     }
     componentDidMount() {
@@ -112,7 +112,7 @@ class SideBar extends Component {
                 if (resp.error)
                     this.setState({
                         isLoading: false,
-                        modalMsg: "Somthing went wrong! Please try again!",
+                        modalMsg: "Something went wrong! Please try again!",
                     });
                 else
                     this.setState({

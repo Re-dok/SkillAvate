@@ -4,11 +4,7 @@ import { useState } from "react";
 import { Carousel, CarouselItem, CarouselControl } from "reactstrap";
 import { connect } from "react-redux";
 import { downloadMultipleCollectionsAsExcel, getUsersByMonthAndYear } from "../../Firebase/firebaseUserDB";
-// const mapDispatchToProps = {
-//     doPasswordReset,
-//     doSignOut,
-//     doSetUserName,
-// };
+
 const mapStateToProps = (state) => {
     return {
         name: state.user.name,

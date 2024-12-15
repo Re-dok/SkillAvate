@@ -83,7 +83,7 @@ class CourseCard extends Component {
                             isLoading: false,
                             modalResp: true,
                             modalMessage:
-                                "Somthing went wrong! Please try again!",
+                                "Something went wrong! Please try again!",
                         });
                     } else {
                         this.setState({
@@ -101,7 +101,7 @@ class CourseCard extends Component {
                             isLoading: false,
                             modalResp: true,
                             modalMessage:
-                                "Somthing went wrong! Please try again!",
+                                "Something went wrong! Please try again!",
                         });
                     } else {
                         this.setState({

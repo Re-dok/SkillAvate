@@ -159,7 +159,7 @@ class LoginPage extends Component {
     };
     render() {
         const isDisabled =
-            !this.props.email || !this.props.password || this.props.isLoading || !this.props.name;
+            !this.props.email || !this.props.password || this.props.isLoading || (!this.state.isLogin&&!this.props.name);
 
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">

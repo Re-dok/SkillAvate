@@ -95,7 +95,6 @@ const addUserToDB = async ({ email, isTrainer, name }) => {
         const batch = writeBatch(db);
         // Add a new trainer document to the users collection
         const newTrainerRef = doc(usersRef);
-        console.log("THIS IS HERE:", name);
         batch.set(newTrainerRef, { email, isTrainer, myClients: [], name });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
@@ -372,10 +371,10 @@ async function addCourseToUser(email, courseId, firstUnit, trainerEmail) {
         const userData = userDoc.data();
         const trainerData = trainerDoc.data();
         if (
-            // we make sure the client isnt already enrolled according to his records
+            // we make sure the client isn't already enrolled according to his records
             userData.courses.filter((course) => course.courseId === courseId)
                 .length === 0 &&
-            // we make sure that the client isnt already enrolled
+            // we make sure that the client isn't already enrolled
             trainerData.myClients.filter(
                 (client) =>
                     client.clientEmail === email &&
@@ -514,7 +513,7 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
     if (querySnapshot2.empty) throw new Error("Admin Not Found");
     const adminDoc = querySnapshot2.docs[0];
     const adminRef = adminDoc.ref;
-    // change admin clinets list to true
+    // change admin clients list to true
     let updatedAdminClients = adminDoc.data().myClients;
     const adminEmail = adminDoc.data().email;
     updatedAdminClients = updatedAdminClients.map((client) => {
@@ -523,7 +522,7 @@ async function removeClientFromTrainer({ currentTrainer, currentClient }) {
         }
         return client;
     });
-    // remove from dmins trainer list
+    // remove from admins trainer list
     let updatedAdminTrainers = adminDoc.data().trainers.map((trainer) => {
         if (trainer.trainerEmail === currentTrainer) {
             const i = trainer.clients.indexOf(currentClient);

@@ -240,7 +240,7 @@ const doUpdateCourseUnit = createAsyncThunk(
             const { isAdmin, isTrainer } = state.user;
             if (!(isTrainer || isAdmin)) {
                 throw new Error(
-                    "Unautherised! You are not an admin or a trainer!"
+                    "Unauthorized! You are not an admin or a trainer!"
                 );
             }
             const courseId = state.course?.course[0].courseId;
@@ -282,7 +282,7 @@ const doUpdateCourseInfo = createAsyncThunk(
             const { isAdmin, isTrainer } = state.user;
             if (!(isTrainer || isAdmin)) {
                 throw new Error(
-                    "Unautherised! You are not an admin or a trainer!"
+                    "Unauthorized! You are not an admin or a trainer!"
                 );
             }
             const courseId = state.course?.course[0].courseId;
@@ -304,7 +304,7 @@ const doUpdateHeadingName = createAsyncThunk(
             const { isAdmin, isTrainer } = state.user;
             if (!(isTrainer || isAdmin)) {
                 throw new Error(
-                    "Unautherised! You are not an admin or a trainer!"
+                    "Unauthorized! You are not an admin or a trainer!"
                 );
             }
             const courseId = state.course?.course[0].courseId;
@@ -347,7 +347,7 @@ const doAddCourseUnit = createAsyncThunk(
             const { isAdmin, isTrainer } = state.user;
             if (!(isTrainer || isAdmin)) {
                 throw new Error(
-                    "Unautherised! You are not an admin or a trainer!"
+                    "Unauthorized! You are not an admin or a trainer!"
                 );
             }
             const courseId = state.course?.course[0].courseId;
@@ -527,7 +527,7 @@ const courseSlice = createSlice({
             })
             .addCase(doGetCourseDetails.fulfilled, (state, action) => {
                 state.courseLoading = false;
-                state.courseSuccess = "Courses data retrived";
+                state.courseSuccess = "Courses data retrieved";
                 state.course.push(action.payload);
             })
             .addCase(doGetCourseDetails.rejected, (state, action) => {

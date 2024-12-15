@@ -47,7 +47,6 @@ const doSignUp = createAsyncThunk(
             const isTrainer = state.user.isTrainer;
             const name = state.user.name;
             console.log(name);
-            console.log("hi");
             const response = await doSignUpUser({
                 email,
                 password,

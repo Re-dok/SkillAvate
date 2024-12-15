@@ -61,7 +61,7 @@ class TrainerCourseInfoCard extends Component {
                 this.setState({
                     showModal: true,
                     modalMsg:
-                        "Somthing went wrong while updating the details!Please try again!",
+                        "Something went wrong while updating the details!Please try again!",
                     modalResp: true,
                 });
             } else {
@@ -99,7 +99,7 @@ class TrainerCourseInfoCard extends Component {
                 this.setState({
                     isLoading: false,
                     showModal: true,
-                    modalMsg: "Somthing went wrong! Please try again!",
+                    modalMsg: "Something went wrong! Please try again!",
                     modalResp: true,
                 });
             } else {
@@ -163,7 +163,7 @@ class TrainerCourseInfoCard extends Component {
                 </div>
                 <div className="fw-bold mb-5">
                     <i className="bi bi-pencil-fill me-2"></i>
-                    Edit Course Discription :
+                    Edit Course Description :
                     <Input
                         rows="4"
                         required
@@ -176,7 +176,7 @@ class TrainerCourseInfoCard extends Component {
                         onBlur={onBlurValue}
                     />
                     <FormFeedback invalid>
-                        Course Discription is Required!
+                        Course Description is Required!
                     </FormFeedback>
                 </div>
                 <div className="fw-bold mb-3">Course ID: {courseId}</div>
