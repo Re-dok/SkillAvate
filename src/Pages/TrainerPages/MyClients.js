@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Table, Modal, ModalHeader, Nav } from "reactstrap";
+import { Button, Table, Modal, ModalHeader, Nav, Input } from "reactstrap";
 import withRouter from "../../Components/WithRouter";
 import { connect } from "react-redux";
 import { getMyCourses } from "../../Firebase/firebaseCourseDB";
@@ -23,6 +23,7 @@ class MyClients extends Component {
             currentCourse: null,
             isLoading: false,
             showClientsTable: true,
+            searchResults: ""
         };
     }
     async componentDidMount() {
@@ -33,6 +34,11 @@ class MyClients extends Component {
         this.setState({ myCourseDetails: courses });
     }
     render() {
+
+        const onChange = (e) => {
+            const { value, name } = e.target
+            this.setState({ [name]: value })
+        }
         const handleRemoveCourse = async () => {
             this.setState({ isLoading: true });
             const { currentClient, currentCourse } = this.state;
@@ -89,7 +95,7 @@ class MyClients extends Component {
         };
         const handleAddClient = async () => {
             this.setState({ isLoading: true });
-            const { currentClient, currentCourse} =
+            const { currentClient, currentCourse } =
                 this.state;
             const resp = await this.props.doAddClientToTrainer({
                 currentTrainer: currentClient,
@@ -151,8 +157,12 @@ class MyClients extends Component {
         const unEnrolledClients = () => {
             return myClients.filter((client) => client.unAssigned);
         };
+
+        const filteredArray = myClients.filter(eachClient => eachClient.clientEmail.toLowerCase().includes(this.state.searchResults))
+
         return (
             <div className="px-2 px-md-5 mx-2 mx-md-5 mt-5">
+                <Input className="w-25" name="searchResults" onChange={onChange} value={this.state.searchResults} placeholder="Search Clients" />
                 {this.props.isAdmin === true && (
                     <div className="col-12 col-md-10 pb-3 px-5 px-md-0">
                         <Nav>
@@ -204,7 +214,7 @@ class MyClients extends Component {
                             </tr>
                         </thead>
                         <tbody>
-                            {myClients.map((client, i) => (
+                            {filteredArray.map((client, i) => (
                                 <tr
                                     key={i}
                                     className="align-content-center justify-content-center align-items-center"
@@ -424,138 +434,138 @@ class MyClients extends Component {
                         <div className="col-12 col gap-3 mx-auto d-flex paragraph-text align-content-center justify-content-center align-items-center">
                             {showClientsTable
                                 ? isAdd &&
-                                  !modalResp &&
-                                  currentClient &&
-                                  (availableCoursesForEnroll().length !== 0 ? (
-                                      <>
-                                          <Table responsive hover size="lg">
-                                              <thead>
-                                                  <tr>
-                                                      <th></th>
-                                                      <th>Course Name</th>
-                                                      <th>Courses Id</th>
-                                                      <th></th>
-                                                  </tr>
-                                              </thead>
-                                              <tbody>
-                                                  {availableCoursesForEnroll().map(
-                                                      (course, i) => (
-                                                          <tr
-                                                              role="button"
-                                                              onClick={() => {
-                                                                  this.setState(
-                                                                      {
-                                                                          currentCourse:
-                                                                              course.courseId,
-                                                                      }
-                                                                  );
-                                                              }}
-                                                              key={i + "5"}
-                                                          >
-                                                              <td
-                                                                  className={
-                                                                      currentCourse ===
-                                                                      course.courseId
-                                                                          ? "bg-info text-light"
-                                                                          : ""
-                                                                  }
-                                                              >
-                                                                  {i + 1}
-                                                              </td>
-                                                              <td
-                                                                  className={
-                                                                      currentCourse ===
-                                                                      course.courseId
-                                                                          ? "bg-info text-light"
-                                                                          : ""
-                                                                  }
-                                                              >
-                                                                  {
-                                                                      course.courseName
-                                                                  }
-                                                              </td>
-                                                              <td
-                                                                  className={
-                                                                      currentCourse ===
-                                                                      course.courseId
-                                                                          ? "bg-info text-light"
-                                                                          : ""
-                                                                  }
-                                                              >
-                                                                  {
-                                                                      course.courseId
-                                                                  }
-                                                              </td>
-                                                          </tr>
-                                                      )
-                                                  )}
-                                              </tbody>
-                                          </Table>
-                                      </>
-                                  ) : (
-                                      <>
-                                          No courses left unenrolled For this
-                                          client
-                                      </>
-                                  ))
+                                !modalResp &&
+                                currentClient &&
+                                (availableCoursesForEnroll().length !== 0 ? (
+                                    <>
+                                        <Table responsive hover size="lg">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Course Name</th>
+                                                    <th>Courses Id</th>
+                                                    <th></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {availableCoursesForEnroll().map(
+                                                    (course, i) => (
+                                                        <tr
+                                                            role="button"
+                                                            onClick={() => {
+                                                                this.setState(
+                                                                    {
+                                                                        currentCourse:
+                                                                            course.courseId,
+                                                                    }
+                                                                );
+                                                            }}
+                                                            key={i + "5"}
+                                                        >
+                                                            <td
+                                                                className={
+                                                                    currentCourse ===
+                                                                        course.courseId
+                                                                        ? "bg-info text-light"
+                                                                        : ""
+                                                                }
+                                                            >
+                                                                {i + 1}
+                                                            </td>
+                                                            <td
+                                                                className={
+                                                                    currentCourse ===
+                                                                        course.courseId
+                                                                        ? "bg-info text-light"
+                                                                        : ""
+                                                                }
+                                                            >
+                                                                {
+                                                                    course.courseName
+                                                                }
+                                                            </td>
+                                                            <td
+                                                                className={
+                                                                    currentCourse ===
+                                                                        course.courseId
+                                                                        ? "bg-info text-light"
+                                                                        : ""
+                                                                }
+                                                            >
+                                                                {
+                                                                    course.courseId
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </>
+                                ) : (
+                                    <>
+                                        No courses left unenrolled For this
+                                        client
+                                    </>
+                                ))
                                 : isAdd &&
-                                  !modalResp &&
-                                  (currentClient &&
-                                  unEnrolledClients().length !== 0 ? (
-                                      <>
-                                          <Table responsive hover size="lg">
-                                              <thead>
-                                                  <tr>
-                                                      <th></th>
-                                                      <th>Client Email</th>
-                                                  </tr>
-                                              </thead>
-                                              <tbody>
-                                                  {unEnrolledClients().map(
-                                                      (client, i) => (
-                                                          <tr
-                                                              role="button"
-                                                              onClick={() => {
-                                                                  this.setState(
-                                                                      {
-                                                                          currentCourse:
-                                                                              client.clientEmail,
-                                                                      }
-                                                                  );
-                                                              }}
-                                                              key={i + "6"}
-                                                          >
-                                                              <td
-                                                                  className={
-                                                                      currentCourse ===
-                                                                      client.clientEmail
-                                                                          ? "bg-info text-light"
-                                                                          : ""
-                                                                  }
-                                                              >
-                                                                  {i + 1}
-                                                              </td>
-                                                              <td
-                                                                  className={
-                                                                      currentCourse ===
-                                                                      client.clientEmail
-                                                                          ? "bg-info text-light"
-                                                                          : ""
-                                                                  }
-                                                              >
-                                                                  {
-                                                                      client.clientEmail
-                                                                  }
-                                                              </td>
-                                                          </tr>
-                                                      )
-                                                  )}
-                                              </tbody>
-                                          </Table>
-                                      </>
-                                  ) : (
-                                      <>All Clients Have Trainers</>
-                                  ))}
+                                !modalResp &&
+                                (currentClient &&
+                                    unEnrolledClients().length !== 0 ? (
+                                    <>
+                                        <Table responsive hover size="lg">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Client Email</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {unEnrolledClients().map(
+                                                    (client, i) => (
+                                                        <tr
+                                                            role="button"
+                                                            onClick={() => {
+                                                                this.setState(
+                                                                    {
+                                                                        currentCourse:
+                                                                            client.clientEmail,
+                                                                    }
+                                                                );
+                                                            }}
+                                                            key={i + "6"}
+                                                        >
+                                                            <td
+                                                                className={
+                                                                    currentCourse ===
+                                                                        client.clientEmail
+                                                                        ? "bg-info text-light"
+                                                                        : ""
+                                                                }
+                                                            >
+                                                                {i + 1}
+                                                            </td>
+                                                            <td
+                                                                className={
+                                                                    currentCourse ===
+                                                                        client.clientEmail
+                                                                        ? "bg-info text-light"
+                                                                        : ""
+                                                                }
+                                                            >
+                                                                {
+                                                                    client.clientEmail
+                                                                }
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </Table>
+                                    </>
+                                ) : (
+                                    <>All Clients Have Trainers</>
+                                ))}
                         </div>
                         <div className="col gap-3 mx-auto d-flex justify-content-center">
                             {!modalResp && (
@@ -569,8 +579,8 @@ class MyClients extends Component {
                                                 ? handleAddCourse()
                                                 : handleRemoveCourse()
                                             : isAdd
-                                            ? handleAddClient()
-                                            : handleRemoveClient()
+                                                ? handleAddClient()
+                                                : handleRemoveClient()
                                     }
                                     disabled={
                                         (isAdd && currentCourse === null) ||
@@ -580,8 +590,8 @@ class MyClients extends Component {
                                     {isLoading
                                         ? "Loading..."
                                         : isAdd
-                                        ? "ADD"
-                                        : "Remove"}
+                                            ? "ADD"
+                                            : "Remove"}
                                 </Button>
                             )}
                             <Button
