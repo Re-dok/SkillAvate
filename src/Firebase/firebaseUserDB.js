@@ -14,22 +14,56 @@ import { coursesRef } from "./firebaseCourseDB";
 import * as XLSX from "xlsx";
 
 const usersRef = collection(db, "users");
+// import { getDocs, collection } from "firebase/firestore";
+// import { db } from "./firebase"; // Your Firebase setup
+// import * as XLSX from "xlsx";
+
+// Function to convert timestamp to "Month Year" format
+const formatTimestamp = (timestamp) => {
+    if (timestamp?.seconds) {
+        const date = new Date(timestamp.seconds * 1000); // Convert to milliseconds
+        const month = date.toLocaleString("default", { month: "long" }); // Full month name
+        const year = date.getFullYear();
+        return `${month} ${year}`;
+    }
+    return "";
+};
+
+// Function to flatten and transform data
+const flattenObject = (obj, parent = "", res = {}) => {
+    for (let key in obj) {
+        const propName = parent ? `${parent}.${key}` : key;
+        if (key === "createdAt" && typeof obj[key] === "object" && obj[key] !== null) {
+            // Format the createdAt timestamp
+            res[propName] = formatTimestamp(obj[key]);
+        } else if (typeof obj[key] === "object" && obj[key] !== null) {
+            if (Array.isArray(obj[key])) {
+                res[propName] = JSON.stringify(obj[key]); // Convert arrays to JSON strings
+            } else {
+                flattenObject(obj[key], propName, res); // Recursively flatten nested objects
+            }
+        } else {
+            res[propName] = obj[key];
+        }
+    }
+    return res;
+};
+
 export const downloadMultipleCollectionsAsExcel = async () => {
     try {
         const workbook = XLSX.utils.book_new(); // Create a new workbook
-        const collectionNames = ["users", "courses"];
+        const collectionNames = ["users", "courses"]; // Collection names to export
+
         for (const collectionName of collectionNames) {
             // Fetch data from Firestore
             const querySnapshot = await getDocs(collection(db, collectionName));
-            const data = querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
+            const data = querySnapshot.docs.map((doc) => {
+                const rawData = { id: doc.id, ...doc.data() };
+                return flattenObject(rawData); // Flatten and transform the document data
+            });
 
             if (data.length === 0) {
-                console.warn(
-                    `No data found in the collection: ${collectionName}`
-                );
+                console.warn(`No data found in the collection: ${collectionName}`);
                 continue;
             }
 
@@ -46,6 +80,7 @@ export const downloadMultipleCollectionsAsExcel = async () => {
         console.error("Error downloading data:", error);
     }
 };
+
 async function getUsersByMonthAndYear() {
     try {
         // Fetch all users

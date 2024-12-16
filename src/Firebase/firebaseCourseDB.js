@@ -6,6 +6,7 @@ import {
     addDoc,
     doc,
     updateDoc,
+    getDoc,
     deleteDoc,
     serverTimestamp,
 } from "firebase/firestore";
@@ -61,11 +62,18 @@ async function updateCourseDetails(courseId, newCourse) {
         throw new Error("Error updating basic course Info:", error);
     }
 }
+
 async function addCourse(course) {
-    course.courseId = uuidv4();
-    course.createdAt = serverTimestamp();
-    await addDoc(coursesRef, course);
-    return course;
+    try {
+        course.courseId = uuidv4();
+        course.createdAt = serverTimestamp();
+        const docRef = await addDoc(coursesRef, course);
+        const savedDoc = await getDoc(docRef);
+        return { id: savedDoc.id, ...savedDoc.data() };
+    } catch (error) {
+        console.error("Error adding course:", error);
+        throw error;
+    }
 }
 async function removeCourse(courseId) {
     const q = query(coursesRef, where("courseId", "==", courseId));
