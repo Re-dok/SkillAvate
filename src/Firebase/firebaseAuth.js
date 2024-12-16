@@ -24,7 +24,7 @@ async function doSignUpUser({ email, password, isTrainer,name,phoneNumber }) {
     const user = userCreds.user;
     if (user) {
         await sendEmailVerification(user);
-        await addUserToDB({ email, isTrainer,name ,phoneNumber});
+        await addUserToDB({ email, isTrainer: false ,name ,phoneNumber});
         await signOut(auth);
         return "Verification email sent! Please verify and sign in.";
     } else {
