@@ -25,6 +25,7 @@ const initialState = {
         password: null,
     },
     name: "",
+    phoneNumber: null,
     isAdmin: false,
     isTrainer: false,
     isPersistent: false,
@@ -44,14 +45,13 @@ const doSignUp = createAsyncThunk(
         try {
             const state = getState();
             const { email, password } = state.user.userCredentials;
-            const isTrainer = state.user.isTrainer;
-            const name = state.user.name;
-            console.log(name);
+            const { isTrainer, name, phoneNumber } = state.user;
             const response = await doSignUpUser({
                 email,
                 password,
                 isTrainer,
-                name
+                name,
+                phoneNumber
             });
             await doSignoutUser();
             return response;
@@ -216,8 +216,11 @@ const userSlice = createSlice({
         emailChanged: (state, action) => {
             state.userCredentials.email = action.payload;
         },
-        nameChanged:(state,action)=>{
-            state.name=action.payload;
+        nameChanged: (state, action) => {
+            state.name = action.payload;
+        },
+        phoneNumberChanged: (state, action) => {
+            state.phoneNumber = action.payload;
         },
         toggleUserRole: (state) => {
             state.isTrainer = !state.isTrainer;
@@ -418,6 +421,7 @@ export const {
     setInitialURL,
     resetMessages,
     updatedMyClients,
+    phoneNumberChanged,
 } = userSlice.actions;
 export {
     doSignUp,

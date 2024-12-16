@@ -19,7 +19,8 @@ import {
     doSignUp,
     setInitialURL,
     doSignOut,
-    nameChanged
+    nameChanged,
+    phoneNumberChanged
 } from "../Features/user/userSlice";
 import { connect } from "react-redux";
 
@@ -107,7 +108,7 @@ class LoginPage extends Component {
         if (!this.state.isLogin) {
             await this.props.doSignUp();
         } else {
-            const { email, password,name} = this.props;
+            const { email, password } = this.props;
             if (!email || !password) return;
             await this.props.doSignIn();
             const { success } = this.props;
@@ -153,14 +154,18 @@ class LoginPage extends Component {
     handleChange = (e) => {
         if (e.target.name === "password")
             this.props.passwordChanged(e.target.value);
-        else if(e.target.name==="name")
+        else if (e.target.name === "name")
             this.props.nameChanged(e.target.value);
+        else if(e.target.name==="phoneNumber")
+            this.props.phoneNumberChanged(e.target.value);
         else this.props.emailChanged(e.target.value);
     };
     render() {
         const isDisabled =
-            !this.props.email || !this.props.password || this.props.isLoading || (!this.state.isLogin&&!this.props.name);
-
+            !this.props.email ||
+            !this.props.password ||
+            this.props.isLoading ||
+            (!this.state.isLogin && (!this.props.name||!this.props.phoneNumber));
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
                 <div
@@ -176,16 +181,28 @@ class LoginPage extends Component {
                             className="w-100 input-focus-none"
                         />
                     </InputGroup>
-                    {!this.state.isLogin &&
+                    {!this.state.isLogin && (<>
                         <InputGroup className="gap-0 d-flex flex-column ">
-                        <Label>Full Name</Label>
-                        <Input
-                            required
-                            name="name"
-                            onChange={(e) => this.handleChange(e)}
-                            className="w-100 input-focus-none"
-                        />
-                    </InputGroup>}
+                            <Label>Full Name</Label>
+                            <Input
+                                required
+                                name="name"
+                                onChange={(e) => this.handleChange(e)}
+                                className="w-100 input-focus-none"
+                                />
+                        </InputGroup>
+                            <InputGroup className="gap-0 d-flex flex-column ">
+                                <Label>Phone Number</Label>
+                                <Input
+                                    required
+                                    name="phoneNumber"
+                                    type="tel"
+                                    onChange={(e) => this.handleChange(e)}
+                                    className="w-100 input-focus-none"
+                                    />
+                        </InputGroup>
+                                    </>
+                    )}
                     <InputGroup className="gap-0 d-flex flex-column">
                         <Label>Password</Label>
                         <InputGroup className="d-flex flex-row border rounded border-2">
@@ -295,6 +312,7 @@ const mapDispatchToProps = {
     passwordChanged,
     emailChanged,
     nameChanged,
+    phoneNumberChanged,
     doSignUp,
     toggleUserRole,
     doSignIn,
@@ -307,7 +325,8 @@ const mapStateToProps = (state) => {
     return {
         password: state.user.userCredentials.password,
         email: state.user.userCredentials.email,
-        name:state.user.name,
+        phoneNumber:state.user.phoneNumber,
+        name: state.user.name,
         isLoading: state.user.loading,
         isTrainer: state.user.isTrainer,
         isAdmin: state.user.isAdmin,

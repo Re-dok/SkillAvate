@@ -15,7 +15,7 @@ async function doSignoutUser() {
     await auth.signOut();
     return "Signed Out!";
 }
-async function doSignUpUser({ email, password, isTrainer,name }) {
+async function doSignUpUser({ email, password, isTrainer,name,phoneNumber }) {
     const userCreds = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -24,8 +24,7 @@ async function doSignUpUser({ email, password, isTrainer,name }) {
     const user = userCreds.user;
     if (user) {
         await sendEmailVerification(user);
-        console.log("hi",name);
-        await addUserToDB({ email, isTrainer,name });
+        await addUserToDB({ email, isTrainer,name ,phoneNumber});
         await signOut(auth);
         return "Verification email sent! Please verify and sign in.";
     } else {
