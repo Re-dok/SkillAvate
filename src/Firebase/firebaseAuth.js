@@ -15,7 +15,7 @@ async function doSignoutUser() {
     await auth.signOut();
     return "Signed Out!";
 }
-async function doSignUpUser({ email, password, isTrainer,name,phoneNumber }) {
+async function doSignUpUser({ email, password, isTrainer, name, phoneNumber }) {
     const userCreds = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -24,7 +24,7 @@ async function doSignUpUser({ email, password, isTrainer,name,phoneNumber }) {
     const user = userCreds.user;
     if (user) {
         await sendEmailVerification(user);
-        await addUserToDB({ email, isTrainer,name ,phoneNumber});
+        await addUserToDB({ email, isTrainer: true, name, phoneNumber });
         await signOut(auth);
         return "Verification email sent! Please verify and sign in.";
     } else {
@@ -46,7 +46,7 @@ async function doSignInUser({ email, password, isPersistent }) {
     await user.reload();
     const updatedUser = auth.currentUser;
     const isVerified = updatedUser.emailVerified;
-    if (!isVerified) {await signOut(auth);throw new Error("user not verified!");}
+    if (!isVerified) { await signOut(auth); throw new Error("user not verified!"); }
     return "SIGNIN IN ";
 }
 async function doUserPasswordReset({ email }) {

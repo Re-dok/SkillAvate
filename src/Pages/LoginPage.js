@@ -244,7 +244,7 @@ class LoginPage extends Component {
                             </div>
                         </InputGroup>
                     ) : (
-                        <InputGroup className="d-flex mt-1 flex-lg-row flex-column align-content-center justify-content-between">
+                        <InputGroup className="d-none mt-1 flex-lg-row flex-column align-content-center justify-content-between">
                             <Label className="mt-1">Sign Up As a :</Label>
                             <div className="w-100 mb-3 d-flex flex-row justify-content-start align-content-center gap-3">
                                 <FormGroup check inline>
