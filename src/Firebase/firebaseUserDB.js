@@ -33,7 +33,11 @@ const formatTimestamp = (timestamp) => {
 const flattenObject = (obj, parent = "", res = {}) => {
     for (let key in obj) {
         const propName = parent ? `${parent}.${key}` : key;
-        if (key === "createdAt" && typeof obj[key] === "object" && obj[key] !== null) {
+        if (
+            key === "createdAt" &&
+            typeof obj[key] === "object" &&
+            obj[key] !== null
+        ) {
             // Format the createdAt timestamp
             res[propName] = formatTimestamp(obj[key]);
         } else if (typeof obj[key] === "object" && obj[key] !== null) {
@@ -63,7 +67,9 @@ export const downloadMultipleCollectionsAsExcel = async () => {
             });
 
             if (data.length === 0) {
-                console.warn(`No data found in the collection: ${collectionName}`);
+                console.warn(
+                    `No data found in the collection: ${collectionName}`
+                );
                 continue;
             }
 
@@ -125,12 +131,18 @@ async function getUsersByMonthAndYear() {
         return [];
     }
 }
-const addUserToDB = async ({ email, isTrainer, name,phoneNumber }) => {
+const addUserToDB = async ({ email, isTrainer, name, phoneNumber }) => {
     if (isTrainer) {
         const batch = writeBatch(db);
         // Add a new trainer document to the users collection
         const newTrainerRef = doc(usersRef);
-        batch.set(newTrainerRef, { email, isTrainer, myClients: [], name,phoneNumber });
+        batch.set(newTrainerRef, {
+            email,
+            isTrainer,
+            myClients: [],
+            name,
+            phoneNumber,
+        });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
         const querySnapshot = await getDocs(q);
@@ -164,7 +176,7 @@ const addUserToDB = async ({ email, isTrainer, name,phoneNumber }) => {
             Grades: [],
             createdAt: createdAt,
             name,
-            phoneNumber
+            phoneNumber,
         });
         // Query to find the admin user
         const q = query(usersRef, where("isAdmin", "==", true));
@@ -319,6 +331,16 @@ async function getUserData(email) {
         const userData = userDoc.data();
         const { isTrainer, isAdmin } = userData;
         if (!isTrainer && !isAdmin) {
+            const adminQuery = query(usersRef, where("isAdmin", "==", true));
+            const adminSnapshot = await getDocs(adminQuery);
+            if (adminSnapshot.empty) {
+                throw new Error("Admin not found");
+            }
+            const isUnAssigned = adminSnapshot.docs[0]
+                .data()
+                .myClients.filter(
+                    (client) => client.clientEmail === email
+                )[0].unAssigned;
             return {
                 isTrainer: userData.isTrainer,
                 isAdmin: userData.isAdmin,
@@ -326,6 +348,7 @@ async function getUserData(email) {
                 email: email,
                 courses: userData.courses,
                 name: userData?.name,
+                unAssigned: isUnAssigned,
             };
         } else if (isTrainer) {
             return {

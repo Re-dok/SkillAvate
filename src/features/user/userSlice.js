@@ -51,7 +51,7 @@ const doSignUp = createAsyncThunk(
                 password,
                 isTrainer,
                 name,
-                phoneNumber
+                phoneNumber,
             });
             await doSignoutUser();
             return response;
@@ -299,6 +299,7 @@ const userSlice = createSlice({
                     state.myClients = action.payload.myClients;
                 }
                 state.name = action.payload.name || "";
+                state.unAssigned = action.payload.unAssigned;
                 if (action.payload.isAdmin) {
                     state.trainers = action.payload.trainers;
                 }

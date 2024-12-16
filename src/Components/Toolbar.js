@@ -57,18 +57,20 @@ class Toolbar extends Component {
                                     )}
                                     My Courses
                                 </NavLink>
-                                <NavLink
-                                    to="/explore"
-                                    className="text-decoration-none nav-text d-flex gap-2"
-                                >
-                                    {this.props.router.location.pathname ===
-                                    "/explore" ? (
-                                        <i className="bi bi-binoculars-fill text-info"></i>
-                                    ) : (
-                                        <i className="bi bi-binoculars"></i>
-                                    )}
-                                    Explore
-                                </NavLink>
+                                {!this.props.unAssigned && (
+                                    <NavLink
+                                        to="/explore"
+                                        className="text-decoration-none nav-text d-flex gap-2"
+                                    >
+                                        {this.props.router.location.pathname ===
+                                        "/explore" ? (
+                                            <i className="bi bi-binoculars-fill text-info"></i>
+                                        ) : (
+                                            <i className="bi bi-binoculars"></i>
+                                        )}
+                                        Explore
+                                    </NavLink>
+                                )}
                             </>
                         )}
                         {
@@ -253,20 +255,23 @@ class Toolbar extends Component {
                                                 My Courses
                                             </NavLink>
                                         </DropdownItem>
-                                        <DropdownItem>
-                                            <NavLink
-                                                to="/explore"
-                                                className="text-decoration-none nav-text d-flex gap-2"
-                                            >
-                                                {this.props.router.location
-                                                    .pathname === "/explore" ? (
-                                                    <i className="bi bi-binoculars-fill text-info"></i>
-                                                ) : (
-                                                    <i className="bi bi-binoculars"></i>
-                                                )}
-                                                Explore
-                                            </NavLink>
-                                        </DropdownItem>
+                                        {!this.props.unAssigned && (
+                                            <DropdownItem>
+                                                <NavLink
+                                                    to="/explore"
+                                                    className="text-decoration-none nav-text d-flex gap-2"
+                                                >
+                                                    {this.props.router.location
+                                                        .pathname ===
+                                                    "/explore" ? (
+                                                        <i className="bi bi-binoculars-fill text-info"></i>
+                                                    ) : (
+                                                        <i className="bi bi-binoculars"></i>
+                                                    )}
+                                                    Explore
+                                                </NavLink>
+                                            </DropdownItem>
+                                        )}
                                     </>
                                 )}
                                 {
@@ -377,6 +382,7 @@ const mapStateToProps = (state) => ({
     username: state.user.userCredentials.email,
     isAdmin: state.user?.isAdmin || false,
     isTrainer: state.user.isTrainer,
+    unAssigned: state.user.unAssigned,
 });
 export default connect(
     mapStateToProps,
