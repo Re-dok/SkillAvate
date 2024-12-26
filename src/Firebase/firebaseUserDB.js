@@ -7,7 +7,7 @@ import {
     updateDoc,
     writeBatch,
     doc,
-    serverTimestamp,
+    Timestamp,
 } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import { coursesRef } from "./firebaseCourseDB";
@@ -152,7 +152,7 @@ const addUserToDB = async ({ email, isTrainer, name, phoneNumber }) => {
             const trainerRef = trainerDoc.ref;
             // Update trainers field for the admin
             let updatedTrainers = trainerDoc.data().trainers || [];
-            const createdAt = serverTimestamp();
+            const createdAt=Timestamp.fromDate(new Date());
             updatedTrainers.push({
                 trainerEmail: email,
                 clients: [],
@@ -168,7 +168,7 @@ const addUserToDB = async ({ email, isTrainer, name, phoneNumber }) => {
         const batch = writeBatch(db);
         // Add a new user document to the users collection
         const newUserRef = doc(usersRef);
-        const createdAt = serverTimestamp();
+        const createdAt=Timestamp.fromDate(new Date());
         batch.set(newUserRef, {
             email,
             isTrainer,
