@@ -60,7 +60,8 @@ class LoginPage extends Component {
                     } else {
                         // signed in?
                         // fetch details,nav as normal via intended nav,will need to set is logged in as true
-                        await this.props.doGetUserData(user.email);
+                        const resp = await this.props.doGetUserData(user.email);
+                        if(!resp.error){
                         const { isAdmin, isTrainer } = this.props;
                         if (
                             this.props.initialURL === "/" ||
@@ -80,7 +81,7 @@ class LoginPage extends Component {
                             this.props.navigate(this.props.initialURL);
                             if (this.props.initialURL)
                                 this.props.setInitialURL(null);
-                        }
+                        }}
                     }
                 }
             });
@@ -113,7 +114,8 @@ class LoginPage extends Component {
             await this.props.doSignIn();
             const { success } = this.props;
             if (success) {
-                await this.props.doGetUserData(email);
+                const resp=await this.props.doGetUserData(email);
+                if(resp.error) return;
                 const { isTrainer, isAdmin, navigate } = this.props;
                 if (
                     this.props.initialURL === "/" ||

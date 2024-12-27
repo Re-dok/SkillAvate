@@ -214,7 +214,7 @@ const userSlice = createSlice({
             state.userCredentials.password = action.payload;
         },
         emailChanged: (state, action) => {
-            state.userCredentials.email = action.payload;
+            state.userCredentials.email = action.payload.toLowerCase();
         },
         nameChanged: (state, action) => {
             state.name = action.payload;
@@ -307,6 +307,7 @@ const userSlice = createSlice({
             .addCase(doGetUserData.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+                state.isLoggedIn=false;
             })
             .addCase(doSignOut.pending, (state) => {
                 state.loading = true;
