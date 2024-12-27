@@ -20,7 +20,7 @@ import {
     setInitialURL,
     doSignOut,
     nameChanged,
-    phoneNumberChanged
+    phoneNumberChanged,
 } from "../Features/user/userSlice";
 import { connect } from "react-redux";
 
@@ -60,26 +60,28 @@ class LoginPage extends Component {
                     } else {
                         // signed in?
                         // fetch details,nav as normal via intended nav,will need to set is logged in as true
-                        await this.props.doGetUserData(user.email);
-                        const { isAdmin, isTrainer } = this.props;
-                        if (
-                            this.props.initialURL === "/" ||
-                            this.props.initialURL === "/resetPassword" ||
-                            this.props.initialURL === null ||
-                            this.props.initialURL === "/notFound"
-                        ) {
-                            this.props.navigate(
-                                isAdmin === true
-                                    ? "/courses"
-                                    : isTrainer
-                                    ? "/courses"
-                                    : "/myCourses"
-                            );
-                            this.props.setInitialURL(null);
-                        } else {
-                            this.props.navigate(this.props.initialURL);
-                            if (this.props.initialURL)
+                        const resp = await this.props.doGetUserData(user.email);
+                        if (!resp.error) {
+                            const { isAdmin, isTrainer } = this.props;
+                            if (
+                                this.props.initialURL === "/" ||
+                                this.props.initialURL === "/resetPassword" ||
+                                this.props.initialURL === null ||
+                                this.props.initialURL === "/notFound"
+                            ) {
+                                this.props.navigate(
+                                    isAdmin === true
+                                        ? "/courses"
+                                        : isTrainer
+                                        ? "/courses"
+                                        : "/myCourses"
+                                );
                                 this.props.setInitialURL(null);
+                            } else {
+                                this.props.navigate(this.props.initialURL);
+                                if (this.props.initialURL)
+                                    this.props.setInitialURL(null);
+                            }
                         }
                     }
                 }
@@ -113,7 +115,8 @@ class LoginPage extends Component {
             await this.props.doSignIn();
             const { success } = this.props;
             if (success) {
-                await this.props.doGetUserData(email);
+                const resp=await this.props.doGetUserData(email);
+                if(resp.error) return;
                 const { isTrainer, isAdmin, navigate } = this.props;
                 if (
                     this.props.initialURL === "/" ||
@@ -156,7 +159,7 @@ class LoginPage extends Component {
             this.props.passwordChanged(e.target.value);
         else if (e.target.name === "name")
             this.props.nameChanged(e.target.value);
-        else if(e.target.name==="phoneNumber")
+        else if (e.target.name === "phoneNumber")
             this.props.phoneNumberChanged(e.target.value);
         else this.props.emailChanged(e.target.value);
     };
@@ -165,7 +168,8 @@ class LoginPage extends Component {
             !this.props.email ||
             !this.props.password ||
             this.props.isLoading ||
-            (!this.state.isLogin && (!this.props.name||!this.props.phoneNumber));
+            (!this.state.isLogin &&
+                (!this.props.name || !this.props.phoneNumber));
         return (
             <div className="d-flex min-vh-100 justify-content-center align-items-center">
                 <div
@@ -181,16 +185,17 @@ class LoginPage extends Component {
                             className="w-100 input-focus-none"
                         />
                     </InputGroup>
-                    {!this.state.isLogin && (<>
-                        <InputGroup className="gap-0 d-flex flex-column ">
-                            <Label>Full Name</Label>
-                            <Input
-                                required
-                                name="name"
-                                onChange={(e) => this.handleChange(e)}
-                                className="w-100 input-focus-none"
+                    {!this.state.isLogin && (
+                        <>
+                            <InputGroup className="gap-0 d-flex flex-column ">
+                                <Label>Full Name</Label>
+                                <Input
+                                    required
+                                    name="name"
+                                    onChange={(e) => this.handleChange(e)}
+                                    className="w-100 input-focus-none"
                                 />
-                        </InputGroup>
+                            </InputGroup>
                             <InputGroup className="gap-0 d-flex flex-column ">
                                 <Label>Phone Number</Label>
                                 <Input
@@ -199,9 +204,9 @@ class LoginPage extends Component {
                                     type="tel"
                                     onChange={(e) => this.handleChange(e)}
                                     className="w-100 input-focus-none"
-                                    />
-                        </InputGroup>
-                                    </>
+                                />
+                            </InputGroup>
+                        </>
                     )}
                     <InputGroup className="gap-0 d-flex flex-column">
                         <Label>Password</Label>
@@ -325,7 +330,7 @@ const mapStateToProps = (state) => {
     return {
         password: state.user.userCredentials.password,
         email: state.user.userCredentials.email,
-        phoneNumber:state.user.phoneNumber,
+        phoneNumber: state.user.phoneNumber,
         name: state.user.name,
         isLoading: state.user.loading,
         isTrainer: state.user.isTrainer,

@@ -359,7 +359,7 @@ class MyCourses extends Component {
                     </Nav>
                 </div>
                 <div className="col-12 col-md-10 py-5 px-5 px-md-0 d-flex gap-5 flex-column">
-                    {this.props.courses.map((course, courseNumber) => {
+                    {this.props.courses && this.props.courses.map((course, courseNumber) => {
                         if (course.isComplete !== openCompletedCourses) {
                             if (course.isComplete === true && ifIsEmpty[0]) {
                                 ifIsEmpty[0] = false;
